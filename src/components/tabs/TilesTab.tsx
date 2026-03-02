@@ -459,7 +459,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
 
       {/* RIGHT PANEL - Full height, wide */}
       {rightPanelTab && (
-        <div className="absolute top-0 right-0 z-20 w-[420px] h-full border-l border-border/50 bg-background/95 backdrop-blur-md flex flex-col shadow-2xl overflow-y-auto">
+        <div className="absolute top-0 right-0 z-20 w-[420px] h-full border-l border-border/50 bg-background/95 backdrop-blur-md flex flex-col shadow-2xl overflow-x-hidden overflow-y-auto">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 mt-1">
             <span className="text-sm font-semibold capitalize">{rightPanelTab}</span>
             <Button
