@@ -445,10 +445,15 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     return () => cancelAnimationFrame(animationFrameId);
   }, [pendingWallId, draw]);
 
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const didDragRef = useRef(false);
+
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 1) {
+    if (e.button === 0 || e.button === 1) {
       e.preventDefault();
       setIsPanning(true);
+      didDragRef.current = false;
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
       setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
     }
   };
@@ -458,6 +463,14 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     if (!rect) return;
 
     if (isPanning) {
+      // Check if we've moved enough to count as a drag (5px threshold)
+      if (dragStartRef.current) {
+        const dx = e.clientX - dragStartRef.current.x;
+        const dy = e.clientY - dragStartRef.current.y;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+          didDragRef.current = true;
+        }
+      }
       setOffset({
         x: e.clientX - panStart.x,
         y: e.clientY - panStart.y
@@ -473,20 +486,22 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     setHoveredWallId(wall?.id || null);
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
+    const wasDragging = didDragRef.current;
     setIsPanning(false);
-  };
+    didDragRef.current = false;
+    dragStartRef.current = null;
 
-  const handleClick = (e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const screenX = e.clientX - rect.left;
-    const screenY = e.clientY - rect.top;
-    const world = screenToWorld(screenX, screenY);
-    
-    const wall = findWallAt(world.x, world.y);
-    onWallSelect(wall?.id || null);
+    // Only select wall if it was a click (no drag)
+    if (!wasDragging && e.button === 0) {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
+      const world = screenToWorld(screenX, screenY);
+      const wall = findWallAt(world.x, world.y);
+      onWallSelect(wall?.id || null);
+    }
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -512,15 +527,14 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     <div 
       ref={containerRef} 
       className="w-full h-full overflow-hidden bg-muted/30"
-      style={{ cursor: isPanning ? 'grabbing' : (hoveredWallId ? 'pointer' : 'crosshair') }}
+      style={{ cursor: isPanning && didDragRef.current ? 'grabbing' : (hoveredWallId ? 'pointer' : 'grab') }}
     >
       <canvas
         ref={canvasRef}
-        onClick={handleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={() => { setIsPanning(false); setHoveredWallId(null); }}
+        onMouseLeave={() => { setIsPanning(false); didDragRef.current = false; dragStartRef.current = null; setHoveredWallId(null); }}
         onWheel={handleWheel}
         onContextMenu={(e) => e.preventDefault()}
       />
