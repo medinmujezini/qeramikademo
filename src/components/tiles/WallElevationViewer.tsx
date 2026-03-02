@@ -1018,12 +1018,9 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     e?.stopPropagation();
     if (!wall) return;
     
-    // Use actual wall height, not floorPlan.wallHeight
     const dims = getWallDimensions();
     const actualWallHeight = dims.height;
     
-    // Convert all sections to WallTileSection format with correct units
-    // For sections without a tileId, fall back to selectedTile
     const tileSections: Partial<WallTileSection>[] = sections
       .map(s => {
         const tileId = s.tileId || selectedTile?.id;
@@ -1045,7 +1042,6 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       })
       .filter((s): s is NonNullable<typeof s> => s !== null);
     
-    // Save all sections at once using onSaveSections if available
     if (tileSections.length > 0) {
       if (onSaveSections) {
         onSaveSections(wall.id, tileSections);
@@ -1069,10 +1065,9 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     });
   }, [selectedSection, selectedTile, groutColor, onApplyToAll]);
 
-  // Get tile for selected section
-  const sectionTile = selectedSection?.tileId 
-    ? tiles.find(t => t.id === selectedSection.tileId) 
-    : selectedTile;
+  // Get tile for selected section - always prefer selectedTile if available
+  const sectionTile = selectedTile 
+    || (selectedSection?.tileId ? tiles.find(t => t.id === selectedSection.tileId) : null);
 
   return (
     <div className="h-full flex flex-col w-full">
