@@ -12,6 +12,7 @@ interface TilesCanvasProps {
   jointWidth: number;
   showTilePreview: boolean;
   pendingWallId?: string | null;
+  tiles?: Tile[];
 }
 
 export const TilesCanvas: React.FC<TilesCanvasProps> = ({
@@ -21,6 +22,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
   jointWidth,
   showTilePreview,
   pendingWallId,
+  tiles: externalTiles,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -117,7 +119,8 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       
       // Get existing tile for this wall
       const tileSection = floorPlan.tileSections.find(s => s.wallId === wall.id);
-      const existingTile = tileSection ? TILE_LIBRARY.find(t => t.id === tileSection.tileId) : null;
+      const tileSource = externalTiles && externalTiles.length > 0 ? externalTiles : TILE_LIBRARY;
+      const existingTile = tileSection ? tileSource.find(t => t.id === tileSection.tileId) : null;
       
       // Determine which tile to show (preview or existing)
       const displayTile = isSelected && selectedTile && showTilePreview ? selectedTile : existingTile;
@@ -409,7 +412,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       ctx.textAlign = 'center';
       ctx.fillText('Click on a wall to select it for tiling', width / 2, 30);
     }
-  }, [floorPlan, offset, scale, selectedWallId, pendingWallId, selectedTile, hoveredWallId, jointWidth, showTilePreview, screenToWorld, worldToScreen]);
+  }, [floorPlan, offset, scale, selectedWallId, pendingWallId, selectedTile, hoveredWallId, jointWidth, showTilePreview, screenToWorld, worldToScreen, externalTiles]);
 
   // Resize handling
   useEffect(() => {
