@@ -24,7 +24,7 @@ import {
 import { generateCutListPDF } from '@/utils/pdfExport';
 import { calculateArcInfo } from '@/utils/arcUtils';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
-import { Grid3X3, Paintbrush, Check, Calculator, ChevronRight, Scissors, Recycle, AlertTriangle, Waves, TrendingUp, FileDown, Loader2, ArrowLeft } from 'lucide-react';
+import { Grid3X3, Paintbrush, Check, Calculator, ChevronRight, Scissors, Recycle, AlertTriangle, Waves, TrendingUp, FileDown, Loader2, ArrowLeft, Eye, EyeOff, X } from 'lucide-react';
 import { TileCalculationsPanel } from '@/components/tiles/TileCalculationsPanel';
 
 interface TilesTabProps {
@@ -44,7 +44,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   const [showTilePreview, setShowTilePreview] = useState(true);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [tilePattern, setTilePattern] = useState<'grid' | 'staggered' | 'herringbone' | 'diagonal'>('grid');
-  const [rightPanelTab, setRightPanelTab] = useState<'preview' | 'calculations'>('preview');
+  const [rightPanelTab, setRightPanelTab] = useState<'preview' | 'calculations' | null>(null);
 
   // Auto-select pending wall when it changes
   React.useEffect(() => {
@@ -435,64 +435,84 @@ export const TilesTab: React.FC<TilesTabProps> = ({
         </div>
       </div>
 
-      {/* RIGHT PANEL - Wall Elevation + Calculations */}
-      <div className="absolute top-20 right-6 z-20 w-80 max-h-[calc(100%-140px)]">
-        <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
-          {/* Tabs Header */}
-          <Tabs value={rightPanelTab} onValueChange={(v) => setRightPanelTab(v as 'preview' | 'calculations')}>
-            <div className="border-b border-white/10 px-2 py-1">
-              <TabsList className="w-full bg-transparent h-8">
-                <TabsTrigger value="preview" className="text-xs flex-1 h-7 data-[state=active]:bg-white/10">
-                  <Grid3X3 className="h-3 w-3 mr-1" />
-                  Preview
-                </TabsTrigger>
-                <TabsTrigger value="calculations" className="text-xs flex-1 h-7 data-[state=active]:bg-white/10">
-                  <Calculator className="h-3 w-3 mr-1" />
-                  Calculations
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            
-            <TabsContent value="preview" className="flex-1 overflow-y-auto m-0">
-              <WallElevationViewer
-                wall={selectedWall}
-                wallIndex={selectedWallIndex}
-                selectedTile={selectedTile}
-                jointWidth={jointWidth}
-                groutColor={groutColor}
-                tiles={tileLibrary}
-                onApplyTile={handleApplyTile}
-                onApplyToAll={handleApplyToAllWalls}
-                onSaveSections={handleSaveSections}
-              />
-            </TabsContent>
-            
-            <TabsContent value="calculations" className="flex-1 overflow-hidden m-0">
-              <TileCalculationsPanel
-                projectCalculation={projectCalculation}
-                wallBreakdown={wallBreakdown.map((wb, idx) => ({
-                  wallId: wb.wallId,
-                  wallName: `Wall ${String.fromCharCode(65 + idx)}`,
-                  area: wb.area,
-                  fullTiles: wb.fullTiles,
-                  cutTiles: wb.cutTiles.reduce((sum, c) => sum + c.count, 0),
-                  isCurved: wb.isCurved,
-                  isSloped: wb.isSloped,
-                  wastageFactor: wb.curveWastageFactor || wb.slopeWastageFactor || 1,
-                  assignedTile: wb.assignedTileId ?? null,
-                }))}
-                materials={materials}
-                totalCost={totalCost}
-                onExportPDF={handleExportPDF}
-                isExportingPDF={isExportingPDF}
-                curvedWallCount={curvedWallCount}
-                slopedWallCount={slopedWallCount}
-                walls={floorPlan.walls}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
+      {/* RIGHT TOP - Toggle Buttons */}
+      <div className="absolute top-4 right-6 z-20 flex gap-2">
+        <Button
+          variant={rightPanelTab === 'preview' ? 'default' : 'secondary'}
+          size="sm"
+          className="gap-1.5 h-8 shadow-lg"
+          onClick={() => setRightPanelTab(rightPanelTab === 'preview' ? null : 'preview')}
+        >
+          <Grid3X3 className="h-3.5 w-3.5" />
+          Preview
+        </Button>
+        <Button
+          variant={rightPanelTab === 'calculations' ? 'default' : 'secondary'}
+          size="sm"
+          className="gap-1.5 h-8 shadow-lg"
+          onClick={() => setRightPanelTab(rightPanelTab === 'calculations' ? null : 'calculations')}
+        >
+          <Calculator className="h-3.5 w-3.5" />
+          Calculations
+        </Button>
       </div>
+
+      {/* RIGHT PANEL - Conditionally visible */}
+      {rightPanelTab && (
+        <div className="absolute top-14 right-6 z-20 w-80 max-h-[calc(100%-120px)]">
+          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
+              <span className="text-xs font-medium capitalize">{rightPanelTab}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => setRightPanelTab(null)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {rightPanelTab === 'preview' && (
+                <WallElevationViewer
+                  wall={selectedWall}
+                  wallIndex={selectedWallIndex}
+                  selectedTile={selectedTile}
+                  jointWidth={jointWidth}
+                  groutColor={groutColor}
+                  tiles={tileLibrary}
+                  onApplyTile={handleApplyTile}
+                  onApplyToAll={handleApplyToAllWalls}
+                  onSaveSections={handleSaveSections}
+                />
+              )}
+              {rightPanelTab === 'calculations' && (
+                <TileCalculationsPanel
+                  projectCalculation={projectCalculation}
+                  wallBreakdown={wallBreakdown.map((wb, idx) => ({
+                    wallId: wb.wallId,
+                    wallName: `Wall ${String.fromCharCode(65 + idx)}`,
+                    area: wb.area,
+                    fullTiles: wb.fullTiles,
+                    cutTiles: wb.cutTiles.reduce((sum, c) => sum + c.count, 0),
+                    isCurved: wb.isCurved,
+                    isSloped: wb.isSloped,
+                    wastageFactor: wb.curveWastageFactor || wb.slopeWastageFactor || 1,
+                    assignedTile: wb.assignedTileId ?? null,
+                  }))}
+                  materials={materials}
+                  totalCost={totalCost}
+                  onExportPDF={handleExportPDF}
+                  isExportingPDF={isExportingPDF}
+                  curvedWallCount={curvedWallCount}
+                  slopedWallCount={slopedWallCount}
+                  walls={floorPlan.walls}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FLOATING BOTTOM HINT */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
