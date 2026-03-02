@@ -385,6 +385,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
           jointWidth={jointWidth}
           showTilePreview={showTilePreview}
           pendingWallId={pendingWallId}
+          tiles={tileLibrary}
         />
       </div>
 
