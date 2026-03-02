@@ -1,0 +1,309 @@
+/**
+ * TiledWall3D - Renders a wall with animated 3D tile meshes
+ * Supports all tile patterns: grid, staggered, herringbone, diagonal
+ * Renders grout as a backing plane with properly spaced tiles on top
+ */
+
+import React, { useMemo, useState, useEffect } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { Tile3D } from './Tile3D';
+import type { Wall, Point, Tile, TilePattern, TileOrientation } from '@/types/floorPlan';
+import { CM_TO_METERS, MM_TO_CM } from '@/constants/units';
+
+// Tile config passed from WallFinish
+interface TileConfig {
+  tileId: string;
+  groutColor: string;
+  pattern: TilePattern;
+  jointWidth?: number;      // in mm, defaults to 3
+  orientation?: TileOrientation;
+  offsetX?: number;         // in cm
+  offsetY?: number;         // in cm
+}
+
+interface TiledWall3DProps {
+  wall: Wall;
+  start: Point;
+  end: Point;
+  tileConfig: TileConfig;
+  tile: Tile;
+  scale: number;
+  animationState: 'idle' | 'animating' | 'complete';
+  onAnimationComplete?: () => void;
+}
+
+interface TilePosition {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  delay: number;
+  rotation: number; // Z-axis rotation in radians
+}
+
+// Calculate tile positions for a wall with proper joint spacing and patterns
+function calculateTilePositions(
+  wallLength: number,
+  wallHeight: number,
+  tile: Tile,
+  pattern: TilePattern = 'grid',
+  jointWidth: number = 3,      // in mm
+  orientation: TileOrientation = 'horizontal',
+  offsetX: number = 0,         // in cm
+  offsetY: number = 0          // in cm
+): TilePosition[] {
+  const positions: TilePosition[] = [];
+  
+  // Convert units using centralized constants
+  const jointM = jointWidth * MM_TO_CM * CM_TO_METERS;   // mm to meters
+  let tileW = tile.width * CM_TO_METERS;                  // cm to meters
+  let tileH = tile.height * CM_TO_METERS;                 // cm to meters
+  const wallL = wallLength * CM_TO_METERS;                // cm to meters
+  const wallH = wallHeight * CM_TO_METERS;                // cm to meters
+  const offX = offsetX * CM_TO_METERS;                    // cm to meters
+  const offY = offsetY * CM_TO_METERS;                    // cm to meters
+
+  // Swap dimensions for vertical orientation
+  if (orientation === 'vertical') {
+    [tileW, tileH] = [tileH, tileW];
+  }
+
+  // Calculate pitch (tile + joint)
+  const pitchX = tileW + jointM;
+  const pitchY = tileH + jointM;
+
+  // Number of tiles needed (with some extra for offsets)
+  const cols = Math.ceil((wallL + pitchX) / pitchX) + 2;
+  const rows = Math.ceil((wallH + pitchY) / pitchY) + 2;
+
+  // Pattern-specific calculations
+  if (pattern === 'herringbone') {
+    // Herringbone pattern: tiles at 45° and -45° alternating
+    const diagLength = Math.sqrt(tileW * tileW + tileH * tileH);
+    const stepX = tileH; // Horizontal step is tile height
+    const stepY = tileW; // Vertical step is tile width
+    
+    let index = 0;
+    for (let row = -2; row < Math.ceil(wallH / stepY) + 2; row++) {
+      for (let col = -2; col < Math.ceil(wallL / stepX) + 2; col++) {
+        const isEven = (row + col) % 2 === 0;
+        
+        // Base position
+        let x = col * stepX - wallL / 2 + offX;
+        let y = row * stepY + offY;
+        
+        // Offset for herringbone pattern
+        if (!isEven) {
+          x += stepX / 2;
+        }
+        
+        // Check bounds
+        if (x > -wallL / 2 - tileW && x < wallL / 2 + tileW &&
+            y > -tileH && y < wallH + tileH) {
+          
+          const normalizedX = (x + wallL / 2) / wallL;
+          const normalizedY = y / wallH;
+          const delay = (normalizedX * 0.3 + normalizedY * 0.5) * 0.8;
+          
+          positions.push({
+            x,
+            y,
+            width: tileW - jointM,
+            height: tileH - jointM,
+            delay: Math.max(0, delay),
+            rotation: isEven ? Math.PI / 4 : -Math.PI / 4,
+          });
+          index++;
+        }
+      }
+    }
+  } else if (pattern === 'diagonal') {
+    // All tiles rotated 45°
+    const diagPitch = pitchX * Math.SQRT2 * 0.5;
+    
+    let index = 0;
+    for (let row = -2; row < Math.ceil(wallH / diagPitch) + 4; row++) {
+      for (let col = -2; col < Math.ceil(wallL / diagPitch) + 4; col++) {
+        const x = col * diagPitch - wallL / 2 + offX + (row % 2) * diagPitch * 0.5;
+        const y = row * diagPitch * 0.5 + offY;
+        
+        if (x > -wallL / 2 - tileW && x < wallL / 2 + tileW &&
+            y > -tileH && y < wallH + tileH) {
+          
+          const normalizedX = (x + wallL / 2) / wallL;
+          const normalizedY = y / wallH;
+          const delay = (normalizedX * 0.3 + normalizedY * 0.5) * 0.8;
+          
+          positions.push({
+            x,
+            y,
+            width: tileW - jointM,
+            height: tileH - jointM,
+            delay: Math.max(0, delay),
+            rotation: Math.PI / 4,
+          });
+          index++;
+        }
+      }
+    }
+  } else {
+    // Grid and Staggered patterns
+    for (let row = 0; row < rows; row++) {
+      for (let col = -1; col < cols; col++) {
+        let rowOffset = 0;
+        
+        // Staggered pattern: offset every other row by 50%
+        if (pattern === 'staggered' && row % 2 === 1) {
+          rowOffset = pitchX / 2;
+        }
+        
+        const x = col * pitchX + rowOffset + offX - wallL / 2 + tileW / 2;
+        const y = row * pitchY + offY + tileH / 2 - wallH / 2;
+        
+        // Only include tiles within wall bounds (with some margin for partial tiles)
+        const margin = tileW;
+        if (x > -wallL / 2 - margin && x < wallL / 2 + margin &&
+            y > -tileH && y < wallH + tileH) {
+          
+          // Calculate animation delay based on position (wave from bottom-left)
+          const normalizedX = Math.max(0, Math.min(1, (x + wallL / 2) / wallL));
+          const normalizedY = Math.max(0, Math.min(1, y / wallH));
+          const delay = (normalizedX * 0.3 + normalizedY * 0.5) * 0.8;
+
+          positions.push({
+            x,
+            y,
+            width: tileW - jointM,
+            height: tileH - jointM,
+            delay,
+            rotation: 0,
+          });
+        }
+      }
+    }
+  }
+
+  return positions;
+}
+
+export const TiledWall3D: React.FC<TiledWall3DProps> = ({
+  wall,
+  start,
+  end,
+  tileConfig,
+  tile,
+  scale,
+  animationState,
+  onAnimationComplete,
+}) => {
+  const [animationProgress, setAnimationProgress] = useState(0);
+
+  // Calculate wall geometry using centralized constants
+  const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+  const angle = Math.atan2(end.y - start.y, end.x - start.x);
+  const midX = (start.x + end.x) / 2 * CM_TO_METERS;
+  const midZ = (start.y + end.y) / 2 * CM_TO_METERS;
+  const wallThicknessM = wall.thickness * CM_TO_METERS;
+  const wallLengthM = length * CM_TO_METERS;
+  const wallHeightM = wall.height * CM_TO_METERS;
+
+  // Create clipping planes to cut tiles at wall boundaries
+  const clippingPlanes = useMemo(() => {
+    // Left plane (normal pointing right +X, positioned at -wallLengthM/2)
+    const leftPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), wallLengthM / 2);
+    // Right plane (normal pointing left -X, positioned at +wallLengthM/2)
+    const rightPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), wallLengthM / 2);
+    return [leftPlane, rightPlane];
+  }, [wallLengthM]);
+
+  // Generate tile positions with all config options
+  const tilePositions = useMemo(() => {
+    return calculateTilePositions(
+      length,
+      wall.height,
+      tile,
+      tileConfig.pattern,
+      tileConfig.jointWidth ?? 3,
+      tileConfig.orientation ?? 'horizontal',
+      tileConfig.offsetX ?? 0,
+      tileConfig.offsetY ?? 0
+    );
+  }, [
+    length, 
+    wall.height, 
+    tile, 
+    tileConfig.pattern, 
+    tileConfig.jointWidth,
+    tileConfig.orientation,
+    tileConfig.offsetX,
+    tileConfig.offsetY
+  ]);
+
+  // Handle animation progress
+  useFrame((state, delta) => {
+    if (animationState === 'animating' && animationProgress < 1) {
+      const newProgress = Math.min(animationProgress + delta * 0.8, 1);
+      setAnimationProgress(newProgress);
+      
+      if (newProgress >= 1 && onAnimationComplete) {
+        onAnimationComplete();
+      }
+    } else if ((animationState === 'complete' || animationState === 'idle') && animationProgress < 1) {
+      // If complete or idle (tiles exist but weren't animated), show immediately
+      setAnimationProgress(1);
+    }
+  });
+
+  // Reset animation when state changes to animating
+  useEffect(() => {
+    if (animationState === 'animating') {
+      setAnimationProgress(0);
+    } else if (animationState === 'idle') {
+      // Show immediately for idle state (tiles already exist)
+      setAnimationProgress(1);
+    }
+  }, [animationState]);
+
+  const isAnimating = animationState === 'animating';
+
+  return (
+    <group position={[midX, 0, midZ]} rotation={[0, -angle, 0]}>
+      {/* Base wall / grout backing plane */}
+      <mesh 
+        position={[0, wallHeightM / 2, -wallThicknessM / 2 - 0.002]}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[wallLengthM, wallHeightM, wallThicknessM * 0.5]} />
+        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} />
+      </mesh>
+
+      {/* Grout layer - slightly in front of wall base */}
+      <mesh 
+        position={[0, wallHeightM / 2, wallThicknessM / 2]}
+        receiveShadow
+      >
+        <planeGeometry args={[wallLengthM, wallHeightM]} />
+        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} />
+      </mesh>
+
+      {/* Individual 3D tiles on top of grout */}
+      {tilePositions.map((pos, idx) => (
+        <Tile3D
+          key={`tile-${idx}`}
+          position={[pos.x, pos.y, wallThicknessM / 2 + 0.005]}
+          size={[pos.width, pos.height]}
+          color={tile.color}
+          tileRotation={pos.rotation}
+          delay={pos.delay}
+          isAnimating={isAnimating}
+          animationProgress={animationProgress}
+          clippingPlanes={clippingPlanes}
+        />
+      ))}
+    </group>
+  );
+};
+
+export default TiledWall3D;
