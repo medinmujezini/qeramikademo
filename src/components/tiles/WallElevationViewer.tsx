@@ -1323,8 +1323,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       )}
 
       {/* Controls - always visible with internal scroll if needed */}
-      <div className="flex-shrink-0 border-t flex flex-col" style={{ maxHeight: '280px' }}>
-        <ScrollArea className="flex-1">
+      <div className="flex-shrink-0 border-t flex flex-col">
           <div className="p-3 space-y-3">
           {/* Tile for section */}
           {sections.length > 1 && (
@@ -1448,7 +1447,6 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
           </div>
 
           </div>
-        </ScrollArea>
         
         {/* Apply buttons - always visible outside scroll area */}
         <div className="p-3 pt-2 border-t bg-background space-y-1.5">
