@@ -1069,7 +1069,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     : selectedTile;
 
   return (
-    <div className="h-full flex flex-col border-l w-[600px]">
+    <div className="h-full flex flex-col w-full">
       {/* Header */}
       <div className="border-b p-3 bg-muted/30">
         <h3 className="font-semibold text-sm flex items-center gap-2">
