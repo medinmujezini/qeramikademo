@@ -436,20 +436,20 @@ export const TilesTab: React.FC<TilesTabProps> = ({
       </div>
 
       {/* RIGHT TOP - Toggle Buttons */}
-      <div className="absolute top-4 right-6 z-20 flex gap-2">
+      <div className="absolute top-4 right-4 z-30 flex gap-1.5">
         <Button
-          variant={rightPanelTab === 'preview' ? 'default' : 'secondary'}
+          variant={rightPanelTab === 'preview' ? 'default' : 'outline'}
           size="sm"
-          className="gap-1.5 h-8 shadow-lg"
+          className="gap-1.5 h-9 rounded-lg text-xs shadow-md backdrop-blur-sm"
           onClick={() => setRightPanelTab(rightPanelTab === 'preview' ? null : 'preview')}
         >
           <Grid3X3 className="h-3.5 w-3.5" />
           Preview
         </Button>
         <Button
-          variant={rightPanelTab === 'calculations' ? 'default' : 'secondary'}
+          variant={rightPanelTab === 'calculations' ? 'default' : 'outline'}
           size="sm"
-          className="gap-1.5 h-8 shadow-lg"
+          className="gap-1.5 h-9 rounded-lg text-xs shadow-md backdrop-blur-sm"
           onClick={() => setRightPanelTab(rightPanelTab === 'calculations' ? null : 'calculations')}
         >
           <Calculator className="h-3.5 w-3.5" />
@@ -457,59 +457,57 @@ export const TilesTab: React.FC<TilesTabProps> = ({
         </Button>
       </div>
 
-      {/* RIGHT PANEL - Conditionally visible */}
+      {/* RIGHT PANEL - Full height, wide */}
       {rightPanelTab && (
-        <div className="absolute top-14 right-6 z-20 w-80 max-h-[calc(100%-120px)]">
-          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
-              <span className="text-xs font-medium capitalize">{rightPanelTab}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => setRightPanelTab(null)}
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {rightPanelTab === 'preview' && (
-                <WallElevationViewer
-                  wall={selectedWall}
-                  wallIndex={selectedWallIndex}
-                  selectedTile={selectedTile}
-                  jointWidth={jointWidth}
-                  groutColor={groutColor}
-                  tiles={tileLibrary}
-                  onApplyTile={handleApplyTile}
-                  onApplyToAll={handleApplyToAllWalls}
-                  onSaveSections={handleSaveSections}
-                />
-              )}
-              {rightPanelTab === 'calculations' && (
-                <TileCalculationsPanel
-                  projectCalculation={projectCalculation}
-                  wallBreakdown={wallBreakdown.map((wb, idx) => ({
-                    wallId: wb.wallId,
-                    wallName: `Wall ${String.fromCharCode(65 + idx)}`,
-                    area: wb.area,
-                    fullTiles: wb.fullTiles,
-                    cutTiles: wb.cutTiles.reduce((sum, c) => sum + c.count, 0),
-                    isCurved: wb.isCurved,
-                    isSloped: wb.isSloped,
-                    wastageFactor: wb.curveWastageFactor || wb.slopeWastageFactor || 1,
-                    assignedTile: wb.assignedTileId ?? null,
-                  }))}
-                  materials={materials}
-                  totalCost={totalCost}
-                  onExportPDF={handleExportPDF}
-                  isExportingPDF={isExportingPDF}
-                  curvedWallCount={curvedWallCount}
-                  slopedWallCount={slopedWallCount}
-                  walls={floorPlan.walls}
-                />
-              )}
-            </div>
+        <div className="absolute top-0 right-0 z-20 w-[420px] h-full border-l border-border/50 bg-background/95 backdrop-blur-md flex flex-col shadow-2xl">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 mt-1">
+            <span className="text-sm font-semibold capitalize">{rightPanelTab}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 rounded-md"
+              onClick={() => setRightPanelTab(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {rightPanelTab === 'preview' && (
+              <WallElevationViewer
+                wall={selectedWall}
+                wallIndex={selectedWallIndex}
+                selectedTile={selectedTile}
+                jointWidth={jointWidth}
+                groutColor={groutColor}
+                tiles={tileLibrary}
+                onApplyTile={handleApplyTile}
+                onApplyToAll={handleApplyToAllWalls}
+                onSaveSections={handleSaveSections}
+              />
+            )}
+            {rightPanelTab === 'calculations' && (
+              <TileCalculationsPanel
+                projectCalculation={projectCalculation}
+                wallBreakdown={wallBreakdown.map((wb, idx) => ({
+                  wallId: wb.wallId,
+                  wallName: `Wall ${String.fromCharCode(65 + idx)}`,
+                  area: wb.area,
+                  fullTiles: wb.fullTiles,
+                  cutTiles: wb.cutTiles.reduce((sum, c) => sum + c.count, 0),
+                  isCurved: wb.isCurved,
+                  isSloped: wb.isSloped,
+                  wastageFactor: wb.curveWastageFactor || wb.slopeWastageFactor || 1,
+                  assignedTile: wb.assignedTileId ?? null,
+                }))}
+                materials={materials}
+                totalCost={totalCost}
+                onExportPDF={handleExportPDF}
+                isExportingPDF={isExportingPDF}
+                curvedWallCount={curvedWallCount}
+                slopedWallCount={slopedWallCount}
+                walls={floorPlan.walls}
+              />
+            )}
           </div>
         </div>
       )}
