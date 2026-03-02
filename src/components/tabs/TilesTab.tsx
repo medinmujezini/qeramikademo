@@ -251,27 +251,52 @@ export const TilesTab: React.FC<TilesTabProps> = ({
     return calculateProjectFromSections(floorPlan.walls, floorPlan.points, floorPlan.tileSections, tileLibrary);
   }, [floorPlan.walls, floorPlan.points, floorPlan.tileSections, tileLibrary]);
 
+  // Helper to set wall finish with cached tile data for 3D rendering
+  const applyWallFinish = useCallback((wallId: string, tileId: string, settings: Partial<WallTileSection>) => {
+    const tile = findTile(tileId);
+    setWallFinish(wallId, 'tiles', {
+      tileId,
+      groutColor: settings.groutColor || groutColor,
+      pattern: settings.pattern || 'grid',
+      jointWidth: jointWidth,
+      orientation: settings.orientation || 'horizontal',
+      offsetX: settings.offsetX || 0,
+      offsetY: settings.offsetY || 0,
+      tileWidth: tile?.width,
+      tileHeight: tile?.height,
+      tileColor: tile?.color,
+      tileMaterial: tile?.material,
+    });
+  }, [findTile, setWallFinish, groutColor, jointWidth]);
+
   // Handle applying tiles with settings from elevation viewer
   const handleApplyTile = useCallback((wallId: string, settings: Partial<WallTileSection>) => {
     if (settings.tileId) {
       assignTileToWall(wallId, settings.tileId, settings);
+      applyWallFinish(wallId, settings.tileId, settings);
     }
-  }, [assignTileToWall]);
+  }, [assignTileToWall, applyWallFinish]);
 
   // Handle saving multiple sections for a wall
   const handleSaveSections = useCallback((wallId: string, sections: Partial<WallTileSection>[]) => {
     if (sections.length > 0 && sections.some(s => s.tileId)) {
       updateWallTileSections(wallId, sections);
+      // Also set wall finish for the first section's tile (for 3D rendering)
+      const firstTiled = sections.find(s => s.tileId);
+      if (firstTiled?.tileId) {
+        applyWallFinish(wallId, firstTiled.tileId, firstTiled);
+      }
     }
-  }, [updateWallTileSections]);
+  }, [updateWallTileSections, applyWallFinish]);
 
   const handleApplyToAllWalls = useCallback((settings: Partial<WallTileSection>) => {
     if (settings.tileId) {
       floorPlan.walls.forEach(wall => {
         assignTileToWall(wall.id, settings.tileId!, settings);
+        applyWallFinish(wall.id, settings.tileId!, settings);
       });
     }
-  }, [floorPlan.walls, assignTileToWall]);
+  }, [floorPlan.walls, assignTileToWall, applyWallFinish]);
 
   // Count walls with tiles assigned
   const tiledWallCount = useMemo(() => {
