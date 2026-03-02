@@ -1014,7 +1014,8 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
   }, [draw]);
 
   // Handle apply
-  const handleApply = useCallback(() => {
+  const handleApply = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!wall) return;
     
     // Use actual wall height, not floorPlan.wallHeight
@@ -1022,46 +1023,51 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     const actualWallHeight = dims.height;
     
     // Convert all sections to WallTileSection format with correct units
+    // For sections without a tileId, fall back to selectedTile
     const tileSections: Partial<WallTileSection>[] = sections
-      .filter(s => s.tileId)
-      .map(s => ({
-        tileId: s.tileId!,
-        orientation: s.orientation,
-        pattern: s.pattern,
-        offsetX: s.offsetX,
-        offsetY: s.offsetY,
-        groutColor,
-        startPosition: s.bounds.x1,
-        endPosition: s.bounds.x2,
-        startHeight: s.bounds.y1 * actualWallHeight, // Convert normalized to cm using actual wall height
-        endHeight: s.bounds.y2 * actualWallHeight,   // Convert normalized to cm using actual wall height
-        // Include sloped wall info
-        isSlopedWall: dims.isSloped,
-        slopeAngle: dims.isSloped ? Math.atan2(Math.abs(dims.endHeight - dims.startHeight), dims.length) * (180 / Math.PI) : undefined,
-      }));
+      .map(s => {
+        const tileId = s.tileId || selectedTile?.id;
+        if (!tileId) return null;
+        return {
+          tileId,
+          orientation: s.orientation,
+          pattern: s.pattern,
+          offsetX: s.offsetX,
+          offsetY: s.offsetY,
+          groutColor,
+          startPosition: s.bounds.x1,
+          endPosition: s.bounds.x2,
+          startHeight: s.bounds.y1 * actualWallHeight,
+          endHeight: s.bounds.y2 * actualWallHeight,
+          isSlopedWall: dims.isSloped,
+          slopeAngle: dims.isSloped ? Math.atan2(Math.abs(dims.endHeight - dims.startHeight), dims.length) * (180 / Math.PI) : undefined,
+        };
+      })
+      .filter((s): s is NonNullable<typeof s> => s !== null);
     
     // Save all sections at once using onSaveSections if available
     if (tileSections.length > 0) {
       if (onSaveSections) {
         onSaveSections(wall.id, tileSections);
       } else if (tileSections.length === 1) {
-        // Fallback for single section
         onApplyTile(wall.id, tileSections[0]);
       }
     }
-  }, [wall, sections, groutColor, getWallDimensions, onSaveSections, onApplyTile]);
+  }, [wall, sections, groutColor, selectedTile, getWallDimensions, onSaveSections, onApplyTile]);
 
-  const handleApplyAll = useCallback(() => {
-    if (!selectedSection?.tileId) return;
+  const handleApplyAll = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const tileId = selectedSection?.tileId || selectedTile?.id;
+    if (!tileId) return;
     onApplyToAll({
-      tileId: selectedSection.tileId,
-      orientation: selectedSection.orientation,
-      pattern: selectedSection.pattern,
-      offsetX: selectedSection.offsetX,
-      offsetY: selectedSection.offsetY,
+      tileId,
+      orientation: selectedSection?.orientation || 'horizontal',
+      pattern: selectedSection?.pattern || 'grid',
+      offsetX: selectedSection?.offsetX || 0,
+      offsetY: selectedSection?.offsetY || 0,
       groutColor,
     });
-  }, [selectedSection, groutColor, onApplyToAll]);
+  }, [selectedSection, selectedTile, groutColor, onApplyToAll]);
 
   // Get tile for selected section
   const sectionTile = selectedSection?.tileId 
