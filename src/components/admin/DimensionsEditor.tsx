@@ -40,9 +40,10 @@ const DimensionsEditor = ({
           <Label className="text-xs text-muted-foreground">{labels.width} (W)</Label>
           <Input
             type="number"
+            step="any"
             value={width}
-            onChange={(e) => onChange({ width: parseInt(e.target.value) || 0, depth, height })}
-            min={1}
+            onChange={(e) => onChange({ width: parseFloat(e.target.value) || 0, depth, height })}
+            min={0.1}
             className="h-9"
           />
         </div>
@@ -50,9 +51,10 @@ const DimensionsEditor = ({
           <Label className="text-xs text-muted-foreground">{labels.depth} (D)</Label>
           <Input
             type="number"
+            step="any"
             value={depth}
-            onChange={(e) => onChange({ width, depth: parseInt(e.target.value) || 0, height })}
-            min={1}
+            onChange={(e) => onChange({ width, depth: parseFloat(e.target.value) || 0, height })}
+            min={0.1}
             className="h-9"
           />
         </div>
@@ -60,9 +62,10 @@ const DimensionsEditor = ({
           <Label className="text-xs text-muted-foreground">{labels.height} (H)</Label>
           <Input
             type="number"
+            step="any"
             value={height}
-            onChange={(e) => onChange({ width, depth, height: parseInt(e.target.value) || 0 })}
-            min={1}
+            onChange={(e) => onChange({ width, depth, height: parseFloat(e.target.value) || 0 })}
+            min={0.1}
             className="h-9"
           />
         </div>
