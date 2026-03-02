@@ -436,7 +436,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
       </div>
 
       {/* RIGHT TOP - Toggle Buttons */}
-      <div className="absolute top-4 right-4 z-30 flex gap-1.5">
+      <div className="absolute top-16 right-4 z-30 flex gap-1.5">
         <Button
           variant={rightPanelTab === 'preview' ? 'default' : 'outline'}
           size="sm"
@@ -459,7 +459,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
 
       {/* RIGHT PANEL - Full height, wide */}
       {rightPanelTab && (
-        <div className="absolute top-0 right-0 z-20 w-[420px] h-full border-l border-border/50 bg-background/95 backdrop-blur-md flex flex-col shadow-2xl">
+        <div className="absolute top-0 right-0 z-20 w-[420px] h-full border-l border-border/50 bg-background/95 backdrop-blur-md flex flex-col shadow-2xl overflow-y-auto">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 mt-1">
             <span className="text-sm font-semibold capitalize">{rightPanelTab}</span>
             <Button
