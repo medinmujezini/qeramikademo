@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Canvas2D } from '@/components/floor-plan/Canvas2D';
 import { Toolbar } from '@/components/floor-plan/Toolbar';
 import { PropertiesPanel } from '@/components/floor-plan/PropertiesPanel';
@@ -165,6 +165,53 @@ export const FloorPlanTab: React.FC = () => {
 
     setSelectedElement(null);
   }, [resetFloorPlan, addPoint, addWall, setSelectedElement]);
+
+  // Global hotkeys for tool switching
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger hotkeys when typing in inputs
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      switch (e.key.toLowerCase()) {
+        case 'v':
+          setActiveTool('select');
+          break;
+        case ' ':
+          e.preventDefault();
+          setActiveTool('pan');
+          break;
+        case 'w':
+          setActiveTool('wall');
+          break;
+        case 'c':
+          setActiveTool('column');
+          break;
+        case 'd':
+          setActiveTool('door');
+          break;
+        case 'n':
+          setActiveTool('window');
+          break;
+        case 'g':
+          setShowGrid(prev => !prev);
+          break;
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === ' ') {
+        setActiveTool('select');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   return (
     <div className="h-full relative overflow-hidden">
