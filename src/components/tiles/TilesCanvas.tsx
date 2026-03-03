@@ -265,7 +265,6 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       ctx.textBaseline = 'bottom';
       ctx.fillText(`${wallLength.toFixed(0)} cm`, 0, -4);
       ctx.restore();
-      ctx.restore();
       
       // Draw slope indicator
       if (isSloped) {
