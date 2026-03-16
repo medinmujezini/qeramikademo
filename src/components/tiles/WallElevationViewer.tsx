@@ -1180,7 +1180,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       )}
 
       {/* Canvas - allow shrinking to make room for controls */}
-      <div ref={containerRef} className="flex-1 min-h-[120px] overflow-hidden bg-muted/20 relative">
+      <div ref={containerRef} className="flex-1 min-h-[280px] overflow-hidden bg-muted/20 relative">
         <canvas 
           ref={canvasRef}
           onClick={handleCanvasClick}
