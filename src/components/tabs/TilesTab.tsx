@@ -414,30 +414,32 @@ export const TilesTab: React.FC<TilesTabProps> = ({
           <div className="panel-header shrink-0">
             <span className="panel-header-title">Tile Library</span>
           </div>
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
-            <TileLibraryPanel
-              selectedTileId={selectedTile?.id}
-              onTileSelect={setSelectedTile}
-              maxHeight="180px"
-            />
+          <ScrollArea className="flex-1">
+            <div className="p-2 space-y-2">
+              <TileLibraryPanel
+                selectedTileId={selectedTile?.id}
+                onTileSelect={setSelectedTile}
+                maxHeight="180px"
+              />
 
-            <div className="space-y-2 pt-2 border-t border-white/10">
-              <Label className="text-xs text-muted-foreground">Joint: {jointWidth}mm</Label>
-              <Slider
-                value={[jointWidth]}
-                onValueChange={([v]) => setJointWidth(v)}
-                min={1}
-                max={10}
-                step={0.5}
+              <div className="space-y-2 pt-2 border-t border-white/10">
+                <Label className="text-xs text-muted-foreground">Joint: {jointWidth}mm</Label>
+                <Slider
+                  value={[jointWidth]}
+                  onValueChange={([v]) => setJointWidth(v)}
+                  min={1}
+                  max={10}
+                  step={0.5}
+                />
+              </div>
+              
+              <GroutColorPicker
+                value={groutColor}
+                onChange={setGroutColor}
+                compact
               />
             </div>
-            
-            <GroutColorPicker
-              value={groutColor}
-              onChange={setGroutColor}
-              compact
-            />
-          </div>
+          </ScrollArea>
         </div>
       </div>
 
@@ -497,8 +499,14 @@ export const TilesTab: React.FC<TilesTabProps> = ({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {rightPanelTab === 'preview' && (
+          <ScrollArea className="flex-1">
+            {rightPanelTab === 'preview' && !selectedWall && (
+              <div className="flex flex-col items-center justify-center h-64 text-center p-6 gap-3">
+                <Grid3X3 className="h-10 w-10 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">Select a wall to see tile details</p>
+              </div>
+            )}
+            {rightPanelTab === 'preview' && selectedWall && (
               <WallElevationViewer
                 wall={selectedWall}
                 wallIndex={selectedWallIndex}
@@ -534,7 +542,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
                 walls={floorPlan.walls}
               />
             )}
-          </div>
+          </ScrollArea>
         </div>
       )}
 
