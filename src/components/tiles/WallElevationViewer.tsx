@@ -982,34 +982,36 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     // Draw legend
     ctx.font = 'bold 13px sans-serif';
     ctx.textAlign = 'left';
-    const legendY = height - 14;
+    ctx.textBaseline = 'middle';
+    const legendY = height - 12;
     const bulletRadius = 4;
     let legendX = startX;
 
     // Full tile bullet
     ctx.fillStyle = 'hsl(var(--muted-foreground))';
     ctx.beginPath();
-    ctx.arc(legendX + bulletRadius, legendY - bulletRadius + 2, bulletRadius, 0, Math.PI * 2);
+    ctx.arc(legendX + bulletRadius, legendY, bulletRadius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillText('Full tile', legendX + bulletRadius * 2 + 8, legendY + 2);
+    ctx.fillText('Full tile', legendX + bulletRadius * 2 + 6, legendY);
     legendX += 95;
 
     // Straight cut bullet
     ctx.fillStyle = '#f59e0b';
     ctx.beginPath();
-    ctx.arc(legendX + bulletRadius, legendY - bulletRadius + 2, bulletRadius, 0, Math.PI * 2);
+    ctx.arc(legendX + bulletRadius, legendY, bulletRadius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillText('Straight cut', legendX + bulletRadius * 2 + 8, legendY + 2);
+    ctx.fillText('Straight cut', legendX + bulletRadius * 2 + 6, legendY);
     legendX += 115;
 
     if (dims.isSloped) {
       // Angled cut bullet
       ctx.fillStyle = '#ef4444';
       ctx.beginPath();
-      ctx.arc(legendX + bulletRadius, legendY - bulletRadius + 2, bulletRadius, 0, Math.PI * 2);
+      ctx.arc(legendX + bulletRadius, legendY, bulletRadius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillText('Angled cut', legendX + bulletRadius * 2 + 8, legendY + 2);
+      ctx.fillText('Angled cut', legendX + bulletRadius * 2 + 6, legendY);
     }
+    ctx.textBaseline = 'alphabetic';
 
   }, [wall, selectedTile, sections, selectedSectionId, dividers, groutColor, jointWidth, getWallDimensions, tiles]);
 
