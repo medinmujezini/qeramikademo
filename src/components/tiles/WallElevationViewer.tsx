@@ -980,15 +980,29 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     }
 
     // Draw legend
-    ctx.font = '10px sans-serif';
+    ctx.font = 'bold 13px sans-serif';
     ctx.textAlign = 'left';
+    const legendY = height - 14;
+    const swatchSize = 10;
+    let legendX = startX;
+
+    // Full tile swatch
     ctx.fillStyle = 'hsl(var(--muted-foreground))';
-    ctx.fillText('▪ Full tile', startX, height - 8);
+    ctx.fillRect(legendX, legendY - swatchSize + 2, swatchSize, swatchSize);
+    ctx.fillText('Full tile', legendX + swatchSize + 6, legendY + 2);
+    legendX += 90;
+
+    // Straight cut swatch
     ctx.fillStyle = '#f59e0b';
-    ctx.fillText('▪ Straight cut', startX + 55, height - 8);
+    ctx.fillRect(legendX, legendY - swatchSize + 2, swatchSize, swatchSize);
+    ctx.fillText('Straight cut', legendX + swatchSize + 6, legendY + 2);
+    legendX += 110;
+
     if (dims.isSloped) {
+      // Angled cut swatch
       ctx.fillStyle = '#ef4444';
-      ctx.fillText('▪ Angled cut', startX + 135, height - 8);
+      ctx.fillRect(legendX, legendY - swatchSize + 2, swatchSize, swatchSize);
+      ctx.fillText('Angled cut', legendX + swatchSize + 6, legendY + 2);
     }
 
   }, [wall, selectedTile, sections, selectedSectionId, dividers, groutColor, jointWidth, getWallDimensions, tiles]);
@@ -1166,7 +1180,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       )}
 
       {/* Canvas - allow shrinking to make room for controls */}
-      <div ref={containerRef} className="flex-1 min-h-[120px] overflow-hidden bg-muted/20 relative">
+      <div ref={containerRef} className="flex-1 min-h-[280px] overflow-hidden bg-muted/20 relative">
         <canvas 
           ref={canvasRef}
           onClick={handleCanvasClick}
