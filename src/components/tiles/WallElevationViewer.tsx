@@ -18,7 +18,7 @@ import { arcLength as calcArcLength } from '@/utils/arcUtils';
 import { 
   RectangleHorizontal, RectangleVertical, Grid3X3, Layers, Paintbrush, Check, 
   Scissors, SplitSquareHorizontal, SplitSquareVertical, LayoutTemplate, Trash2, 
-  GripVertical, Move, AlertTriangle, TrendingUp, Waves 
+  GripVertical, Move, AlertTriangle, TrendingUp, Waves, Maximize, Columns, Rows3, PanelTop, ChevronDown
 } from 'lucide-react';
 
 // Types for sections and dividers
@@ -83,12 +83,12 @@ const GROUT_COLORS = [
 
 // Preset section layouts
 const PRESET_LAYOUTS = [
-  { id: 'full', label: 'Full Wall', dividers: [] as { type: string; position: number }[] },
-  { id: 'horizontal-half', label: 'Horizontal 50/50', dividers: [{ type: 'horizontal', position: 0.5 }] },
-  { id: 'accent-band', label: 'Accent Band (Top 20%)', dividers: [{ type: 'horizontal', position: 0.8 }] },
-  { id: 'wainscoting', label: 'Wainscoting (Bottom 1/3)', dividers: [{ type: 'horizontal', position: 0.33 }] },
-  { id: 'vertical-half', label: 'Vertical 50/50', dividers: [{ type: 'vertical', position: 0.5 }] },
-  { id: 'three-bands', label: 'Three Horizontal Bands', dividers: [{ type: 'horizontal', position: 0.33 }, { type: 'horizontal', position: 0.66 }] },
+  { id: 'full', label: 'Full Wall', icon: Maximize, dividers: [] as { type: string; position: number }[] },
+  { id: 'horizontal-half', label: 'Horizontal 50/50', icon: SplitSquareHorizontal, dividers: [{ type: 'horizontal', position: 0.5 }] },
+  { id: 'accent-band', label: 'Accent Band (Top 20%)', icon: PanelTop, dividers: [{ type: 'horizontal', position: 0.8 }] },
+  { id: 'wainscoting', label: 'Wainscoting (Bottom 1/3)', icon: Layers, dividers: [{ type: 'horizontal', position: 0.33 }] },
+  { id: 'vertical-half', label: 'Vertical 50/50', icon: Columns, dividers: [{ type: 'vertical', position: 0.5 }] },
+  { id: 'three-bands', label: 'Three Horizontal Bands', icon: Rows3, dividers: [{ type: 'horizontal', position: 0.33 }, { type: 'horizontal', position: 0.66 }] },
 ];
 
 export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
@@ -1124,17 +1124,24 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 text-xs">
-              <LayoutTemplate className="h-3 w-3 mr-1" />
-              Presets
+            <Button variant="outline" size="sm" className="h-7 text-xs min-w-[180px] justify-between">
+              <span className="flex items-center gap-1.5">
+                <LayoutTemplate className="h-3 w-3" />
+                Layout Presets
+              </span>
+              <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {PRESET_LAYOUTS.map(preset => (
-              <DropdownMenuItem key={preset.id} onClick={() => applyPreset(preset.id)}>
-                {preset.label}
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent align="start" className="w-[220px]">
+            {PRESET_LAYOUTS.map(preset => {
+              const Icon = preset.icon;
+              return (
+                <DropdownMenuItem key={preset.id} onClick={() => applyPreset(preset.id)} className="gap-2">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  {preset.label}
+                </DropdownMenuItem>
+              );
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
 
