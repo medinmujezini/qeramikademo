@@ -389,8 +389,8 @@ export const UnifiedLibrary: React.FC = () => {
       </Tabs>
 
       {/* Footer hint */}
-      <div className="p-3 border-t text-xs text-muted-foreground text-center">
-        Click or drag items to add to scene
+      <div className="px-3 py-2 border-t text-xs text-muted-foreground text-center shrink-0">
+        Click or drag to add
       </div>
     </div>
   );
