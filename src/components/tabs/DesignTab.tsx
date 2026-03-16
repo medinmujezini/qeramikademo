@@ -1133,14 +1133,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* LEFT PANEL - Library */}
-      <div className="absolute top-20 left-6 z-20 w-56 max-h-[calc(100%-140px)]">
+      <div className="absolute top-20 left-6 z-20 w-60 min-w-[240px] max-h-[calc(100%-140px)]">
         <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
           <div className="panel-header shrink-0">
             <span className="panel-header-title">Library</span>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="flex-1">
             <UnifiedLibrary />
-          </div>
+          </ScrollArea>
         </div>
       </div>
       
