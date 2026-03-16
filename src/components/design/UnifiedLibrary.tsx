@@ -271,24 +271,24 @@ export const UnifiedLibrary: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col border-r bg-muted/30">
-      {/* Header */}
-      <div className="p-3 border-b">
-        <h3 className="font-semibold mb-2">Item Library</h3>
-        <div className="relative">
+    <div className="h-full flex flex-col bg-muted/30 w-full box-border overflow-hidden">
+      {/* Header + Search */}
+      <div className="px-3 pt-3 pb-2 space-y-2 shrink-0">
+        <h3 className="font-semibold text-sm">Item Library</h3>
+        <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+            className="pl-8 w-full"
           />
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'furniture' | 'fixtures')} className="flex-1 flex flex-col">
-        <TabsList className="mx-3 mt-2">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'furniture' | 'fixtures')} className="flex-1 flex flex-col min-h-0 w-full">
+        <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)]">
           <TabsTrigger value="furniture" className="flex-1 gap-1">
             <Sofa className="h-3.5 w-3.5" />
             Furniture
@@ -305,7 +305,7 @@ export const UnifiedLibrary: React.FC = () => {
             {furnitureLoading ? (
               <LoadingSkeleton />
             ) : (
-              <div className="p-3 space-y-4">
+              <div className="px-3 py-2 space-y-2">
                 {(Object.entries(filteredFurniture) as [FurnitureCategory, FurnitureTemplate[]][]).map(([category, items]) => {
                   if (items.length === 0) return null;
                   return (
@@ -349,7 +349,7 @@ export const UnifiedLibrary: React.FC = () => {
             {fixturesLoading ? (
               <LoadingSkeleton />
             ) : (
-              <div className="p-3 space-y-4">
+              <div className="px-3 py-2 space-y-2">
                 {(Object.entries(filteredFixtures) as [FixtureCategory, FixtureTemplate[]][]).map(([category, items]) => {
                   if (items.length === 0) return null;
                   return (
@@ -389,8 +389,8 @@ export const UnifiedLibrary: React.FC = () => {
       </Tabs>
 
       {/* Footer hint */}
-      <div className="p-3 border-t text-xs text-muted-foreground text-center">
-        Click or drag items to add to scene
+      <div className="px-3 py-2 border-t text-xs text-muted-foreground text-center shrink-0">
+        Click or drag to add
       </div>
     </div>
   );
