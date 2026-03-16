@@ -83,12 +83,12 @@ const GROUT_COLORS = [
 
 // Preset section layouts
 const PRESET_LAYOUTS = [
-  { id: 'full', label: 'Full Wall', dividers: [] as { type: string; position: number }[] },
-  { id: 'horizontal-half', label: 'Horizontal 50/50', dividers: [{ type: 'horizontal', position: 0.5 }] },
-  { id: 'accent-band', label: 'Accent Band (Top 20%)', dividers: [{ type: 'horizontal', position: 0.8 }] },
-  { id: 'wainscoting', label: 'Wainscoting (Bottom 1/3)', dividers: [{ type: 'horizontal', position: 0.33 }] },
-  { id: 'vertical-half', label: 'Vertical 50/50', dividers: [{ type: 'vertical', position: 0.5 }] },
-  { id: 'three-bands', label: 'Three Horizontal Bands', dividers: [{ type: 'horizontal', position: 0.33 }, { type: 'horizontal', position: 0.66 }] },
+  { id: 'full', label: 'Full Wall', icon: Maximize, dividers: [] as { type: string; position: number }[] },
+  { id: 'horizontal-half', label: 'Horizontal 50/50', icon: SplitSquareHorizontal, dividers: [{ type: 'horizontal', position: 0.5 }] },
+  { id: 'accent-band', label: 'Accent Band (Top 20%)', icon: PanelTop, dividers: [{ type: 'horizontal', position: 0.8 }] },
+  { id: 'wainscoting', label: 'Wainscoting (Bottom 1/3)', icon: Layers, dividers: [{ type: 'horizontal', position: 0.33 }] },
+  { id: 'vertical-half', label: 'Vertical 50/50', icon: Columns, dividers: [{ type: 'vertical', position: 0.5 }] },
+  { id: 'three-bands', label: 'Three Horizontal Bands', icon: Rows3, dividers: [{ type: 'horizontal', position: 0.33 }, { type: 'horizontal', position: 0.66 }] },
 ];
 
 export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
