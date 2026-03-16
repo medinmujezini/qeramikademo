@@ -499,8 +499,14 @@ export const TilesTab: React.FC<TilesTabProps> = ({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {rightPanelTab === 'preview' && (
+          <ScrollArea className="flex-1">
+            {rightPanelTab === 'preview' && !selectedWall && (
+              <div className="flex flex-col items-center justify-center h-64 text-center p-6 gap-3">
+                <Grid3X3 className="h-10 w-10 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">Select a wall to see tile details</p>
+              </div>
+            )}
+            {rightPanelTab === 'preview' && selectedWall && (
               <WallElevationViewer
                 wall={selectedWall}
                 wallIndex={selectedWallIndex}
@@ -536,7 +542,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
                 walls={floorPlan.walls}
               />
             )}
-          </div>
+          </ScrollArea>
         </div>
       )}
 
