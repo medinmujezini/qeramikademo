@@ -291,13 +291,15 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   }, [updateWallTileSections, applyWallFinish]);
 
   const handleApplyToAllWalls = useCallback((settings: Partial<WallTileSection>) => {
-    if (settings.tileId) {
-      floorPlan.walls.forEach(wall => {
-        assignTileToWall(wall.id, settings.tileId!, settings);
-        applyWallFinish(wall.id, settings.tileId!, settings);
-      });
-    }
-  }, [floorPlan.walls, assignTileToWall, applyWallFinish]);
+    if (!settings.tileId) return;
+    const tileId = settings.tileId;
+    // Apply wall finish for each wall — setWallFinish uses functional updater 
+    // so all calls chain correctly in a single React batch
+    floorPlan.walls.forEach(wall => {
+      applyWallFinish(wall.id, tileId, settings);
+    });
+    toast.success(`Tile applied to all ${floorPlan.walls.length} walls`);
+  }, [floorPlan.walls, applyWallFinish]);
 
   // Count walls with tiles assigned
   const tiledWallCount = useMemo(() => {
