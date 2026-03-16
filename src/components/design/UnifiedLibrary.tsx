@@ -349,7 +349,7 @@ export const UnifiedLibrary: React.FC = () => {
             {fixturesLoading ? (
               <LoadingSkeleton />
             ) : (
-              <div className="p-3 space-y-4">
+              <div className="px-3 py-2 space-y-2">
                 {(Object.entries(filteredFixtures) as [FixtureCategory, FixtureTemplate[]][]).map(([category, items]) => {
                   if (items.length === 0) return null;
                   return (
