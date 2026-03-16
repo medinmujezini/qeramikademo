@@ -18,7 +18,7 @@ import { arcLength as calcArcLength } from '@/utils/arcUtils';
 import { 
   RectangleHorizontal, RectangleVertical, Grid3X3, Layers, Paintbrush, Check, 
   Scissors, SplitSquareHorizontal, SplitSquareVertical, LayoutTemplate, Trash2, 
-  GripVertical, Move, AlertTriangle, TrendingUp, Waves 
+  GripVertical, Move, AlertTriangle, TrendingUp, Waves, Maximize, Columns, Rows3, PanelTop, ChevronDown
 } from 'lucide-react';
 
 // Types for sections and dividers
