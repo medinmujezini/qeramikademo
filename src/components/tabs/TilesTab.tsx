@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -290,13 +291,15 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   }, [updateWallTileSections, applyWallFinish]);
 
   const handleApplyToAllWalls = useCallback((settings: Partial<WallTileSection>) => {
-    if (settings.tileId) {
-      floorPlan.walls.forEach(wall => {
-        assignTileToWall(wall.id, settings.tileId!, settings);
-        applyWallFinish(wall.id, settings.tileId!, settings);
-      });
-    }
-  }, [floorPlan.walls, assignTileToWall, applyWallFinish]);
+    if (!settings.tileId) return;
+    const tileId = settings.tileId;
+    // Apply wall finish for each wall — setWallFinish uses functional updater 
+    // so all calls chain correctly in a single React batch
+    floorPlan.walls.forEach(wall => {
+      applyWallFinish(wall.id, tileId, settings);
+    });
+    toast.success(`Tile applied to all ${floorPlan.walls.length} walls`);
+  }, [floorPlan.walls, applyWallFinish]);
 
   // Count walls with tiles assigned
   const tiledWallCount = useMemo(() => {
