@@ -1165,7 +1165,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 onRotate={handleRotateSelected}
                 onDelete={handleDeleteSelected}
               />
-            </div>
+            </ScrollArea>
           </div>
         </div>
       )}
