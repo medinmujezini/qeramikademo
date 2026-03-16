@@ -1159,13 +1159,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <PanelRightClose className="h-3 w-3" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <ScrollArea className="flex-1">
               <DesignPropertiesPanel
                 selectedFurniture={selectedFurniture}
                 onRotate={handleRotateSelected}
                 onDelete={handleDeleteSelected}
               />
-            </div>
+            </ScrollArea>
           </div>
         </div>
       )}
