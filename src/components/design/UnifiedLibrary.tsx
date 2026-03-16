@@ -115,7 +115,7 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{name}</p>
+          <p className="font-medium text-sm truncate" title={name}>{name}</p>
           <p className="text-xs text-muted-foreground">
             {dimensions.width}×{dimensions.depth}×{dimensions.height} cm
           </p>
