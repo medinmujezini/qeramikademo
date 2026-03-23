@@ -19,6 +19,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Crosshair,
+  Loader2,
 } from 'lucide-react';
 import { SYSTEM_COLORS, type MEPRoute, type MEPSystemType } from '@/types/mep';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
