@@ -1045,7 +1045,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     
     const tileSections: Partial<WallTileSection>[] = sections
       .map(s => {
-        const tileId = s.tileId || selectedTile?.id;
+        const tileId = selectedTile?.id || s.tileId;
         if (!tileId) return null;
         return {
           tileId,
