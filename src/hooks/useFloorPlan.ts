@@ -26,25 +26,35 @@ export const useFloorPlan = () => {
   const [selectedElement, setSelectedElement] = useState<{ type: string; id: string } | null>(null);
   const [history, setHistory] = useState<FloorPlan[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const historyIndexRef = useRef(historyIndex);
+  historyIndexRef.current = historyIndex;
+  const historyRef = useRef(history);
+  historyRef.current = history;
 
   const saveToHistory = useCallback((plan: FloorPlan) => {
-    setHistory(prev => [...prev.slice(0, historyIndex + 1), plan]);
-    setHistoryIndex(prev => prev + 1);
-  }, [historyIndex]);
+    setHistory(prev => {
+      const newHistory = [...prev.slice(0, historyIndexRef.current + 1), plan];
+      historyIndexRef.current = newHistory.length - 1;
+      return newHistory;
+    });
+    setHistoryIndex(historyIndexRef.current);
+  }, []);
 
   const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      setHistoryIndex(prev => prev - 1);
-      setFloorPlan(history[historyIndex - 1]);
+    if (historyIndexRef.current > 0) {
+      const newIndex = historyIndexRef.current - 1;
+      setHistoryIndex(newIndex);
+      setFloorPlan(historyRef.current[newIndex]);
     }
-  }, [history, historyIndex]);
+  }, []);
 
   const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(prev => prev + 1);
-      setFloorPlan(history[historyIndex + 1]);
+    if (historyIndexRef.current < historyRef.current.length - 1) {
+      const newIndex = historyIndexRef.current + 1;
+      setHistoryIndex(newIndex);
+      setFloorPlan(historyRef.current[newIndex]);
     }
-  }, [history, historyIndex]);
+  }, []);
 
   // Points
   const addPoint = useCallback((x: number, y: number): string => {
