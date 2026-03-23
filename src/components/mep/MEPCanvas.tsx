@@ -606,13 +606,20 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
   ]);
 
   const handleMouseUp = useCallback(() => {
+    // If we had a pending pan that never exceeded threshold, treat as click-deselect
+    if (pendingPan.current && !isPanning) {
+      onSelectFixture(null);
+      onSelectNode(null);
+    }
+    pendingPan.current = false;
+    mouseDownPos.current = null;
     setIsPanning(false);
     setIsDragging(false);
     setDragFixtureId(null);
     setIsDraggingNode(false);
     setDragNodeId(null);
     setNodeSnapResult(null);
-  }, []);
+  }, [isPanning, onSelectFixture, onSelectNode]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
