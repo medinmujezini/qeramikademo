@@ -78,29 +78,26 @@ function calculateTilePositions(
   const rows = Math.ceil(wallH / pitchY) + 2;
 
   // Pattern-specific calculations
+  // All patterns use y=0 as wall bottom, y=wallH as wall top (matching grout plane)
   if (pattern === 'herringbone') {
-    // Herringbone pattern: tiles at 45° and -45° alternating
-    const diagLength = Math.sqrt(tileW * tileW + tileH * tileH);
-    const stepX = tileH; // Horizontal step is tile height
-    const stepY = tileW; // Vertical step is tile width
+    const stepX = tileH;
+    const stepY = tileW;
     
     let index = 0;
     for (let row = -2; row < Math.ceil(wallH / stepY) + 2; row++) {
       for (let col = -2; col < Math.ceil(wallL / stepX) + 2; col++) {
         const isEven = (row + col) % 2 === 0;
         
-        // Base position
         let x = col * stepX - wallL / 2 + offX;
-        let y = row * stepY + offY;
+        let y = row * stepY + offY + wallH / 2; // Center vertically on wall
         
-        // Offset for herringbone pattern
         if (!isEven) {
           x += stepX / 2;
         }
         
-        // Check bounds
-        if (x > -wallL / 2 - tileW && x < wallL / 2 + tileW &&
-            y > -tileH && y < wallH + tileH) {
+        // Only include tiles that overlap the wall bounds
+        if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
+            y + tileH > 0 && y - tileH < wallH) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
@@ -119,7 +116,6 @@ function calculateTilePositions(
       }
     }
   } else if (pattern === 'diagonal') {
-    // All tiles rotated 45°
     const diagPitch = pitchX * Math.SQRT2 * 0.5;
     
     let index = 0;
@@ -128,8 +124,9 @@ function calculateTilePositions(
         const x = col * diagPitch - wallL / 2 + offX + (row % 2) * diagPitch * 0.5;
         const y = row * diagPitch * 0.5 + offY;
         
-        if (x > -wallL / 2 - tileW && x < wallL / 2 + tileW &&
-            y > -tileH && y < wallH + tileH) {
+        // Only include tiles that overlap the wall bounds
+        if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
+            y + tileH > 0 && y - tileH < wallH) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
