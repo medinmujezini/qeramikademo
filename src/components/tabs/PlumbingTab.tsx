@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { autoRouteAllFixturesStackCentric } from '@/utils/mepStackRouting';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Crosshair,
+  Loader2,
 } from 'lucide-react';
 import { SYSTEM_COLORS, type MEPRoute, type MEPSystemType } from '@/types/mep';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -128,11 +130,13 @@ interface ValidationPanelProps {
   warnings: ValidationWarning[];
   onValidate: () => void;
   onHighlightError: (error: ValidationError) => void;
+  onReRoute: () => Promise<void>;
 }
 
-const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onValidate, onHighlightError }) => {
+const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onValidate, onHighlightError, onReRoute }) => {
   const [errorsOpen, setErrorsOpen] = React.useState(true);
   const [warningsOpen, setWarningsOpen] = React.useState(false);
+  const [isReRouting, setIsReRouting] = React.useState(false);
   
   const errorCount = errors.length;
   const warningCount = warnings.length;
@@ -207,6 +211,31 @@ const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onV
               </ScrollArea>
             </CollapsibleContent>
           </Collapsible>
+        )}
+        
+        {/* Re-route button */}
+        {errorCount > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            disabled={isReRouting}
+            onClick={async () => {
+              setIsReRouting(true);
+              try {
+                await onReRoute();
+              } finally {
+                setIsReRouting(false);
+              }
+            }}
+          >
+            {isReRouting ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <RotateCcw className="h-4 w-4 mr-1" />
+            )}
+            Re-route to fix errors
+          </Button>
         )}
         
         {/* Warning Details */}
@@ -485,6 +514,17 @@ const PlumbingTabContent: React.FC = () => {
                     } else if (error.elementType === 'node') {
                       mepState.setSelectedNodeId(error.elementId);
                     }
+                  }}
+                  onReRoute={async () => {
+                    mepState.clearAllRoutes();
+                    const result = autoRouteAllFixturesStackCentric(
+                      mepState.fixtures,
+                      mepState.nodes,
+                      [],
+                      { canvasWidth: floorPlan.roomWidth, canvasHeight: floorPlan.roomHeight, walls: wallsForRouting }
+                    );
+                    result.routes.forEach(route => mepState.addRoute(route));
+                    mepState.runValidation();
                   }}
                 />
                 
