@@ -205,14 +205,18 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
 
-  // Create clipping planes to cut tiles at wall boundaries
+  // Create clipping planes to cut tiles at all 4 wall boundaries
   const clippingPlanes = useMemo(() => {
     // Left plane (normal pointing right +X, positioned at -wallLengthM/2)
     const leftPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), wallLengthM / 2);
     // Right plane (normal pointing left -X, positioned at +wallLengthM/2)
     const rightPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), wallLengthM / 2);
-    return [leftPlane, rightPlane];
-  }, [wallLengthM]);
+    // Bottom plane (normal pointing up +Y, at y=0)
+    const bottomPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    // Top plane (normal pointing down -Y, at y=wallHeightM)
+    const topPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wallHeightM);
+    return [leftPlane, rightPlane, bottomPlane, topPlane];
+  }, [wallLengthM, wallHeightM]);
 
   // Generate tile positions with all config options
   const tilePositions = useMemo(() => {
