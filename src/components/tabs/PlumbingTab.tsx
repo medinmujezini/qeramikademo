@@ -245,7 +245,6 @@ const PlumbingTabContent: React.FC = () => {
   const [showGuidePanel, setShowGuidePanel] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
   
   // Derive ceiling height from floor plan
   const ceilingHeight = useMemo(() => {
