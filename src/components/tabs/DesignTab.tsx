@@ -273,10 +273,10 @@ const DesignScene: React.FC<DesignSceneProps> = ({
     const xs = floorPlan.points.map(p => p.x);
     const ys = floorPlan.points.map(p => p.y);
     return {
-      minX: Math.min(...xs) * scale - 1,
-      maxX: Math.max(...xs) * scale + 1,
-      minY: Math.min(...ys) * scale - 1,
-      maxY: Math.max(...ys) * scale + 1
+      minX: Math.min(...xs) * scale,
+      maxX: Math.max(...xs) * scale,
+      minY: Math.min(...ys) * scale,
+      maxY: Math.max(...ys) * scale
     };
   }, [floorPlan.points, scale]);
 
