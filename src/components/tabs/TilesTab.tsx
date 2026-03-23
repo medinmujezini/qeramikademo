@@ -37,7 +37,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   pendingWallId,
   onApplyComplete,
 }) => {
-  const { floorPlan, assignTileToWall, updateWallTileSections, setWallFinish } = useFloorPlanContext();
+  const { floorPlan, assignTileToWall, updateWallTileSections, setWallFinish, setAllWallsFinish } = useFloorPlanContext();
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
   const [selectedWallId, setSelectedWallId] = useState<string | null>(pendingWallId || null);
   const [jointWidth, setJointWidth] = useState(3);
