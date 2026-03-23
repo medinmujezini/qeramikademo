@@ -187,7 +187,8 @@ function calculateTilePositions(
         
         // Only include tiles that overlap the wall bounds
         if (x + tileW / 2 > -wallL / 2 && x - tileW / 2 < wallL / 2 &&
-            y + tileH / 2 > 0 && y - tileH / 2 < wallH) {
+            y + tileH / 2 > 0 && y - tileH / 2 < wallH &&
+            !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
           
           // Calculate animation delay based on position (wave from bottom-left)
           const normalizedX = Math.max(0, Math.min(1, (x + wallL / 2) / wallL));
