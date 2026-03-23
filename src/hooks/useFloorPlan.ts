@@ -1165,6 +1165,7 @@ export const useFloorPlan = () => {
     updateWallTileSections,
     // Wall & Floor finishes
     setWallFinish,
+    setAllWallsFinish,
     removeWallFinish,
     setFloorFinish,
     removeFloorFinish,
