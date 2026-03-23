@@ -312,7 +312,11 @@ export function RiserDiagramView({
           width={800}
           height={400}
           className="w-full h-full rounded border border-border bg-card"
-          style={{ minHeight: 300 }}
+          style={{ minHeight: 300, cursor: cursorStyle }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         />
       </CardContent>
     </Card>
