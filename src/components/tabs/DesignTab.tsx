@@ -615,6 +615,22 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const orbitControlsRef = useRef<any>(null);
+  const cameraRef = useRef<any>(null);
+
+  // Calculate room-based camera position
+  const roomW = (floorPlan.roomWidth || 800) / 100;
+  const roomH = (floorPlan.roomHeight || 600) / 100;
+  const defaultCameraPos: [number, number, number] = [roomW, roomW * 0.8, roomH];
+  const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
+
+  const handleResetView = useCallback(() => {
+    if (cameraRef.current && orbitControlsRef.current) {
+      cameraRef.current.position.set(...defaultCameraPos);
+      orbitControlsRef.current.target.set(...defaultTarget);
+      orbitControlsRef.current.update();
+    }
+  }, [defaultCameraPos, defaultTarget]);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -1008,14 +1024,17 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           }}
           onPointerMissed={handleCanvasPointerMissed}
         >
-          <PerspectiveCamera makeDefault position={[8, 6, 8]} fov={50} />
+          <PerspectiveCamera ref={cameraRef} makeDefault position={defaultCameraPos} fov={50} />
           <OrbitControls 
+            ref={orbitControlsRef}
             makeDefault
             enableDamping
             dampingFactor={0.05}
             minDistance={2}
             maxDistance={30}
-            maxPolarAngle={Math.PI / 2 - 0.1}
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI / 2}
+            target={defaultTarget}
             enabled={!isDragging && !isDraggingFixture}
           />
           <Suspense fallback={null}>
@@ -1122,6 +1141,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             <Camera className="h-3.5 w-3.5" />
           )}
           Render
+        </Button>
+
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 gap-1.5"
+          onClick={handleResetView}
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Reset View
         </Button>
 
         {isDragging && (
