@@ -321,7 +321,7 @@ export class GBufferMaterialFactory {
     let emissiveFlags = this.emissiveFlagsMaterials.get(id);
     
     if (albedoRoughness && normalMetalAO && emissiveFlags) {
-      // Update clipping planes from original material (they may change)
+      // Sync dynamic properties from original material (color, roughness, clipping, etc.)
       const originalMat = mesh.material as THREE.Material;
       const clips = originalMat.clippingPlanes || null;
       const hasClips = clips && clips.length > 0;
@@ -331,6 +331,23 @@ export class GBufferMaterialFactory {
       normalMetalAO.clipping = !!hasClips;
       emissiveFlags.clippingPlanes = clips;
       emissiveFlags.clipping = !!hasClips;
+      
+      // Sync material properties that may change at runtime (e.g. floor color change)
+      if (originalMat instanceof THREE.MeshStandardMaterial || 
+          originalMat instanceof THREE.MeshPhysicalMaterial) {
+        albedoRoughness.uniforms.uAlbedo.value.copy(originalMat.color);
+        albedoRoughness.uniforms.uRoughness.value = originalMat.roughness ?? 0.5;
+        normalMetalAO.uniforms.uMetalness.value = originalMat.metalness ?? 0.0;
+        if (originalMat.map !== albedoRoughness.uniforms.uAlbedoMap.value) {
+          albedoRoughness.uniforms.uAlbedoMap.value = originalMat.map;
+          albedoRoughness.uniforms.uHasAlbedoMap.value = !!originalMat.map;
+        }
+      } else if (originalMat instanceof THREE.MeshBasicMaterial) {
+        albedoRoughness.uniforms.uAlbedo.value.copy(originalMat.color);
+      } else if ('color' in originalMat && (originalMat as any).color instanceof THREE.Color) {
+        albedoRoughness.uniforms.uAlbedo.value.copy((originalMat as any).color);
+      }
+      
       return { albedoRoughness, normalMetalAO, emissiveFlags };
     }
     
