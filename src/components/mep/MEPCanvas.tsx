@@ -450,10 +450,15 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
   // MOUSE HANDLERS
   // ===========================================================================
 
+  // Track mouse-down position for pan threshold (5px to distinguish click vs drag)
+  const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
+  const pendingPan = useRef(false);
+  const PAN_THRESHOLD = 5;
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY);
     
-    // Middle mouse or space+left = pan
+    // Middle mouse or Alt+left = immediate pan
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       setIsPanning(true);
       setPanStart({ x: e.clientX - transform.x, y: e.clientY - transform.y });
@@ -496,9 +501,10 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
       return;
     }
     
-    // Clicked on empty space
-    onSelectFixture(null);
-    onSelectNode(null);
+    // Clicked on empty space — prepare for potential pan (with threshold)
+    mouseDownPos.current = { x: e.clientX, y: e.clientY };
+    pendingPan.current = true;
+    setPanStart({ x: e.clientX - transform.x, y: e.clientY - transform.y });
   }, [screenToWorld, transform, fixtures, nodes, placingTemplate, snapResult, onSelectFixture, onSelectNode, onPlaceFixture]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
