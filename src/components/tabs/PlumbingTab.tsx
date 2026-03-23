@@ -212,6 +212,31 @@ const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onV
           </Collapsible>
         )}
         
+        {/* Re-route button */}
+        {errorCount > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            disabled={isReRouting}
+            onClick={async () => {
+              setIsReRouting(true);
+              try {
+                await onReRoute();
+              } finally {
+                setIsReRouting(false);
+              }
+            }}
+          >
+            {isReRouting ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <RotateCcw className="h-4 w-4 mr-1" />
+            )}
+            Re-route to fix errors
+          </Button>
+        )}
+        
         {/* Warning Details */}
         {warningCount > 0 && (
           <Collapsible open={warningsOpen} onOpenChange={setWarningsOpen}>
