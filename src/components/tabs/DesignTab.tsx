@@ -1227,9 +1227,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* BOTTOM CENTER - Hint */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
-        Click walls/floor for surface • Drag library items to place
-      </div>
+      {!isPanelOpen && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
+          Click walls/floor for surface • Drag library items to place
+        </div>
+      )}
 
       {/* Render Image Dialog */}
       <Dialog open={renderDialogOpen} onOpenChange={setRenderDialogOpen}>
