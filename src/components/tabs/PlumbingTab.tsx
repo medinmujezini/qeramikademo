@@ -467,6 +467,15 @@ const PlumbingTabContent: React.FC = () => {
                   errors={mepState.validationResult.errors}
                   warnings={mepState.validationResult.warnings}
                   onValidate={mepState.runValidation}
+                  onHighlightError={(error) => {
+                    if (error.elementType === 'fixture') {
+                      mepState.setSelectedFixtureId(error.elementId);
+                    } else if (error.elementType === 'route' || error.elementType === 'segment') {
+                      mepState.setSelectedRouteId(error.elementId);
+                    } else if (error.elementType === 'node') {
+                      mepState.setSelectedNodeId(error.elementId);
+                    }
+                  }}
                 />
                 
                 <Card className="glass-sm">
