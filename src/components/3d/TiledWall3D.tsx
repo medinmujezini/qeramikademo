@@ -220,6 +220,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   scale,
   animationState,
   onAnimationComplete,
+  doors = [],
+  windows = [],
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
@@ -231,6 +233,32 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallThicknessM = wall.thickness * CM_TO_METERS;
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
+
+  // Compute wall openings from doors and windows
+  // Positions are in local wall coords: x centered at 0, y from 0 (bottom) to wallHeightM (top)
+  const openings = useMemo<WallOpening[]>(() => {
+    const ops: WallOpening[] = [];
+    doors.forEach(door => {
+      // door.position is 0-1 along wall length
+      const xCenter = (door.position - 0.5) * wallLengthM;
+      ops.push({
+        xCenter,
+        yBottom: 0,
+        halfWidth: (door.width * CM_TO_METERS) / 2,
+        halfHeight: (door.height * CM_TO_METERS) / 2,
+      });
+    });
+    windows.forEach(win => {
+      const xCenter = (win.position - 0.5) * wallLengthM;
+      ops.push({
+        xCenter,
+        yBottom: win.sillHeight * CM_TO_METERS,
+        halfWidth: (win.width * CM_TO_METERS) / 2,
+        halfHeight: (win.height * CM_TO_METERS) / 2,
+      });
+    });
+    return ops;
+  }, [doors, windows, wallLengthM]);
 
   // Create clipping planes in world space to cut tiles at all 4 wall boundaries
   // THREE.js clipping planes operate in world space, so we must transform from local
@@ -262,7 +290,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
       tileConfig.jointWidth ?? 3,
       tileConfig.orientation ?? 'horizontal',
       tileConfig.offsetX ?? 0,
-      tileConfig.offsetY ?? 0
+      tileConfig.offsetY ?? 0,
+      openings
     );
   }, [
     length, 
@@ -272,7 +301,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
     tileConfig.jointWidth,
     tileConfig.orientation,
     tileConfig.offsetX,
-    tileConfig.offsetY
+    tileConfig.offsetY,
+    openings
   ]);
 
   // Handle animation progress
