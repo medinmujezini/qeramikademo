@@ -46,9 +46,13 @@ export function RiserDiagramView({
   numFloors = 2,
 }: RiserDiagramViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const panStart = useRef({ x: 0, y: 0 });
   const [selectedSystem, setSelectedSystem] = React.useState<MEPSystemType | 'all'>('all');
   const [zoom, setZoom] = React.useState(1);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
+  const [cursorStyle, setCursorStyle] = React.useState<'grab' | 'grabbing'>('grab');
 
   // Build riser elements from fixtures, nodes, and routes
   const riserElements = useMemo(() => {
