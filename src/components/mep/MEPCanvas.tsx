@@ -450,10 +450,15 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
   // MOUSE HANDLERS
   // ===========================================================================
 
+  // Track mouse-down position for pan threshold (5px to distinguish click vs drag)
+  const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
+  const pendingPan = useRef(false);
+  const PAN_THRESHOLD = 5;
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY);
     
-    // Middle mouse or space+left = pan
+    // Middle mouse or Alt+left = immediate pan
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       setIsPanning(true);
       setPanStart({ x: e.clientX - transform.x, y: e.clientY - transform.y });
@@ -496,14 +501,25 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
       return;
     }
     
-    // Clicked on empty space
-    onSelectFixture(null);
-    onSelectNode(null);
+    // Clicked on empty space — prepare for potential pan (with threshold)
+    mouseDownPos.current = { x: e.clientX, y: e.clientY };
+    pendingPan.current = true;
+    setPanStart({ x: e.clientX - transform.x, y: e.clientY - transform.y });
   }, [screenToWorld, transform, fixtures, nodes, placingTemplate, snapResult, onSelectFixture, onSelectNode, onPlaceFixture]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY);
     setCursorPos(worldPos);
+    
+    // Handle pending pan (threshold check)
+    if (pendingPan.current && mouseDownPos.current) {
+      const dx = e.clientX - mouseDownPos.current.x;
+      const dy = e.clientY - mouseDownPos.current.y;
+      if (Math.sqrt(dx * dx + dy * dy) > PAN_THRESHOLD) {
+        setIsPanning(true);
+        pendingPan.current = false;
+      }
+    }
     
     // Handle panning
     if (isPanning) {
@@ -590,13 +606,20 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
   ]);
 
   const handleMouseUp = useCallback(() => {
+    // If we had a pending pan that never exceeded threshold, treat as click-deselect
+    if (pendingPan.current && !isPanning) {
+      onSelectFixture(null);
+      onSelectNode(null);
+    }
+    pendingPan.current = false;
+    mouseDownPos.current = null;
     setIsPanning(false);
     setIsDragging(false);
     setDragFixtureId(null);
     setIsDraggingNode(false);
     setDragNodeId(null);
     setNodeSnapResult(null);
-  }, []);
+  }, [isPanning, onSelectFixture, onSelectNode]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();

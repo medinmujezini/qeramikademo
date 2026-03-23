@@ -16,6 +16,8 @@ import {
   RotateCcw,
   BookOpen,
   MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { SYSTEM_COLORS, type MEPRoute } from '@/types/mep';
 import { MEPCanvas } from '@/components/mep/MEPCanvas';
@@ -242,6 +244,7 @@ const PlumbingTabContent: React.FC = () => {
   const [activeView, setActiveView] = useState<PlumbingView>('plan');
   const [showGuidePanel, setShowGuidePanel] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // Derive ceiling height from floor plan
   const ceilingHeight = useMemo(() => {
@@ -358,84 +361,106 @@ const PlumbingTabContent: React.FC = () => {
       </div>
       
       {/* FLOATING LEFT PANEL - Routing Controls */}
-      <div className="absolute top-20 left-6 bottom-6 z-20 w-72">
-        <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
-          <ScrollArea className="flex-1">
-            <div className="p-3 flex flex-col gap-3">
-              <AutoRoutingPanel
-                fixtures={mepState.fixtures}
-                nodes={mepState.nodes}
-                routes={mepState.routes}
-                walls={wallsForRouting}
-                canvasWidth={floorPlan.roomWidth}
-                canvasHeight={floorPlan.roomHeight}
-                ceilingHeight={ceilingHeight}
-                onRoutesGenerated={handleRoutesGenerated}
-                onClearRoutes={mepState.clearAllRoutes}
-              />
-              
-              <LayerControls 
-                layers={mepState.layerVisibility}
-                onToggleLayer={mepState.toggleLayer}
-              />
-              
-              {/* Properties Panel - shows fixture or node based on selection */}
-              {mepState.selectedNode ? (
-                <NodePropertiesPanel
-                  node={mepState.selectedNode}
-                  ceilingHeight={ceilingHeight}
-                  onUpdateNode={mepState.updateNode}
-                  onDelete={() => mepState.deleteNode(mepState.selectedNodeId!)}
-                />
-              ) : (
-                <FixturePropertiesPanel
-                  fixture={mepState.selectedFixture}
-                  onRotate={() => {
-                    if (mepState.selectedFixture) {
-                      mepState.rotateFixture(mepState.selectedFixtureId!, (mepState.selectedFixture.rotation + 90) % 360);
-                    }
-                  }}
-                  onDelete={() => {
-                    if (mepState.selectedFixtureId) {
-                      mepState.deleteFixture(mepState.selectedFixtureId);
-                    }
-                  }}
-                  onUpdatePosition={(x, y) => {
-                    if (mepState.selectedFixtureId) {
-                      mepState.moveFixture(mepState.selectedFixtureId, { x, y });
-                    }
-                  }}
-                />
-              )}
-              
-              <ValidationPanel 
-                errors={mepState.validationResult.errors}
-                warnings={mepState.validationResult.warnings}
-                onValidate={mepState.runValidation}
-              />
-              
-              <Card className="glass-sm">
-                <CardContent className="p-3">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => mepState.reset()}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-1" />
-                    Reset All
-                  </Button>
-                </CardContent>
-              </Card>
+      {sidebarCollapsed ? (
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute top-20 left-6 z-20 bg-background/90 backdrop-blur-md shadow-lg"
+          onClick={() => setSidebarCollapsed(false)}
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </Button>
+      ) : (
+        <div className="absolute top-20 left-6 bottom-6 z-20 w-72 flex flex-col">
+          <div className="bg-background/90 backdrop-blur-md rounded-xl shadow-lg overflow-hidden flex flex-col h-full border border-border/50">
+            <div className="flex items-center justify-between px-3 pt-2 pb-1 shrink-0">
+              <span className="text-xs font-medium text-muted-foreground">Controls</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setSidebarCollapsed(true)}
+              >
+                <PanelLeftClose className="h-3.5 w-3.5" />
+              </Button>
             </div>
-          </ScrollArea>
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-3 pt-1 flex flex-col gap-3">
+                <AutoRoutingPanel
+                  fixtures={mepState.fixtures}
+                  nodes={mepState.nodes}
+                  routes={mepState.routes}
+                  walls={wallsForRouting}
+                  canvasWidth={floorPlan.roomWidth}
+                  canvasHeight={floorPlan.roomHeight}
+                  ceilingHeight={ceilingHeight}
+                  onRoutesGenerated={handleRoutesGenerated}
+                  onClearRoutes={mepState.clearAllRoutes}
+                />
+                
+                <LayerControls 
+                  layers={mepState.layerVisibility}
+                  onToggleLayer={mepState.toggleLayer}
+                />
+                
+                {/* Properties Panel - shows fixture or node based on selection */}
+                {mepState.selectedNode ? (
+                  <NodePropertiesPanel
+                    node={mepState.selectedNode}
+                    ceilingHeight={ceilingHeight}
+                    onUpdateNode={mepState.updateNode}
+                    onDelete={() => mepState.deleteNode(mepState.selectedNodeId!)}
+                  />
+                ) : (
+                  <FixturePropertiesPanel
+                    fixture={mepState.selectedFixture}
+                    onRotate={() => {
+                      if (mepState.selectedFixture) {
+                        mepState.rotateFixture(mepState.selectedFixtureId!, (mepState.selectedFixture.rotation + 90) % 360);
+                      }
+                    }}
+                    onDelete={() => {
+                      if (mepState.selectedFixtureId) {
+                        mepState.deleteFixture(mepState.selectedFixtureId);
+                      }
+                    }}
+                    onUpdatePosition={(x, y) => {
+                      if (mepState.selectedFixtureId) {
+                        mepState.moveFixture(mepState.selectedFixtureId, { x, y });
+                      }
+                    }}
+                  />
+                )}
+                
+                <ValidationPanel 
+                  errors={mepState.validationResult.errors}
+                  warnings={mepState.validationResult.warnings}
+                  onValidate={mepState.runValidation}
+                />
+                
+                <Card className="glass-sm">
+                  <CardContent className="p-3">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => mepState.reset()}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                      Reset All
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* FLOATING BOTTOM HINT (plan view only) */}
       {activeView === 'plan' && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
-          Scroll to zoom • Alt+Drag to pan • View pipe routes and connections
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-background/80 backdrop-blur-md rounded-lg px-3 py-1.5 text-xs text-muted-foreground">
+          Scroll to zoom • Drag to pan • Click fixtures to select
         </div>
       )}
       
