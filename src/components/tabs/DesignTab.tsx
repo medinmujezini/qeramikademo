@@ -631,7 +631,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const roomW = (floorPlan.roomWidth || 800) / 100;
   const roomH = (floorPlan.roomHeight || 600) / 100;
   const maxDim = Math.max(roomW, roomH);
-  const defaultCameraPos: [number, number, number] = [roomW / 2 + maxDim, maxDim * 0.9, roomH / 2 + maxDim];
+  const defaultCameraPos: [number, number, number] = [roomW / 2 + maxDim * 0.7, maxDim * 0.65, roomH / 2 + maxDim * 0.7];
   const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
 
   const handleResetView = useCallback(() => {
