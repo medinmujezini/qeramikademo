@@ -498,7 +498,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                   rotation={[0, -angle, 0]}
                   castShadow
                 >
-                  <boxGeometry args={[door.width * scale, doorHeight, wall.thickness * scale * 1.1]} />
+                  <boxGeometry args={[door.width * scale, doorHeight, 0.03]} />
                   <meshStandardMaterial color="#8b5a2b" roughness={0.7} />
                 </mesh>
               );
