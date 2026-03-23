@@ -471,13 +471,16 @@ const PlumbingTabContent: React.FC = () => {
                     if (error.elementType === 'fixture') {
                       mepState.setSelectedFixtureId(error.elementId);
                     } else if (error.elementType === 'route') {
-                      mepState.setSelectedRouteId(error.elementId);
+                      const route = mepState.routes.find(r => r.id === error.elementId);
+                      if (route?.destination.type === 'fixture') {
+                        mepState.setSelectedFixtureId(route.destination.id);
+                      }
                     } else if (error.elementType === 'segment') {
                       const parentRoute = mepState.routes.find(r =>
                         r.segments.some(s => s.id === error.elementId)
                       );
-                      if (parentRoute) {
-                        mepState.setSelectedRouteId(parentRoute.id);
+                      if (parentRoute?.destination.type === 'fixture') {
+                        mepState.setSelectedFixtureId(parentRoute.destination.id);
                       }
                     } else if (error.elementType === 'node') {
                       mepState.setSelectedNodeId(error.elementId);
