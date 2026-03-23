@@ -1143,6 +1143,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           Render
         </Button>
 
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 gap-1.5"
+          onClick={handleResetView}
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Reset View
+        </Button>
+
         {isDragging && (
           <Badge variant="outline" className="gap-1 animate-pulse bg-white/20">
             <Move3D className="h-3 w-3" />
