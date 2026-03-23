@@ -511,6 +511,16 @@ export const MEPCanvas: React.FC<MEPCanvasProps> = ({
     const worldPos = screenToWorld(e.clientX, e.clientY);
     setCursorPos(worldPos);
     
+    // Handle pending pan (threshold check)
+    if (pendingPan.current && mouseDownPos.current) {
+      const dx = e.clientX - mouseDownPos.current.x;
+      const dy = e.clientY - mouseDownPos.current.y;
+      if (Math.sqrt(dx * dx + dy * dy) > PAN_THRESHOLD) {
+        setIsPanning(true);
+        pendingPan.current = false;
+      }
+    }
+    
     // Handle panning
     if (isPanning) {
       setTransform(prev => ({
