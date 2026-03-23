@@ -73,9 +73,9 @@ function calculateTilePositions(
   const pitchX = tileW + jointM;
   const pitchY = tileH + jointM;
 
-  // Number of tiles needed (with some extra for offsets)
-  const cols = Math.ceil((wallL + pitchX) / pitchX) + 2;
-  const rows = Math.ceil((wallH + pitchY) / pitchY) + 2;
+  // Number of tiles needed (with some extra for offsets and partial edge tiles)
+  const cols = Math.ceil(wallL / pitchX) + 2;
+  const rows = Math.ceil(wallH / pitchY) + 2;
 
   // Pattern-specific calculations
   if (pattern === 'herringbone') {
