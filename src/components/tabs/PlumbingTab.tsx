@@ -127,9 +127,10 @@ interface ValidationPanelProps {
   errors: ValidationError[];
   warnings: ValidationWarning[];
   onValidate: () => void;
+  onHighlightError: (error: ValidationError) => void;
 }
 
-const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onValidate }) => {
+const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onValidate, onHighlightError }) => {
   const [errorsOpen, setErrorsOpen] = React.useState(true);
   const [warningsOpen, setWarningsOpen] = React.useState(false);
   
