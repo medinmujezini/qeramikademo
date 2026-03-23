@@ -189,6 +189,7 @@ export const NormalMetalAOFragmentShader = /* glsl */ `
 
 export const EmissiveFlagsFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform vec3 uEmissive;
   uniform float uEmissiveIntensity;
@@ -199,6 +200,7 @@ export const EmissiveFlagsFragmentShader = /* glsl */ `
   varying vec2 vUv;
   
   void main() {
+    #include <clipping_planes_fragment>
     vec3 emissive = uEmissive * uEmissiveIntensity;
     if (uHasEmissiveMap) {
       emissive *= texture2D(uEmissiveMap, vUv).rgb;
