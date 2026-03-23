@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { 
   FloorPlan, Point, Wall, Door, Window, Fixture, Column,
