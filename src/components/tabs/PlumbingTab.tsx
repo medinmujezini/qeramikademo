@@ -521,7 +521,7 @@ const PlumbingTabContent: React.FC = () => {
                       mepState.fixtures,
                       mepState.nodes,
                       [],
-                      { canvasWidth: 800, canvasHeight: 600 }
+                      { canvasWidth: floorPlan.roomWidth, canvasHeight: floorPlan.roomHeight, walls: wallsForRouting }
                     );
                     result.routes.forEach(route => mepState.addRoute(route));
                     mepState.runValidation();
