@@ -431,16 +431,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 wall={wall}
                 start={start}
                 end={end}
-                tileConfig={{
-                  tileId: wallFinish.tileId!,
-                  groutColor: wallFinish.groutColor || '#9ca3af',
-                  pattern: wallFinish.pattern || 'grid',
-                  jointWidth: wallFinish.jointWidth,
-                  orientation: wallFinish.orientation,
-                  offsetX: wallFinish.offsetX,
-                  offsetY: wallFinish.offsetY,
-                }}
-                tile={tile}
+                tileConfig={effectiveTileConfig!}
+                tile={tile!}
                 scale={scale}
                 animationState={tileAnimState}
                 onAnimationComplete={() => onTileAnimationComplete?.(wall.id)}
