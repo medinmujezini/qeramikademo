@@ -147,6 +147,7 @@ export const AlbedoRoughnessFragmentShader = /* glsl */ `
 
 export const NormalMetalAOFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform float uMetalness;
   uniform float uAO;
@@ -168,6 +169,7 @@ export const NormalMetalAOFragmentShader = /* glsl */ `
   }
   
   void main() {
+    #include <clipping_planes_fragment>
     vec3 normal = normalize(vNormal);
     vec2 encodedNormal = encodeNormal(normal);
     
