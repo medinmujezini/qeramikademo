@@ -151,7 +151,8 @@ function calculateTilePositions(
         
         // Only include tiles that overlap the wall bounds
         if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
-            y + tileH > 0 && y - tileH < wallH) {
+            y + tileH > 0 && y - tileH < wallH &&
+            !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
