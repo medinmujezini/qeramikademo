@@ -46,6 +46,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [tilePattern, setTilePattern] = useState<'grid' | 'staggered' | 'herringbone' | 'diagonal'>('grid');
   const [rightPanelTab, setRightPanelTab] = useState<'preview' | 'calculations' | null>(null);
+  const [showTileLibrary, setShowTileLibrary] = useState(true);
 
   // Auto-select pending wall when it changes
   React.useEffect(() => {
@@ -421,39 +422,61 @@ export const TilesTab: React.FC<TilesTabProps> = ({
       )}
 
       {/* LEFT PANEL - Tile Library */}
-      <div className="absolute top-20 left-6 z-20 w-52 max-h-[calc(100%-140px)]">
-        <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
-          <div className="panel-header shrink-0">
-            <span className="panel-header-title">Tile Library</span>
-          </div>
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-2">
-              <TileLibraryPanel
-                selectedTileId={selectedTile?.id}
-                onTileSelect={setSelectedTile}
-                maxHeight="180px"
-              />
+      {showTileLibrary ? (
+        <div className="absolute top-20 left-6 z-20 w-52 max-h-[calc(100%-140px)]">
+          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
+            <div className="panel-header shrink-0 flex items-center justify-between">
+              <span className="panel-header-title">Tile Library</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 rounded-md text-muted-foreground hover:text-foreground"
+                onClick={() => setShowTileLibrary(false)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-2">
+                <TileLibraryPanel
+                  selectedTileId={selectedTile?.id}
+                  onTileSelect={setSelectedTile}
+                  maxHeight="180px"
+                />
 
-              <div className="space-y-2 pt-2 border-t border-white/10">
-                <Label className="text-xs text-muted-foreground">Joint: {jointWidth}mm</Label>
-                <Slider
-                  value={[jointWidth]}
-                  onValueChange={([v]) => setJointWidth(v)}
-                  min={1}
-                  max={10}
-                  step={0.5}
+                <div className="space-y-2 pt-2 border-t border-white/10">
+                  <Label className="text-xs text-muted-foreground">Joint: {jointWidth}mm</Label>
+                  <Slider
+                    value={[jointWidth]}
+                    onValueChange={([v]) => setJointWidth(v)}
+                    min={1}
+                    max={10}
+                    step={0.5}
+                  />
+                </div>
+                
+                <GroutColorPicker
+                  value={groutColor}
+                  onChange={setGroutColor}
+                  compact
                 />
               </div>
-              
-              <GroutColorPicker
-                value={groutColor}
-                onChange={setGroutColor}
-                compact
-              />
-            </div>
-          </ScrollArea>
+            </ScrollArea>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="absolute top-20 left-6 z-20">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-9 rounded-lg text-xs shadow-md backdrop-blur-sm glass-control"
+            onClick={() => setShowTileLibrary(true)}
+          >
+            <Grid3X3 className="h-3.5 w-3.5" />
+            Tile Library
+          </Button>
+        </div>
+      )}
 
       {/* BOTTOM LEFT - Stats card */}
       <div className="absolute bottom-6 left-6 z-20">
