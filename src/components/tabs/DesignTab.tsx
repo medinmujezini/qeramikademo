@@ -615,6 +615,22 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const orbitControlsRef = useRef<any>(null);
+  const cameraRef = useRef<any>(null);
+
+  // Calculate room-based camera position
+  const roomW = (floorPlan.roomWidth || 800) / 100;
+  const roomH = (floorPlan.roomHeight || 600) / 100;
+  const defaultCameraPos: [number, number, number] = [roomW, roomW * 0.8, roomH];
+  const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
+
+  const handleResetView = useCallback(() => {
+    if (cameraRef.current && orbitControlsRef.current) {
+      cameraRef.current.position.set(...defaultCameraPos);
+      orbitControlsRef.current.target.set(...defaultTarget);
+      orbitControlsRef.current.update();
+    }
+  }, [defaultCameraPos, defaultTarget]);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
