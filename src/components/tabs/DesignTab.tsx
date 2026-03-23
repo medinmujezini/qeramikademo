@@ -436,6 +436,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 scale={scale}
                 animationState={tileAnimState}
                 onAnimationComplete={() => onTileAnimationComplete?.(wall.id)}
+                doors={wallDoors}
+                windows={wallWindows}
               />
             ) : (
               <Wall3D 
