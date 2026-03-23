@@ -190,19 +190,45 @@ const Wall3D = ({
   };
 
   const geometry = useMemo(() => {
-    if (!isSloped) {
-      return new THREE.BoxGeometry(length, startHeight, wallThickness);
-    }
-    
     const halfLen = length / 2;
     const halfThick = wallThickness / 2;
     
+    // Build wall shape (front face profile)
     const shape = new THREE.Shape();
     shape.moveTo(-halfLen, 0);
     shape.lineTo(halfLen, 0);
-    shape.lineTo(halfLen, endHeight);
+    shape.lineTo(halfLen, isSloped ? endHeight : startHeight);
     shape.lineTo(-halfLen, startHeight);
     shape.closePath();
+    
+    // Cut holes for doors
+    doors.forEach(door => {
+      const doorCenterX = (door.position - 0.5) * length;
+      const doorHalfW = (door.width * scale) / 2;
+      const doorH = door.height * scale;
+      const hole = new THREE.Path();
+      hole.moveTo(doorCenterX - doorHalfW, 0);
+      hole.lineTo(doorCenterX + doorHalfW, 0);
+      hole.lineTo(doorCenterX + doorHalfW, doorH);
+      hole.lineTo(doorCenterX - doorHalfW, doorH);
+      hole.closePath();
+      shape.holes.push(hole);
+    });
+    
+    // Cut holes for windows
+    windows.forEach(win => {
+      const winCenterX = (win.position - 0.5) * length;
+      const winHalfW = (win.width * scale) / 2;
+      const winBottom = win.sillHeight * scale;
+      const winTop = winBottom + win.height * scale;
+      const hole = new THREE.Path();
+      hole.moveTo(winCenterX - winHalfW, winBottom);
+      hole.lineTo(winCenterX + winHalfW, winBottom);
+      hole.lineTo(winCenterX + winHalfW, winTop);
+      hole.lineTo(winCenterX - winHalfW, winTop);
+      hole.closePath();
+      shape.holes.push(hole);
+    });
     
     const extrudeSettings = {
       depth: wallThickness,
@@ -213,9 +239,9 @@ const Wall3D = ({
     geo.translate(0, 0, -halfThick);
     
     return geo;
-  }, [length, startHeight, endHeight, wallThickness, isSloped]);
+  }, [length, startHeight, endHeight, wallThickness, isSloped, doors, windows, scale]);
 
-  const yPosition = isSloped ? 0 : startHeight / 2;
+  const yPosition = 0;
 
   return (
     <mesh
