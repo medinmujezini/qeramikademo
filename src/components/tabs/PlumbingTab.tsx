@@ -330,10 +330,29 @@ const PlumbingTabContent: React.FC = () => {
       </div>
 
       {/* FLOATING TOP TOOLBAR */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-background/90 backdrop-blur-md rounded-xl shadow-lg px-4 py-2 flex items-center gap-4">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-background/90 backdrop-blur-md rounded-xl shadow-lg px-4 py-2 flex items-center gap-3 max-w-[95vw]">
         <ViewSelector activeView={activeView} onViewChange={setActiveView} />
         
         <div className="h-4 w-px bg-border/50" />
+        
+        {activeView === 'riser' && (
+          <>
+            <Select value={selectedRiserSystem} onValueChange={(v) => setSelectedRiserSystem(v as MEPSystemType | 'all')}>
+              <SelectTrigger className="w-28 h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Systems</SelectItem>
+                <SelectItem value="drainage">Drainage</SelectItem>
+                <SelectItem value="vent">Vent</SelectItem>
+                <SelectItem value="cold-water">Cold Water</SelectItem>
+                <SelectItem value="hot-water">Hot Water</SelectItem>
+                <SelectItem value="power">Electrical</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="h-4 w-px bg-border/50" />
+          </>
+        )}
         
         <Button
           size="sm"
@@ -356,9 +375,9 @@ const PlumbingTabContent: React.FC = () => {
         
         <div className="h-4 w-px bg-border/50" />
         
-        <Badge variant="secondary" className="bg-white/20">{mepState.fixtureCount} fixtures</Badge>
-        <Badge variant="secondary" className="bg-white/20">{mepState.routeCount} routes</Badge>
-        <Badge variant="secondary" className="bg-white/20">{mepState.totalDFU} DFU</Badge>
+        <Badge variant="secondary" className="bg-white/20 text-xs whitespace-nowrap">{mepState.fixtureCount} fixtures</Badge>
+        <Badge variant="secondary" className="bg-white/20 text-xs whitespace-nowrap">{mepState.routeCount} routes</Badge>
+        <Badge variant="secondary" className="bg-white/20 text-xs whitespace-nowrap">{mepState.totalDFU} DFU</Badge>
       </div>
       
       {/* FLOATING LEFT PANEL - Routing Controls */}
