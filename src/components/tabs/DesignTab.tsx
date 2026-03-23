@@ -1082,7 +1082,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* FLOATING TOP TOOLBAR */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar flex items-center gap-4 flex-wrap">
+      <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-30 glass-toolbar flex items-center gap-4 flex-wrap ${isPanelOpen ? 'max-w-[calc(100%-25rem)]' : ''}`}>
         <div className="flex items-center gap-2">
           <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-90" />
           <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-sm">
@@ -1190,7 +1190,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       
       {/* RIGHT PANEL - Properties */}
       {isPanelOpen && (
-        <div className="absolute top-28 right-6 z-20 w-64 max-h-[calc(100%-180px)]">
+        <div className="absolute top-32 right-6 z-20 w-64 max-h-[calc(100%-196px)]">
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0">
               <span className="panel-header-title">Properties</span>
@@ -1219,7 +1219,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-28 right-6 z-20 glass-control h-8 w-8"
+          className="absolute top-32 right-6 z-20 glass-control h-8 w-8"
           onClick={() => setIsPanelOpen(true)}
         >
           <PanelRight className="h-4 w-4" />
