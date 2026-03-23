@@ -355,6 +355,104 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       }
     });
 
+    // Draw doors on walls
+    floorPlan.doors.forEach(door => {
+      const wall = floorPlan.walls.find(w => w.id === door.wallId);
+      if (!wall) return;
+      const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);
+      const endPoint = floorPlan.points.find(p => p.id === wall.endPointId);
+      if (!startPoint || !endPoint) return;
+
+      const doorX = startPoint.x + (endPoint.x - startPoint.x) * door.position;
+      const doorY = startPoint.y + (endPoint.y - startPoint.y) * door.position;
+      const doorScreen = worldToScreen(doorX, doorY);
+      const wallAngle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+      const doorHalfWidth = (door.width / 2) * scale;
+      const perpAngle = wallAngle + Math.PI / 2;
+      const halfThickness = (wall.thickness * scale) / 2;
+
+      // Draw door gap (clear the wall)
+      ctx.strokeStyle = 'hsl(var(--background))';
+      ctx.lineWidth = wall.thickness * scale + 4;
+      ctx.beginPath();
+      ctx.moveTo(
+        doorScreen.x - Math.cos(wallAngle) * doorHalfWidth,
+        doorScreen.y - Math.sin(wallAngle) * doorHalfWidth
+      );
+      ctx.lineTo(
+        doorScreen.x + Math.cos(wallAngle) * doorHalfWidth,
+        doorScreen.y + Math.sin(wallAngle) * doorHalfWidth
+      );
+      ctx.stroke();
+
+      // Draw door swing arc
+      ctx.strokeStyle = 'hsla(30, 60%, 50%, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const swingAngle = door.type.includes('left') ? -Math.PI / 2 : Math.PI / 2;
+      ctx.arc(
+        doorScreen.x - Math.cos(wallAngle) * doorHalfWidth,
+        doorScreen.y - Math.sin(wallAngle) * doorHalfWidth,
+        door.width * scale,
+        wallAngle,
+        wallAngle + swingAngle,
+        door.type.includes('left')
+      );
+      ctx.stroke();
+
+      // Door label
+      ctx.fillStyle = 'hsla(30, 60%, 50%, 0.9)';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🚪', doorScreen.x, doorScreen.y);
+    });
+
+    // Draw windows on walls
+    floorPlan.windows.forEach(win => {
+      const wall = floorPlan.walls.find(w => w.id === win.wallId);
+      if (!wall) return;
+      const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);
+      const endPoint = floorPlan.points.find(p => p.id === wall.endPointId);
+      if (!startPoint || !endPoint) return;
+
+      const winX = startPoint.x + (endPoint.x - startPoint.x) * win.position;
+      const winY = startPoint.y + (endPoint.y - startPoint.y) * win.position;
+      const winScreen = worldToScreen(winX, winY);
+      const wallAngle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+      const winHalfWidth = (win.width / 2) * scale;
+
+      // Draw window indicator (blue line across wall)
+      ctx.strokeStyle = 'hsla(200, 80%, 60%, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(
+        winScreen.x - Math.cos(wallAngle) * winHalfWidth,
+        winScreen.y - Math.sin(wallAngle) * winHalfWidth
+      );
+      ctx.lineTo(
+        winScreen.x + Math.cos(wallAngle) * winHalfWidth,
+        winScreen.y + Math.sin(wallAngle) * winHalfWidth
+      );
+      ctx.stroke();
+
+      // Double line for glass effect
+      const perpAngle = wallAngle + Math.PI / 2;
+      const glassOffset = 2;
+      ctx.strokeStyle = 'hsla(200, 80%, 70%, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(
+        winScreen.x - Math.cos(wallAngle) * winHalfWidth + Math.cos(perpAngle) * glassOffset,
+        winScreen.y - Math.sin(wallAngle) * winHalfWidth + Math.sin(perpAngle) * glassOffset
+      );
+      ctx.lineTo(
+        winScreen.x + Math.cos(wallAngle) * winHalfWidth + Math.cos(perpAngle) * glassOffset,
+        winScreen.y + Math.sin(wallAngle) * winHalfWidth + Math.sin(perpAngle) * glassOffset
+      );
+      ctx.stroke();
+    });
+
     // Draw points as neon squares with subtle glow
     floorPlan.points.forEach(point => {
       const screen = worldToScreen(point.x, point.y);
