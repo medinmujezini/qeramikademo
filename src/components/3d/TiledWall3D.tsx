@@ -8,7 +8,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Tile3D } from './Tile3D';
-import type { Wall, Point, Tile, TilePattern, TileOrientation } from '@/types/floorPlan';
+import type { Wall, Point, Tile, TilePattern, TileOrientation, Door, Window as WindowType } from '@/types/floorPlan';
 import { CM_TO_METERS, MM_TO_CM } from '@/constants/units';
 
 // Tile config passed from WallFinish
@@ -31,6 +31,16 @@ interface TiledWall3DProps {
   scale: number;
   animationState: 'idle' | 'animating' | 'complete';
   onAnimationComplete?: () => void;
+  doors?: Door[];
+  windows?: WindowType[];
+}
+
+// Represents an opening (door/window) as a zone on the wall to exclude tiles
+interface WallOpening {
+  xCenter: number;   // meters, relative to wall center (0 = wall center)
+  yBottom: number;    // meters, from wall bottom
+  halfWidth: number;  // meters
+  halfHeight: number; // meters
 }
 
 interface TilePosition {
@@ -42,6 +52,19 @@ interface TilePosition {
   rotation: number; // Z-axis rotation in radians
 }
 
+// Check if a tile overlaps any wall opening (door/window)
+function tileOverlapsOpening(
+  tileX: number, tileY: number, tileW: number, tileH: number,
+  openings: WallOpening[]
+): boolean {
+  for (const op of openings) {
+    const overlapX = Math.abs(tileX - op.xCenter) < (tileW / 2 + op.halfWidth);
+    const overlapY = Math.abs(tileY - (op.yBottom + op.halfHeight)) < (tileH / 2 + op.halfHeight);
+    if (overlapX && overlapY) return true;
+  }
+  return false;
+}
+
 // Calculate tile positions for a wall with proper joint spacing and patterns
 function calculateTilePositions(
   wallLength: number,
@@ -51,7 +74,8 @@ function calculateTilePositions(
   jointWidth: number = 3,      // in mm
   orientation: TileOrientation = 'horizontal',
   offsetX: number = 0,         // in cm
-  offsetY: number = 0          // in cm
+  offsetY: number = 0,         // in cm
+  openings: WallOpening[] = []
 ): TilePosition[] {
   const positions: TilePosition[] = [];
   
@@ -95,9 +119,10 @@ function calculateTilePositions(
           x += stepX / 2;
         }
         
-        // Only include tiles that overlap the wall bounds
+        // Only include tiles that overlap the wall bounds and don't overlap openings
         if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
-            y + tileH > 0 && y - tileH < wallH) {
+            y + tileH > 0 && y - tileH < wallH &&
+            !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
@@ -126,7 +151,8 @@ function calculateTilePositions(
         
         // Only include tiles that overlap the wall bounds
         if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
-            y + tileH > 0 && y - tileH < wallH) {
+            y + tileH > 0 && y - tileH < wallH &&
+            !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
@@ -161,7 +187,8 @@ function calculateTilePositions(
         
         // Only include tiles that overlap the wall bounds
         if (x + tileW / 2 > -wallL / 2 && x - tileW / 2 < wallL / 2 &&
-            y + tileH / 2 > 0 && y - tileH / 2 < wallH) {
+            y + tileH / 2 > 0 && y - tileH / 2 < wallH &&
+            !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
           
           // Calculate animation delay based on position (wave from bottom-left)
           const normalizedX = Math.max(0, Math.min(1, (x + wallL / 2) / wallL));
@@ -193,6 +220,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   scale,
   animationState,
   onAnimationComplete,
+  doors = [],
+  windows = [],
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
@@ -204,6 +233,32 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallThicknessM = wall.thickness * CM_TO_METERS;
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
+
+  // Compute wall openings from doors and windows
+  // Positions are in local wall coords: x centered at 0, y from 0 (bottom) to wallHeightM (top)
+  const openings = useMemo<WallOpening[]>(() => {
+    const ops: WallOpening[] = [];
+    doors.forEach(door => {
+      // door.position is 0-1 along wall length
+      const xCenter = (door.position - 0.5) * wallLengthM;
+      ops.push({
+        xCenter,
+        yBottom: 0,
+        halfWidth: (door.width * CM_TO_METERS) / 2,
+        halfHeight: (door.height * CM_TO_METERS) / 2,
+      });
+    });
+    windows.forEach(win => {
+      const xCenter = (win.position - 0.5) * wallLengthM;
+      ops.push({
+        xCenter,
+        yBottom: win.sillHeight * CM_TO_METERS,
+        halfWidth: (win.width * CM_TO_METERS) / 2,
+        halfHeight: (win.height * CM_TO_METERS) / 2,
+      });
+    });
+    return ops;
+  }, [doors, windows, wallLengthM]);
 
   // Create clipping planes in world space to cut tiles at all 4 wall boundaries
   // THREE.js clipping planes operate in world space, so we must transform from local
@@ -235,7 +290,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
       tileConfig.jointWidth ?? 3,
       tileConfig.orientation ?? 'horizontal',
       tileConfig.offsetX ?? 0,
-      tileConfig.offsetY ?? 0
+      tileConfig.offsetY ?? 0,
+      openings
     );
   }, [
     length, 
@@ -245,7 +301,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
     tileConfig.jointWidth,
     tileConfig.orientation,
     tileConfig.offsetX,
-    tileConfig.offsetY
+    tileConfig.offsetY,
+    openings
   ]);
 
   // Handle animation progress
