@@ -351,6 +351,10 @@ export class GBufferMaterialFactory {
       albedo = ((originalMat as any).color as THREE.Color).clone();
     }
     
+    // Extract clipping planes from original material
+    const clips = originalMat.clippingPlanes || null;
+    const hasClips = clips && clips.length > 0;
+    
     // Create materials
     albedoRoughness = new THREE.ShaderMaterial({
       vertexShader: GBufferVertexShader,
@@ -364,6 +368,8 @@ export class GBufferMaterialFactory {
         uHasRoughnessMap: { value: roughnessMap !== null },
       },
       side: originalMat.side,
+      clippingPlanes: clips,
+      clipping: !!hasClips,
     });
     
     normalMetalAO = new THREE.ShaderMaterial({
@@ -378,6 +384,8 @@ export class GBufferMaterialFactory {
         uHasAOMap: { value: aoMap !== null },
       },
       side: originalMat.side,
+      clippingPlanes: clips,
+      clipping: !!hasClips,
     });
     
     emissiveFlags = new THREE.ShaderMaterial({
@@ -391,6 +399,8 @@ export class GBufferMaterialFactory {
         uHasEmissiveMap: { value: emissiveMap !== null },
       },
       side: originalMat.side,
+      clippingPlanes: clips,
+      clipping: !!hasClips,
     });
     
     // Cache
