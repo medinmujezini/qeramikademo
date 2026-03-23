@@ -16,6 +16,8 @@ import {
   RotateCcw,
   BookOpen,
   MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { SYSTEM_COLORS, type MEPRoute } from '@/types/mep';
 import { MEPCanvas } from '@/components/mep/MEPCanvas';
