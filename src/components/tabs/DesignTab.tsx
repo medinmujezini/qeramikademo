@@ -384,18 +384,35 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         const wallFinish = floorPlan.wallFinishes?.find(f => f.wallId === wall.id);
         const tileAnimState = tileAnimations?.[wall.id] || 'idle';
         
-        // Check if this wall has tiles that should use 3D animated tiles
+        // Check if this wall has tiles via wallFinish OR tileSection
         const hasTileFinish = wallFinish?.surfaceType === 'tiles' && wallFinish.tileId;
-        const tile = hasTileFinish ? findTile(wallFinish.tileId!, wallFinish) : null;
+        const hasTileSection = showTiles && tileSection && tileSection.tileId;
         
-        // Show 3D tiles if:
-        // 1. Wall has tile finish AND tile exists AND
-        // 2. Either animation is triggered OR already complete OR just has tiles (idle but has finish)
-        const shouldShow3DTiles = hasTileFinish && tile && (
-          tileAnimState === 'animating' || 
-          tileAnimState === 'complete' ||
-          hasTileFinish // Always show if tiles are applied, even without animation
-        );
+        // Resolve tile: prefer wallFinish, fall back to tileSection
+        const effectiveTileId = hasTileFinish ? wallFinish.tileId! : (hasTileSection ? tileSection.tileId : null);
+        const tile = effectiveTileId ? findTile(effectiveTileId, wallFinish) : null;
+        
+        // Build effective tile config from whichever source has data
+        const effectiveTileConfig = hasTileFinish ? {
+          tileId: wallFinish.tileId!,
+          groutColor: wallFinish.groutColor || '#9ca3af',
+          pattern: wallFinish.pattern || 'grid',
+          jointWidth: wallFinish.jointWidth,
+          orientation: wallFinish.orientation,
+          offsetX: wallFinish.offsetX,
+          offsetY: wallFinish.offsetY,
+        } : hasTileSection ? {
+          tileId: tileSection.tileId,
+          groutColor: tileSection.groutColor || '#9ca3af',
+          pattern: tileSection.pattern || 'grid',
+          jointWidth: 3,
+          orientation: tileSection.orientation || 'horizontal',
+          offsetX: tileSection.offsetX || 0,
+          offsetY: tileSection.offsetY || 0,
+        } : null;
+        
+        // Show 3D tiles if we have a valid tile from either source
+        const shouldShow3DTiles = effectiveTileConfig && tile;
 
         const angle = Math.atan2(end.y - start.y, end.x - start.x);
         const wallDoors = floorPlan.doors.filter(d => d.wallId === wall.id);
@@ -414,16 +431,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 wall={wall}
                 start={start}
                 end={end}
-                tileConfig={{
-                  tileId: wallFinish.tileId!,
-                  groutColor: wallFinish.groutColor || '#9ca3af',
-                  pattern: wallFinish.pattern || 'grid',
-                  jointWidth: wallFinish.jointWidth,
-                  orientation: wallFinish.orientation,
-                  offsetX: wallFinish.offsetX,
-                  offsetY: wallFinish.offsetY,
-                }}
-                tile={tile}
+                tileConfig={effectiveTileConfig!}
+                tile={tile!}
                 scale={scale}
                 animationState={tileAnimState}
                 onAnimationComplete={() => onTileAnimationComplete?.(wall.id)}
