@@ -236,13 +236,14 @@ export class GBufferMaterialFactory {
   private albedoRoughnessMaterials = new Map<string, THREE.ShaderMaterial>();
   private normalMetalAOMaterials = new Map<string, THREE.ShaderMaterial>();
   private emissiveFlagsMaterials = new Map<string, THREE.ShaderMaterial>();
-  private depthMaterial: THREE.ShaderMaterial;
+  private depthMaterials = new Map<string, THREE.ShaderMaterial>();
+  private defaultDepthMaterial: THREE.ShaderMaterial;
   
   private near = 0.1;
   private far = 100;
   
   constructor() {
-    this.depthMaterial = new THREE.ShaderMaterial({
+    this.defaultDepthMaterial = new THREE.ShaderMaterial({
       vertexShader: GBufferVertexShader,
       fragmentShader: DepthOnlyFragmentShader,
       uniforms: {
@@ -255,12 +256,53 @@ export class GBufferMaterialFactory {
   setCamera(camera: THREE.PerspectiveCamera): void {
     this.near = camera.near;
     this.far = camera.far;
-    this.depthMaterial.uniforms.uNear.value = this.near;
-    this.depthMaterial.uniforms.uFar.value = this.far;
+    this.defaultDepthMaterial.uniforms.uNear.value = this.near;
+    this.defaultDepthMaterial.uniforms.uFar.value = this.far;
+    // Update all per-mesh depth materials
+    this.depthMaterials.forEach(mat => {
+      mat.uniforms.uNear.value = this.near;
+      mat.uniforms.uFar.value = this.far;
+    });
   }
   
   getDepthMaterial(): THREE.ShaderMaterial {
-    return this.depthMaterial;
+    return this.defaultDepthMaterial;
+  }
+  
+  /**
+   * Get a depth material for a specific mesh, with clipping planes if needed
+   */
+  getDepthMaterialForMesh(mesh: THREE.Mesh): THREE.ShaderMaterial {
+    const originalMat = mesh.material as THREE.Material;
+    const clips = originalMat.clippingPlanes;
+    
+    // If no clipping planes, use shared default
+    if (!clips || clips.length === 0) {
+      return this.defaultDepthMaterial;
+    }
+    
+    const id = mesh.uuid;
+    let depthMat = this.depthMaterials.get(id);
+    
+    if (depthMat) {
+      depthMat.clippingPlanes = clips;
+      depthMat.clipping = true;
+      return depthMat;
+    }
+    
+    depthMat = new THREE.ShaderMaterial({
+      vertexShader: GBufferVertexShader,
+      fragmentShader: DepthOnlyFragmentShader,
+      uniforms: {
+        uNear: { value: this.near },
+        uFar: { value: this.far },
+      },
+      clippingPlanes: clips,
+      clipping: true,
+    });
+    
+    this.depthMaterials.set(id, depthMat);
+    return depthMat;
   }
   
   /**
