@@ -460,8 +460,8 @@ const PlumbingTabContent: React.FC = () => {
 
       {/* FLOATING BOTTOM HINT (plan view only) */}
       {activeView === 'plan' && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
-          Scroll to zoom • Alt+Drag to pan • View pipe routes and connections
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-background/80 backdrop-blur-md rounded-lg px-3 py-1.5 text-xs text-muted-foreground">
+          Scroll to zoom • Drag to pan • Click fixtures to select
         </div>
       )}
       
