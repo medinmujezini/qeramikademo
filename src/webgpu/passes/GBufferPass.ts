@@ -212,11 +212,13 @@ export const EmissiveFlagsFragmentShader = /* glsl */ `
 
 export const DepthOnlyFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform float uNear;
   uniform float uFar;
   
   void main() {
+    #include <clipping_planes_fragment>
     float depth = gl_FragCoord.z;
     // Linear depth
     float linearDepth = (2.0 * uNear * uFar) / (uFar + uNear - depth * (uFar - uNear));
