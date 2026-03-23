@@ -46,6 +46,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [tilePattern, setTilePattern] = useState<'grid' | 'staggered' | 'herringbone' | 'diagonal'>('grid');
   const [rightPanelTab, setRightPanelTab] = useState<'preview' | 'calculations' | null>(null);
+  const [showTileLibrary, setShowTileLibrary] = useState(true);
 
   // Auto-select pending wall when it changes
   React.useEffect(() => {
