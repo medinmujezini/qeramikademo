@@ -31,6 +31,16 @@ interface TiledWall3DProps {
   scale: number;
   animationState: 'idle' | 'animating' | 'complete';
   onAnimationComplete?: () => void;
+  doors?: Door[];
+  windows?: WindowType[];
+}
+
+// Represents an opening (door/window) as a zone on the wall to exclude tiles
+interface WallOpening {
+  xCenter: number;   // meters, relative to wall center (0 = wall center)
+  yBottom: number;    // meters, from wall bottom
+  halfWidth: number;  // meters
+  halfHeight: number; // meters
 }
 
 interface TilePosition {
