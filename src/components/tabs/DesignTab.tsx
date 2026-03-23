@@ -480,6 +480,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 onWallClick={onWallClick}
                 previewColor={previewColor}
                 previewWallpaperId={previewWallpaperId}
+                doors={wallDoors}
+                windows={wallWindows}
               />
             )}
 
