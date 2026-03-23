@@ -278,6 +278,16 @@ export class GBufferMaterialFactory {
     let emissiveFlags = this.emissiveFlagsMaterials.get(id);
     
     if (albedoRoughness && normalMetalAO && emissiveFlags) {
+      // Update clipping planes from original material (they may change)
+      const originalMat = mesh.material as THREE.Material;
+      const clips = originalMat.clippingPlanes || null;
+      const hasClips = clips && clips.length > 0;
+      albedoRoughness.clippingPlanes = clips;
+      albedoRoughness.clipping = !!hasClips;
+      normalMetalAO.clippingPlanes = clips;
+      normalMetalAO.clipping = !!hasClips;
+      emissiveFlags.clippingPlanes = clips;
+      emissiveFlags.clipping = !!hasClips;
       return { albedoRoughness, normalMetalAO, emissiveFlags };
     }
     
