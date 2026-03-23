@@ -356,9 +356,21 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         rotation={[-Math.PI / 2, 0, 0]} 
         position={[floorCenterX, 0, floorCenterZ]} 
         receiveShadow
-        onClick={(e) => {
+        onPointerDown={(e) => {
           e.stopPropagation();
-          onFloorClick?.();
+          (e.object as any)._pointerDownPos = { x: e.clientX, y: e.clientY };
+        }}
+        onPointerUp={(e) => {
+          e.stopPropagation();
+          const down = (e.object as any)._pointerDownPos;
+          if (down) {
+            const dx = e.clientX - down.x;
+            const dy = e.clientY - down.y;
+            if (Math.sqrt(dx * dx + dy * dy) < 5) {
+              onFloorClick?.();
+            }
+          }
+          (e.object as any)._pointerDownPos = null;
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
