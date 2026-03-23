@@ -37,7 +37,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   pendingWallId,
   onApplyComplete,
 }) => {
-  const { floorPlan, assignTileToWall, updateWallTileSections, setWallFinish } = useFloorPlanContext();
+  const { floorPlan, assignTileToWall, updateWallTileSections, setWallFinish, setAllWallsFinish } = useFloorPlanContext();
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
   const [selectedWallId, setSelectedWallId] = useState<string | null>(pendingWallId || null);
   const [jointWidth, setJointWidth] = useState(3);
@@ -292,14 +292,23 @@ export const TilesTab: React.FC<TilesTabProps> = ({
 
   const handleApplyToAllWalls = useCallback((settings: Partial<WallTileSection>) => {
     if (!settings.tileId) return;
-    const tileId = settings.tileId;
-    // Apply wall finish for each wall — setWallFinish uses functional updater 
-    // so all calls chain correctly in a single React batch
-    floorPlan.walls.forEach(wall => {
-      applyWallFinish(wall.id, tileId, settings);
+    const tile = findTile(settings.tileId);
+    // Use batched single-state-update to apply to ALL walls atomically
+    setAllWallsFinish('tiles', {
+      tileId: settings.tileId,
+      groutColor: settings.groutColor || groutColor,
+      pattern: settings.pattern || 'grid',
+      jointWidth: jointWidth,
+      orientation: settings.orientation || 'horizontal',
+      offsetX: settings.offsetX || 0,
+      offsetY: settings.offsetY || 0,
+      tileWidth: tile?.width,
+      tileHeight: tile?.height,
+      tileColor: tile?.color,
+      tileMaterial: tile?.material,
     });
     toast.success(`Tile applied to all ${floorPlan.walls.length} walls`);
-  }, [floorPlan.walls, applyWallFinish]);
+  }, [floorPlan.walls.length, findTile, setAllWallsFinish, groutColor, jointWidth]);
 
   // Count walls with tiles assigned
   const tiledWallCount = useMemo(() => {
