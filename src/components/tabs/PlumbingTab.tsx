@@ -515,6 +515,17 @@ const PlumbingTabContent: React.FC = () => {
                       mepState.setSelectedNodeId(error.elementId);
                     }
                   }}
+                  onReRoute={async () => {
+                    mepState.clearAllRoutes();
+                    const result = autoRouteAllFixturesStackCentric(
+                      mepState.fixtures,
+                      mepState.nodes,
+                      [],
+                      { canvasWidth: 800, canvasHeight: 600 }
+                    );
+                    result.routes.forEach(route => mepState.addRoute(route));
+                    mepState.runValidation();
+                  }}
                 />
                 
                 <Card className="glass-sm">
