@@ -12,7 +12,9 @@ import type { RenderContext, RenderPassConfig } from '../core/RenderGraph';
  */
 
 // Vertex shader shared by all G-Buffer materials
+// Includes Three.js clipping plane support so tiles are clipped at wall boundaries
 export const GBufferVertexShader = /* glsl */ `
+  #include <clipping_planes_pars_vertex>
   varying vec3 vWorldPosition;
   varying vec3 vNormal;
   varying vec2 vUv;
@@ -24,6 +26,7 @@ export const GBufferVertexShader = /* glsl */ `
     vec4 worldPos = modelMatrix * vec4(position, 1.0);
     vWorldPosition = worldPos.xyz;
     gl_Position = projectionMatrix * viewMatrix * worldPos;
+    #include <clipping_planes_vertex>
   }
 `;
 
@@ -114,6 +117,7 @@ export const GBufferFragmentShaderMRT = /* glsl */ `
 // Single-pass fragment shaders for each G-Buffer target
 export const AlbedoRoughnessFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform vec3 uAlbedo;
   uniform float uRoughness;
@@ -125,6 +129,7 @@ export const AlbedoRoughnessFragmentShader = /* glsl */ `
   varying vec2 vUv;
   
   void main() {
+    #include <clipping_planes_fragment>
     vec3 albedo = uAlbedo;
     if (uHasAlbedoMap) {
       vec4 albedoSample = texture2D(uAlbedoMap, vUv);
@@ -142,6 +147,7 @@ export const AlbedoRoughnessFragmentShader = /* glsl */ `
 
 export const NormalMetalAOFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform float uMetalness;
   uniform float uAO;
@@ -163,6 +169,7 @@ export const NormalMetalAOFragmentShader = /* glsl */ `
   }
   
   void main() {
+    #include <clipping_planes_fragment>
     vec3 normal = normalize(vNormal);
     vec2 encodedNormal = encodeNormal(normal);
     
@@ -182,6 +189,7 @@ export const NormalMetalAOFragmentShader = /* glsl */ `
 
 export const EmissiveFlagsFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform vec3 uEmissive;
   uniform float uEmissiveIntensity;
@@ -192,6 +200,7 @@ export const EmissiveFlagsFragmentShader = /* glsl */ `
   varying vec2 vUv;
   
   void main() {
+    #include <clipping_planes_fragment>
     vec3 emissive = uEmissive * uEmissiveIntensity;
     if (uHasEmissiveMap) {
       emissive *= texture2D(uEmissiveMap, vUv).rgb;
@@ -203,11 +212,13 @@ export const EmissiveFlagsFragmentShader = /* glsl */ `
 
 export const DepthOnlyFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform float uNear;
   uniform float uFar;
   
   void main() {
+    #include <clipping_planes_fragment>
     float depth = gl_FragCoord.z;
     // Linear depth
     float linearDepth = (2.0 * uNear * uFar) / (uFar + uNear - depth * (uFar - uNear));
@@ -267,6 +278,16 @@ export class GBufferMaterialFactory {
     let emissiveFlags = this.emissiveFlagsMaterials.get(id);
     
     if (albedoRoughness && normalMetalAO && emissiveFlags) {
+      // Update clipping planes from original material (they may change)
+      const originalMat = mesh.material as THREE.Material;
+      const clips = originalMat.clippingPlanes || null;
+      const hasClips = clips && clips.length > 0;
+      albedoRoughness.clippingPlanes = clips;
+      albedoRoughness.clipping = !!hasClips;
+      normalMetalAO.clippingPlanes = clips;
+      normalMetalAO.clipping = !!hasClips;
+      emissiveFlags.clippingPlanes = clips;
+      emissiveFlags.clipping = !!hasClips;
       return { albedoRoughness, normalMetalAO, emissiveFlags };
     }
     
@@ -330,6 +351,10 @@ export class GBufferMaterialFactory {
       albedo = ((originalMat as any).color as THREE.Color).clone();
     }
     
+    // Extract clipping planes from original material
+    const clips = originalMat.clippingPlanes || null;
+    const hasClips = clips && clips.length > 0;
+    
     // Create materials
     albedoRoughness = new THREE.ShaderMaterial({
       vertexShader: GBufferVertexShader,
@@ -343,6 +368,8 @@ export class GBufferMaterialFactory {
         uHasRoughnessMap: { value: roughnessMap !== null },
       },
       side: originalMat.side,
+      clippingPlanes: clips,
+      clipping: !!hasClips,
     });
     
     normalMetalAO = new THREE.ShaderMaterial({
@@ -357,6 +384,8 @@ export class GBufferMaterialFactory {
         uHasAOMap: { value: aoMap !== null },
       },
       side: originalMat.side,
+      clippingPlanes: clips,
+      clipping: !!hasClips,
     });
     
     emissiveFlags = new THREE.ShaderMaterial({
@@ -370,6 +399,8 @@ export class GBufferMaterialFactory {
         uHasEmissiveMap: { value: emissiveMap !== null },
       },
       side: originalMat.side,
+      clippingPlanes: clips,
+      clipping: !!hasClips,
     });
     
     // Cache
