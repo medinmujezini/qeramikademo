@@ -8,7 +8,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Tile3D } from './Tile3D';
-import type { Wall, Point, Tile, TilePattern, TileOrientation } from '@/types/floorPlan';
+import type { Wall, Point, Tile, TilePattern, TileOrientation, Door, Window as WindowType } from '@/types/floorPlan';
 import { CM_TO_METERS, MM_TO_CM } from '@/constants/units';
 
 // Tile config passed from WallFinish
