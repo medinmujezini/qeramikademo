@@ -1082,7 +1082,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* FLOATING TOP TOOLBAR */}
-      <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-30 glass-toolbar flex items-center gap-4 flex-wrap ${isPanelOpen ? 'max-w-[calc(100%-25rem)]' : ''}`}>
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-90" />
           <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-sm">
