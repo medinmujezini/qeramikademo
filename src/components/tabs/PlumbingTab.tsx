@@ -272,9 +272,9 @@ const PlumbingTabContent: React.FC = () => {
   }, [floorPlan.walls, floorPlan.points]);
   
   return (
-    <div className="h-full relative overflow-hidden">
+    <div className="h-full relative">
       {/* FULL-SCREEN CANVAS AREA */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 overflow-hidden">
         {activeView === 'plan' && (
           <MEPCanvas
             walls={floorPlan.walls}
@@ -326,7 +326,7 @@ const PlumbingTabContent: React.FC = () => {
       </div>
 
       {/* FLOATING TOP TOOLBAR */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar flex items-center gap-4">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-background/90 backdrop-blur-md rounded-xl shadow-lg px-4 py-2 flex items-center gap-4">
         <ViewSelector activeView={activeView} onViewChange={setActiveView} />
         
         <div className="h-4 w-px bg-border/50" />
