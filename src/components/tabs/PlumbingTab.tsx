@@ -129,11 +129,13 @@ interface ValidationPanelProps {
   warnings: ValidationWarning[];
   onValidate: () => void;
   onHighlightError: (error: ValidationError) => void;
+  onReRoute: () => Promise<void>;
 }
 
-const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onValidate, onHighlightError }) => {
+const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onValidate, onHighlightError, onReRoute }) => {
   const [errorsOpen, setErrorsOpen] = React.useState(true);
   const [warningsOpen, setWarningsOpen] = React.useState(false);
+  const [isReRouting, setIsReRouting] = React.useState(false);
   
   const errorCount = errors.length;
   const warningCount = warnings.length;
