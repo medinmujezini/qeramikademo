@@ -497,23 +497,30 @@ const PlumbingTabContent: React.FC = () => {
                   warnings={mepState.validationResult.warnings}
                   onValidate={mepState.runValidation}
                   onHighlightError={(error) => {
-                    if (error.elementType === 'fixture') {
-                      mepState.setSelectedFixtureId(error.elementId);
-                    } else if (error.elementType === 'route') {
-                      const route = mepState.routes.find(r => r.id === error.elementId);
-                      if (route?.destination.type === 'fixture') {
-                        mepState.setSelectedFixtureId(route.destination.id);
+                    // Clear any existing selection first
+                    mepState.setSelectedFixtureId(null);
+                    mepState.setSelectedNodeId(null);
+                    
+                    // Small delay to force re-render with new selection
+                    setTimeout(() => {
+                      if (error.elementType === 'fixture') {
+                        mepState.setSelectedFixtureId(error.elementId);
+                      } else if (error.elementType === 'route') {
+                        const route = mepState.routes.find(r => r.id === error.elementId);
+                        if (route?.destination.type === 'fixture') {
+                          mepState.setSelectedFixtureId(route.destination.id);
+                        }
+                      } else if (error.elementType === 'segment') {
+                        const parentRoute = mepState.routes.find(r =>
+                          r.segments.some(s => s.id === error.elementId)
+                        );
+                        if (parentRoute?.destination.type === 'fixture') {
+                          mepState.setSelectedFixtureId(parentRoute.destination.id);
+                        }
+                      } else if (error.elementType === 'node') {
+                        mepState.setSelectedNodeId(error.elementId);
                       }
-                    } else if (error.elementType === 'segment') {
-                      const parentRoute = mepState.routes.find(r =>
-                        r.segments.some(s => s.id === error.elementId)
-                      );
-                      if (parentRoute?.destination.type === 'fixture') {
-                        mepState.setSelectedFixtureId(parentRoute.destination.id);
-                      }
-                    } else if (error.elementType === 'node') {
-                      mepState.setSelectedNodeId(error.elementId);
-                    }
+                    }, 50);
                   }}
                   onReRoute={async () => {
                     mepState.clearAllRoutes();
