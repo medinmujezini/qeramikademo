@@ -149,7 +149,8 @@ function calculateTilePositions(
     }
   } else {
     // Grid and Staggered patterns
-    for (let row = 0; row < rows; row++) {
+    // y goes from 0 (floor) to wallH (top), matching grout plane at wallH/2 center
+    for (let row = -1; row < rows; row++) {
       for (let col = -1; col < cols; col++) {
         let rowOffset = 0;
         
@@ -159,12 +160,11 @@ function calculateTilePositions(
         }
         
         const x = col * pitchX + rowOffset + offX - wallL / 2 + tileW / 2;
-        const y = row * pitchY + offY + tileH / 2 - wallH / 2;
+        const y = row * pitchY + offY + tileH / 2;
         
-        // Only include tiles within wall bounds (with some margin for partial tiles)
-        const margin = tileW;
-        if (x > -wallL / 2 - margin && x < wallL / 2 + margin &&
-            y > -tileH && y < wallH + tileH) {
+        // Only include tiles that overlap the wall bounds
+        if (x + tileW / 2 > -wallL / 2 && x - tileW / 2 < wallL / 2 &&
+            y + tileH / 2 > 0 && y - tileH / 2 < wallH) {
           
           // Calculate animation delay based on position (wave from bottom-left)
           const normalizedX = Math.max(0, Math.min(1, (x + wallL / 2) / wallL));
