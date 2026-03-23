@@ -1190,7 +1190,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       
       {/* RIGHT PANEL - Properties */}
       {isPanelOpen && (
-        <div className="absolute top-20 right-6 z-20 w-64 max-h-[calc(100%-140px)]">
+        <div className="absolute top-28 right-6 z-20 w-64 max-h-[calc(100%-180px)]">
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0">
               <span className="panel-header-title">Properties</span>
