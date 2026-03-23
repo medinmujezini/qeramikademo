@@ -52,6 +52,19 @@ interface TilePosition {
   rotation: number; // Z-axis rotation in radians
 }
 
+// Check if a tile overlaps any wall opening (door/window)
+function tileOverlapsOpening(
+  tileX: number, tileY: number, tileW: number, tileH: number,
+  openings: WallOpening[]
+): boolean {
+  for (const op of openings) {
+    const overlapX = Math.abs(tileX - op.xCenter) < (tileW / 2 + op.halfWidth);
+    const overlapY = Math.abs(tileY - (op.yBottom + op.halfHeight)) < (tileH / 2 + op.halfHeight);
+    if (overlapX && overlapY) return true;
+  }
+  return false;
+}
+
 // Calculate tile positions for a wall with proper joint spacing and patterns
 function calculateTilePositions(
   wallLength: number,
@@ -61,7 +74,8 @@ function calculateTilePositions(
   jointWidth: number = 3,      // in mm
   orientation: TileOrientation = 'horizontal',
   offsetX: number = 0,         // in cm
-  offsetY: number = 0          // in cm
+  offsetY: number = 0,         // in cm
+  openings: WallOpening[] = []
 ): TilePosition[] {
   const positions: TilePosition[] = [];
   
