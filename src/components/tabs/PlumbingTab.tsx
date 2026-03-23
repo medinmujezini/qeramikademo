@@ -470,8 +470,15 @@ const PlumbingTabContent: React.FC = () => {
                   onHighlightError={(error) => {
                     if (error.elementType === 'fixture') {
                       mepState.setSelectedFixtureId(error.elementId);
-                    } else if (error.elementType === 'route' || error.elementType === 'segment') {
+                    } else if (error.elementType === 'route') {
                       mepState.setSelectedRouteId(error.elementId);
+                    } else if (error.elementType === 'segment') {
+                      const parentRoute = mepState.routes.find(r =>
+                        r.segments.some(s => s.id === error.elementId)
+                      );
+                      if (parentRoute) {
+                        mepState.setSelectedRouteId(parentRoute.id);
+                      }
                     } else if (error.elementType === 'node') {
                       mepState.setSelectedNodeId(error.elementId);
                     }
