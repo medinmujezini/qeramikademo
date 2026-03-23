@@ -205,18 +205,25 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
 
-  // Create clipping planes to cut tiles at all 4 wall boundaries
+  // Create clipping planes in world space to cut tiles at all 4 wall boundaries
+  // THREE.js clipping planes operate in world space, so we must transform from local
   const clippingPlanes = useMemo(() => {
-    // Left plane (normal pointing right +X, positioned at -wallLengthM/2)
-    const leftPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), wallLengthM / 2);
-    // Right plane (normal pointing left -X, positioned at +wallLengthM/2)
-    const rightPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), wallLengthM / 2);
-    // Bottom plane (normal pointing up +Y, at y=0)
-    const bottomPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    // Top plane (normal pointing down -Y, at y=wallHeightM)
-    const topPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wallHeightM);
-    return [leftPlane, rightPlane, bottomPlane, topPlane];
-  }, [wallLengthM, wallHeightM]);
+    const localPlanes = [
+      new THREE.Plane(new THREE.Vector3(1, 0, 0), wallLengthM / 2),
+      new THREE.Plane(new THREE.Vector3(-1, 0, 0), wallLengthM / 2),
+      new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+      new THREE.Plane(new THREE.Vector3(0, -1, 0), wallHeightM),
+    ];
+    // Build the wall group's world transform matrix
+    const matrix = new THREE.Matrix4();
+    matrix.compose(
+      new THREE.Vector3(midX, 0, midZ),
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -angle, 0)),
+      new THREE.Vector3(1, 1, 1)
+    );
+    // Transform planes from local to world space
+    return localPlanes.map(p => p.clone().applyMatrix4(matrix));
+  }, [wallLengthM, wallHeightM, midX, midZ, angle]);
 
   // Generate tile positions with all config options
   const tilePositions = useMemo(() => {
