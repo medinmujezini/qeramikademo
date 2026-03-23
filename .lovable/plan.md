@@ -1,24 +1,22 @@
 
 
-## Plan: Add Minimize/Maximize Toggle to Tile Library Panel
+## Plan: Fix Reset View Camera Distance
 
-### What
-Add a collapsible toggle to the Tile Library panel (left side in Tiles tab), matching the pattern used by Preview/Calculations on the right side. When minimized, the panel collapses to a small icon button; clicking it restores the full panel.
+### Problem
+The current camera position formula `[roomW, roomW * 0.8, roomH]` places the camera too close to the room, resulting in a zoomed-in view that cuts off parts of the room.
 
-### How
+### Solution
+Pull the camera back by using a distance multiplier based on the room diagonal, ensuring the full room is always visible with comfortable padding.
 
-**File: `src/components/tabs/TilesTab.tsx`**
+### Changes — `src/components/tabs/DesignTab.tsx`
 
-1. Add a `showTileLibrary` state (default `true`).
-2. When `showTileLibrary` is `true`, render the current full Tile Library panel as-is, but add a minimize button (using `Minus` or `EyeOff` icon) in the panel header next to "Tile Library".
-3. When `showTileLibrary` is `false`, render a small floating icon button (same position, `glass-control` styled) with `Grid3X3` icon that restores the panel on click.
-4. This mirrors the right panel's toggle pattern — a button to show/hide, with smooth transitions.
+1. Calculate `maxDim = Math.max(roomW, roomH)` and use it to set a comfortable viewing distance:
+   - `position = [roomW/2 + maxDim, maxDim * 0.9, roomH/2 + maxDim]`
+   - `target = [roomW/2, 0, roomH/2]` (stays centered on room)
+   
+   This ensures the camera is always far enough back to see the entire room regardless of dimensions, with an isometric-ish angle.
 
-### Changes
+2. Same formula applied in both the initial `<PerspectiveCamera>` position and the `handleResetView` callback.
 
-- **`src/components/tabs/TilesTab.tsx`** only:
-  - Add `const [showTileLibrary, setShowTileLibrary] = useState(true);`
-  - In the panel header div, add a close/minimize button (`X` or `Minus` icon) that sets `showTileLibrary` to `false`
-  - When `showTileLibrary` is `false`, render a small `glass-control` button at `top-20 left-6` with `Grid3X3` icon that sets it back to `true`
-  - No changes to `TileLibraryPanel.tsx` or other files
+No other files changed.
 
