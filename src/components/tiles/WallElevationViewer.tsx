@@ -914,6 +914,74 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       }
     }
 
+    // Draw door and window openings on the elevation
+    const wallDoors = floorPlan.doors.filter(d => d.wallId === wall.id);
+    const wallWindows = floorPlan.windows.filter(w => w.wallId === wall.id);
+
+    for (const door of wallDoors) {
+      const doorWidthScaled = door.width * scale;
+      const doorHeightScaled = door.height * scale;
+      const doorCenterX = startX + door.position * wallWidth;
+      const doorX = doorCenterX - doorWidthScaled / 2;
+      const doorY = startY + wallHeight - doorHeightScaled;
+
+      // Clear the opening area
+      ctx.clearRect(doorX, doorY, doorWidthScaled, doorHeightScaled);
+
+      // Fill with background color
+      ctx.fillStyle = 'hsl(var(--background))';
+      ctx.fillRect(doorX, doorY, doorWidthScaled, doorHeightScaled);
+
+      // Draw door frame
+      ctx.strokeStyle = '#78716c';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(doorX, doorY, doorWidthScaled, doorHeightScaled);
+
+      // Door label
+      ctx.fillStyle = '#78716c';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Door', doorCenterX, doorY + doorHeightScaled / 2);
+    }
+
+    for (const win of wallWindows) {
+      const winWidthScaled = win.width * scale;
+      const winHeightScaled = win.height * scale;
+      const sillScaled = win.sillHeight * scale;
+      const winCenterX = startX + win.position * wallWidth;
+      const winX = winCenterX - winWidthScaled / 2;
+      const winY = startY + wallHeight - sillScaled - winHeightScaled;
+
+      // Clear the opening area
+      ctx.clearRect(winX, winY, winWidthScaled, winHeightScaled);
+
+      // Fill with light blue (sky)
+      ctx.fillStyle = '#dbeafe';
+      ctx.fillRect(winX, winY, winWidthScaled, winHeightScaled);
+
+      // Draw window frame
+      ctx.strokeStyle = '#78716c';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(winX, winY, winWidthScaled, winHeightScaled);
+
+      // Cross panes
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(winCenterX, winY);
+      ctx.lineTo(winCenterX, winY + winHeightScaled);
+      ctx.moveTo(winX, winY + winHeightScaled / 2);
+      ctx.lineTo(winX + winWidthScaled, winY + winHeightScaled / 2);
+      ctx.stroke();
+
+      // Window label
+      ctx.fillStyle = '#78716c';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Window', winCenterX, winY + winHeightScaled / 2);
+    }
+
     // Draw wall outline - trapezoidal for sloped walls
     ctx.strokeStyle = 'hsl(var(--foreground))';
     ctx.lineWidth = 2;
