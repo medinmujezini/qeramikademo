@@ -25,7 +25,8 @@ export const GBufferVertexShader = /* glsl */ `
     vNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
     vec4 worldPos = modelMatrix * vec4(position, 1.0);
     vWorldPosition = worldPos.xyz;
-    gl_Position = projectionMatrix * viewMatrix * worldPos;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
     #include <clipping_planes_vertex>
   }
 `;
