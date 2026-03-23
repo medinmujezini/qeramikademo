@@ -272,9 +272,9 @@ const PlumbingTabContent: React.FC = () => {
   }, [floorPlan.walls, floorPlan.points]);
   
   return (
-    <div className="h-full relative overflow-hidden">
+    <div className="h-full relative">
       {/* FULL-SCREEN CANVAS AREA */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 overflow-hidden">
         {activeView === 'plan' && (
           <MEPCanvas
             walls={floorPlan.walls}
