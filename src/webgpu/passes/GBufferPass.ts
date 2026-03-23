@@ -117,6 +117,7 @@ export const GBufferFragmentShaderMRT = /* glsl */ `
 // Single-pass fragment shaders for each G-Buffer target
 export const AlbedoRoughnessFragmentShader = /* glsl */ `
   precision highp float;
+  #include <clipping_planes_pars_fragment>
   
   uniform vec3 uAlbedo;
   uniform float uRoughness;
@@ -128,6 +129,7 @@ export const AlbedoRoughnessFragmentShader = /* glsl */ `
   varying vec2 vUv;
   
   void main() {
+    #include <clipping_planes_fragment>
     vec3 albedo = uAlbedo;
     if (uHasAlbedoMap) {
       vec4 albedoSample = texture2D(uAlbedoMap, vUv);
