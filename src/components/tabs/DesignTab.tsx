@@ -1024,14 +1024,17 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           }}
           onPointerMissed={handleCanvasPointerMissed}
         >
-          <PerspectiveCamera makeDefault position={[8, 6, 8]} fov={50} />
+          <PerspectiveCamera ref={cameraRef} makeDefault position={defaultCameraPos} fov={50} />
           <OrbitControls 
+            ref={orbitControlsRef}
             makeDefault
             enableDamping
             dampingFactor={0.05}
             minDistance={2}
             maxDistance={30}
-            maxPolarAngle={Math.PI / 2 - 0.1}
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI / 2}
+            target={defaultTarget}
             enabled={!isDragging && !isDraggingFixture}
           />
           <Suspense fallback={null}>
