@@ -184,13 +184,22 @@ const ValidationPanel: React.FC<ValidationPanelProps> = ({ errors, warnings, onV
                     >
                       <div className="flex items-start gap-1.5">
                         <AlertTriangle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-destructive">{error.message}</p>
                           <p className="text-muted-foreground mt-0.5">
                             {error.category} • {error.elementType}
                             {error.codeReference && ` • ${error.codeReference}`}
                           </p>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-1.5 text-xs gap-1 shrink-0"
+                          onClick={() => onHighlightError(error)}
+                        >
+                          <Crosshair className="h-3 w-3" />
+                          Highlight
+                        </Button>
                       </div>
                     </div>
                   ))}
