@@ -372,7 +372,7 @@ const PlumbingTabContent: React.FC = () => {
         </Button>
       ) : (
         <div className="absolute top-20 left-6 bottom-6 z-20 w-72 flex flex-col">
-          <div className="bg-background/90 backdrop-blur-md rounded-xl shadow-lg overflow-hidden flex flex-col h-full border border-border/50">
+          <div className="bg-background/90 backdrop-blur-md rounded-xl shadow-lg flex flex-col h-full border border-border/50">
             <div className="flex items-center justify-between px-3 pt-2 pb-1 shrink-0">
               <span className="text-xs font-medium text-muted-foreground">Controls</span>
               <Button
