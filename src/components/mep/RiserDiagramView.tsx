@@ -243,6 +243,25 @@ export function RiserDiagramView({
     setPan({ x: 0, y: 0 });
   };
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    isDragging.current = true;
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    panStart.current = { ...pan };
+    setCursorStyle('grabbing');
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPan({ x: panStart.current.x + dx, y: panStart.current.y + dy });
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    setCursorStyle('grab');
+  };
+
   const handleExport = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
