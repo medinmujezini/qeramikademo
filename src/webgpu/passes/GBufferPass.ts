@@ -12,7 +12,9 @@ import type { RenderContext, RenderPassConfig } from '../core/RenderGraph';
  */
 
 // Vertex shader shared by all G-Buffer materials
+// Includes Three.js clipping plane support so tiles are clipped at wall boundaries
 export const GBufferVertexShader = /* glsl */ `
+  #include <clipping_planes_pars_vertex>
   varying vec3 vWorldPosition;
   varying vec3 vNormal;
   varying vec2 vUv;
@@ -24,6 +26,7 @@ export const GBufferVertexShader = /* glsl */ `
     vec4 worldPos = modelMatrix * vec4(position, 1.0);
     vWorldPosition = worldPos.xyz;
     gl_Position = projectionMatrix * viewMatrix * worldPos;
+    #include <clipping_planes_vertex>
   }
 `;
 
