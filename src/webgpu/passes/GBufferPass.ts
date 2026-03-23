@@ -565,7 +565,7 @@ export function createGBufferPass(
       }
       
       backupMaterials(ctx.scene);
-      applyMaterial(ctx.scene, () => materialFactory.getDepthMaterial());
+      applyMaterial(ctx.scene, mesh => materialFactory.getDepthMaterialForMesh(mesh));
       
       // Clear depth buffer to 1.0 (far plane) so sky is detected correctly
       ctx.renderer.setRenderTarget(target);
