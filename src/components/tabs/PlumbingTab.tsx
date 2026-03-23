@@ -19,7 +19,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
-import { SYSTEM_COLORS, type MEPRoute } from '@/types/mep';
+import { SYSTEM_COLORS, type MEPRoute, type MEPSystemType } from '@/types/mep';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MEPCanvas } from '@/components/mep/MEPCanvas';
 import { AutoRoutingPanel } from '@/components/mep/AutoRoutingPanel';
 import { RiserDiagramView } from '@/components/mep/RiserDiagramView';
