@@ -87,6 +87,8 @@ const Wall3D = ({
   onWallClick,
   previewColor,
   previewWallpaperId,
+  doors = [],
+  windows = [],
 }: {
   wall: Wall;
   start: { x: number; y: number };
@@ -97,6 +99,8 @@ const Wall3D = ({
   onWallClick?: (wall: Wall, start: Point, end: Point) => void;
   previewColor?: string | null;
   previewWallpaperId?: string | null;
+  doors?: import('@/types/floorPlan').Door[];
+  windows?: import('@/types/floorPlan').Window[];
 }) => {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
   
