@@ -1045,7 +1045,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     
     const tileSections: Partial<WallTileSection>[] = sections
       .map(s => {
-        const tileId = s.tileId || selectedTile?.id;
+        const tileId = selectedTile?.id || s.tileId;
         if (!tileId) return null;
         return {
           tileId,
@@ -1075,7 +1075,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
 
   const handleApplyAll = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const tileId = selectedSection?.tileId || selectedTile?.id;
+    const tileId = selectedTile?.id || selectedSection?.tileId;
     if (!tileId) return;
     onApplyToAll({
       tileId,
