@@ -73,34 +73,31 @@ function calculateTilePositions(
   const pitchX = tileW + jointM;
   const pitchY = tileH + jointM;
 
-  // Number of tiles needed (with some extra for offsets)
-  const cols = Math.ceil((wallL + pitchX) / pitchX) + 2;
-  const rows = Math.ceil((wallH + pitchY) / pitchY) + 2;
+  // Number of tiles needed (with some extra for offsets and partial edge tiles)
+  const cols = Math.ceil(wallL / pitchX) + 2;
+  const rows = Math.ceil(wallH / pitchY) + 2;
 
   // Pattern-specific calculations
+  // All patterns use y=0 as wall bottom, y=wallH as wall top (matching grout plane)
   if (pattern === 'herringbone') {
-    // Herringbone pattern: tiles at 45° and -45° alternating
-    const diagLength = Math.sqrt(tileW * tileW + tileH * tileH);
-    const stepX = tileH; // Horizontal step is tile height
-    const stepY = tileW; // Vertical step is tile width
+    const stepX = tileH;
+    const stepY = tileW;
     
     let index = 0;
     for (let row = -2; row < Math.ceil(wallH / stepY) + 2; row++) {
       for (let col = -2; col < Math.ceil(wallL / stepX) + 2; col++) {
         const isEven = (row + col) % 2 === 0;
         
-        // Base position
         let x = col * stepX - wallL / 2 + offX;
-        let y = row * stepY + offY;
+        let y = row * stepY + offY + wallH / 2; // Center vertically on wall
         
-        // Offset for herringbone pattern
         if (!isEven) {
           x += stepX / 2;
         }
         
-        // Check bounds
-        if (x > -wallL / 2 - tileW && x < wallL / 2 + tileW &&
-            y > -tileH && y < wallH + tileH) {
+        // Only include tiles that overlap the wall bounds
+        if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
+            y + tileH > 0 && y - tileH < wallH) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
@@ -119,7 +116,6 @@ function calculateTilePositions(
       }
     }
   } else if (pattern === 'diagonal') {
-    // All tiles rotated 45°
     const diagPitch = pitchX * Math.SQRT2 * 0.5;
     
     let index = 0;
@@ -128,8 +124,9 @@ function calculateTilePositions(
         const x = col * diagPitch - wallL / 2 + offX + (row % 2) * diagPitch * 0.5;
         const y = row * diagPitch * 0.5 + offY;
         
-        if (x > -wallL / 2 - tileW && x < wallL / 2 + tileW &&
-            y > -tileH && y < wallH + tileH) {
+        // Only include tiles that overlap the wall bounds
+        if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
+            y + tileH > 0 && y - tileH < wallH) {
           
           const normalizedX = (x + wallL / 2) / wallL;
           const normalizedY = y / wallH;
@@ -149,7 +146,8 @@ function calculateTilePositions(
     }
   } else {
     // Grid and Staggered patterns
-    for (let row = 0; row < rows; row++) {
+    // y goes from 0 (floor) to wallH (top), matching grout plane at wallH/2 center
+    for (let row = -1; row < rows; row++) {
       for (let col = -1; col < cols; col++) {
         let rowOffset = 0;
         
@@ -159,12 +157,11 @@ function calculateTilePositions(
         }
         
         const x = col * pitchX + rowOffset + offX - wallL / 2 + tileW / 2;
-        const y = row * pitchY + offY + tileH / 2 - wallH / 2;
+        const y = row * pitchY + offY + tileH / 2;
         
-        // Only include tiles within wall bounds (with some margin for partial tiles)
-        const margin = tileW;
-        if (x > -wallL / 2 - margin && x < wallL / 2 + margin &&
-            y > -tileH && y < wallH + tileH) {
+        // Only include tiles that overlap the wall bounds
+        if (x + tileW / 2 > -wallL / 2 && x - tileW / 2 < wallL / 2 &&
+            y + tileH / 2 > 0 && y - tileH / 2 < wallH) {
           
           // Calculate animation delay based on position (wave from bottom-left)
           const normalizedX = Math.max(0, Math.min(1, (x + wallL / 2) / wallL));
@@ -208,14 +205,18 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
 
-  // Create clipping planes to cut tiles at wall boundaries
+  // Create clipping planes to cut tiles at all 4 wall boundaries
   const clippingPlanes = useMemo(() => {
     // Left plane (normal pointing right +X, positioned at -wallLengthM/2)
     const leftPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), wallLengthM / 2);
     // Right plane (normal pointing left -X, positioned at +wallLengthM/2)
     const rightPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), wallLengthM / 2);
-    return [leftPlane, rightPlane];
-  }, [wallLengthM]);
+    // Bottom plane (normal pointing up +Y, at y=0)
+    const bottomPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    // Top plane (normal pointing down -Y, at y=wallHeightM)
+    const topPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wallHeightM);
+    return [leftPlane, rightPlane, bottomPlane, topPlane];
+  }, [wallLengthM, wallHeightM]);
 
   // Generate tile positions with all config options
   const tilePositions = useMemo(() => {
