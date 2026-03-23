@@ -1081,7 +1081,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     }
     ctx.textBaseline = 'alphabetic';
 
-  }, [wall, selectedTile, sections, selectedSectionId, dividers, groutColor, jointWidth, getWallDimensions, tiles]);
+  }, [wall, selectedTile, sections, selectedSectionId, dividers, groutColor, jointWidth, getWallDimensions, tiles, floorPlan.doors, floorPlan.windows]);
 
   // Handle canvas resize
   useEffect(() => {
