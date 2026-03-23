@@ -505,11 +505,13 @@ export class GBufferMaterialFactory {
     this.albedoRoughnessMaterials.forEach(m => m.dispose());
     this.normalMetalAOMaterials.forEach(m => m.dispose());
     this.emissiveFlagsMaterials.forEach(m => m.dispose());
-    this.depthMaterial.dispose();
+    this.depthMaterials.forEach(m => m.dispose());
+    this.defaultDepthMaterial.dispose();
     
     this.albedoRoughnessMaterials.clear();
     this.normalMetalAOMaterials.clear();
     this.emissiveFlagsMaterials.clear();
+    this.depthMaterials.clear();
   }
 }
 
