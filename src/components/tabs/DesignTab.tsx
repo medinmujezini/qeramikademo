@@ -621,7 +621,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
   const roomH = (floorPlan.roomHeight || 600) / 100;
-  const defaultCameraPos: [number, number, number] = [roomW, roomW * 0.8, roomH];
+  const maxDim = Math.max(roomW, roomH);
+  const defaultCameraPos: [number, number, number] = [roomW / 2 + maxDim, maxDim * 0.9, roomH / 2 + maxDim];
   const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
 
   const handleResetView = useCallback(() => {
