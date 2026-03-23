@@ -976,6 +976,89 @@ export const useFloorPlan = () => {
     });
   }, [saveToHistory]);
 
+  // Batch apply tile finish to ALL walls in a single state update
+  const setAllWallsFinish = useCallback((
+    surfaceType: 'paint' | 'wallpaper' | 'tiles',
+    options: { 
+      color?: string; 
+      patternId?: string; 
+      tileId?: string; 
+      groutColor?: string; 
+      pattern?: 'grid' | 'staggered' | 'herringbone' | 'diagonal';
+      jointWidth?: number;
+      orientation?: 'horizontal' | 'vertical';
+      offsetX?: number;
+      offsetY?: number;
+      tileWidth?: number;
+      tileHeight?: number;
+      tileColor?: string;
+      tileMaterial?: string;
+    }
+  ) => {
+    setFloorPlan(prev => {
+      let tileSections = [...prev.tileSections];
+      let wallFinishes = [...(prev.wallFinishes || [])];
+
+      for (const wall of prev.walls) {
+        if (surfaceType === 'tiles' && options.tileId) {
+          const existingSection = tileSections.find(s => s.wallId === wall.id);
+          const sectionId = existingSection?.id || uuidv4();
+
+          const newSection = {
+            id: sectionId,
+            wallId: wall.id,
+            tileId: options.tileId,
+            startPosition: 0,
+            endPosition: 1,
+            startHeight: 0,
+            endHeight: wall.height,
+            orientation: options.orientation || 'horizontal' as const,
+            pattern: options.pattern || 'grid' as const,
+            offsetX: options.offsetX || 0,
+            offsetY: options.offsetY || 0,
+            groutColor: options.groutColor || '#9ca3af',
+          };
+
+          tileSections = [...tileSections.filter(s => s.wallId !== wall.id), newSection];
+
+          const existingFinish = wallFinishes.find(f => f.wallId === wall.id);
+          const newFinish = {
+            id: existingFinish?.id || uuidv4(),
+            wallId: wall.id,
+            surfaceType: 'tiles' as const,
+            tileId: options.tileId,
+            groutColor: options.groutColor || '#9ca3af',
+            pattern: options.pattern || 'grid' as const,
+            jointWidth: options.jointWidth,
+            orientation: options.orientation,
+            offsetX: options.offsetX,
+            offsetY: options.offsetY,
+            tileWidth: options.tileWidth,
+            tileHeight: options.tileHeight,
+            tileColor: options.tileColor,
+            tileMaterial: options.tileMaterial,
+          };
+
+          wallFinishes = [...wallFinishes.filter(f => f.wallId !== wall.id), newFinish];
+        } else {
+          const existingFinish = wallFinishes.find(f => f.wallId === wall.id);
+          const newFinish = {
+            id: existingFinish?.id || uuidv4(),
+            wallId: wall.id,
+            surfaceType,
+            color: options.color,
+            patternId: options.patternId,
+          };
+          wallFinishes = [...wallFinishes.filter(f => f.wallId !== wall.id), newFinish];
+        }
+      }
+
+      const updated = { ...prev, tileSections, wallFinishes };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
   const removeWallFinish = useCallback((wallId: string) => {
     setFloorPlan(prev => {
       // Remove tile sections for this wall
