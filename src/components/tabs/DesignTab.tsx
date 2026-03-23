@@ -33,12 +33,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
-import { TILE_LIBRARY, isWallSloped } from '@/types/floorPlan';
+import { TILE_LIBRARY } from '@/types/floorPlan';
 import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
 import { isFixturePositionValid } from '@/utils/fixtureCollision';
+import { createWallShapeWithOpenings } from '@/utils/wallOpeningGeometry';
 import { toast } from 'sonner';
 import type { FurnitureTemplate } from '@/data/furnitureLibrary';
 import type { FixtureTemplate } from '@/data/fixtureLibrary';
@@ -116,7 +117,6 @@ const Wall3D = ({
   
   const startHeight = (wall.startHeight ?? wall.height) * scale;
   const endHeight = (wall.endHeight ?? wall.height) * scale;
-  const isSloped = isWallSloped(wall);
   const wallThickness = wall.thickness * scale;
 
   React.useEffect(() => {
@@ -190,44 +190,15 @@ const Wall3D = ({
   };
 
   const geometry = useMemo(() => {
-    const halfLen = length / 2;
     const halfThick = wallThickness / 2;
-    
-    // Build wall shape (front face profile)
-    const shape = new THREE.Shape();
-    shape.moveTo(-halfLen, 0);
-    shape.lineTo(halfLen, 0);
-    shape.lineTo(halfLen, isSloped ? endHeight : startHeight);
-    shape.lineTo(-halfLen, startHeight);
-    shape.closePath();
-    
-    // Cut holes for doors
-    doors.forEach(door => {
-      const doorCenterX = (door.position - 0.5) * length;
-      const doorHalfW = (door.width * scale) / 2;
-      const doorH = door.height * scale;
-      const hole = new THREE.Path();
-      hole.moveTo(doorCenterX - doorHalfW, 0);
-      hole.lineTo(doorCenterX + doorHalfW, 0);
-      hole.lineTo(doorCenterX + doorHalfW, doorH);
-      hole.lineTo(doorCenterX - doorHalfW, doorH);
-      hole.closePath();
-      shape.holes.push(hole);
-    });
-    
-    // Cut holes for windows
-    windows.forEach(win => {
-      const winCenterX = (win.position - 0.5) * length;
-      const winHalfW = (win.width * scale) / 2;
-      const winBottom = win.sillHeight * scale;
-      const winTop = winBottom + win.height * scale;
-      const hole = new THREE.Path();
-      hole.moveTo(winCenterX - winHalfW, winBottom);
-      hole.lineTo(winCenterX + winHalfW, winBottom);
-      hole.lineTo(winCenterX + winHalfW, winTop);
-      hole.lineTo(winCenterX - winHalfW, winTop);
-      hole.closePath();
-      shape.holes.push(hole);
+
+    const shape = createWallShapeWithOpenings({
+      wallLength: length,
+      startHeight,
+      endHeight,
+      doors,
+      windows,
+      unitScale: scale,
     });
     
     const extrudeSettings = {
@@ -239,7 +210,7 @@ const Wall3D = ({
     geo.translate(0, 0, -halfThick);
     
     return geo;
-  }, [length, startHeight, endHeight, wallThickness, isSloped, doors, windows, scale]);
+  }, [length, startHeight, endHeight, wallThickness, doors, windows, scale]);
 
   const yPosition = 0;
 
@@ -261,9 +232,9 @@ const Wall3D = ({
       }}
     >
       {texture ? (
-        <meshStandardMaterial map={texture} roughness={0.7} />
+        <meshStandardMaterial map={texture} roughness={0.7} side={THREE.DoubleSide} />
       ) : (
-        <meshStandardMaterial color={getWallColor()} roughness={0.9} />
+        <meshStandardMaterial color={getWallColor()} roughness={0.9} side={THREE.DoubleSide} />
       )}
     </mesh>
   );

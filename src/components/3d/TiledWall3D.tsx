@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { Tile3D } from './Tile3D';
 import type { Wall, Point, Tile, TilePattern, TileOrientation, Door, Window as WindowType } from '@/types/floorPlan';
 import { CM_TO_METERS, MM_TO_CM } from '@/constants/units';
+import { createOpeningZones, createWallShapeWithOpenings, type OpeningZone } from '@/utils/wallOpeningGeometry';
 
 // Tile config passed from WallFinish
 interface TileConfig {
@@ -35,14 +36,6 @@ interface TiledWall3DProps {
   windows?: WindowType[];
 }
 
-// Represents an opening (door/window) as a zone on the wall to exclude tiles
-interface WallOpening {
-  xCenter: number;   // meters, relative to wall center (0 = wall center)
-  yBottom: number;    // meters, from wall bottom
-  halfWidth: number;  // meters
-  halfHeight: number; // meters
-}
-
 interface TilePosition {
   x: number;
   y: number;
@@ -55,7 +48,7 @@ interface TilePosition {
 // Check if a tile overlaps any wall opening (door/window)
 function tileOverlapsOpening(
   tileX: number, tileY: number, tileW: number, tileH: number,
-  openings: WallOpening[]
+  openings: OpeningZone[]
 ): boolean {
   for (const op of openings) {
     const overlapX = Math.abs(tileX - op.xCenter) < (tileW / 2 + op.halfWidth);
@@ -75,7 +68,7 @@ function calculateTilePositions(
   orientation: TileOrientation = 'horizontal',
   offsetX: number = 0,         // in cm
   offsetY: number = 0,         // in cm
-  openings: WallOpening[] = []
+  openings: OpeningZone[] = []
 ): TilePosition[] {
   const positions: TilePosition[] = [];
   
@@ -234,31 +227,25 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
 
-  // Compute wall openings from doors and windows
-  // Positions are in local wall coords: x centered at 0, y from 0 (bottom) to wallHeightM (top)
-  const openings = useMemo<WallOpening[]>(() => {
-    const ops: WallOpening[] = [];
-    doors.forEach(door => {
-      // door.position is 0-1 along wall length
-      const xCenter = (door.position - 0.5) * wallLengthM;
-      ops.push({
-        xCenter,
-        yBottom: 0,
-        halfWidth: (door.width * CM_TO_METERS) / 2,
-        halfHeight: (door.height * CM_TO_METERS) / 2,
-      });
+  const openings = useMemo<OpeningZone[]>(() => {
+    return createOpeningZones({
+      wallLength: wallLengthM,
+      doors,
+      windows,
+      unitScale: CM_TO_METERS,
     });
-    windows.forEach(win => {
-      const xCenter = (win.position - 0.5) * wallLengthM;
-      ops.push({
-        xCenter,
-        yBottom: win.sillHeight * CM_TO_METERS,
-        halfWidth: (win.width * CM_TO_METERS) / 2,
-        halfHeight: (win.height * CM_TO_METERS) / 2,
-      });
-    });
-    return ops;
   }, [doors, windows, wallLengthM]);
+
+  const wallShape = useMemo(() => {
+    return createWallShapeWithOpenings({
+      wallLength: wallLengthM,
+      startHeight: wallHeightM,
+      endHeight: wallHeightM,
+      doors,
+      windows,
+      unitScale: CM_TO_METERS,
+    });
+  }, [wallLengthM, wallHeightM, doors, windows]);
 
   // Create clipping planes in world space to cut tiles at all 4 wall boundaries
   // THREE.js clipping planes operate in world space, so we must transform from local
@@ -336,21 +323,21 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
     <group position={[midX, 0, midZ]} rotation={[0, -angle, 0]}>
       {/* Base wall / grout backing plane */}
       <mesh 
-        position={[0, wallHeightM / 2, -wallThicknessM / 2 - 0.002]}
+        position={[0, 0, -wallThicknessM / 2 - 0.002]}
         castShadow
         receiveShadow
       >
-        <boxGeometry args={[wallLengthM, wallHeightM, wallThicknessM * 0.5]} />
-        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} />
+        <extrudeGeometry args={[wallShape, { depth: wallThicknessM * 0.5, bevelEnabled: false }]} />
+        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Grout layer - slightly in front of wall base */}
       <mesh 
-        position={[0, wallHeightM / 2, wallThicknessM / 2]}
+        position={[0, 0, wallThicknessM / 2]}
         receiveShadow
       >
-        <planeGeometry args={[wallLengthM, wallHeightM]} />
-        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} />
+        <shapeGeometry args={[wallShape]} />
+        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Individual 3D tiles on top of grout */}
