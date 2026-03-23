@@ -46,9 +46,13 @@ export function RiserDiagramView({
   numFloors = 2,
 }: RiserDiagramViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const panStart = useRef({ x: 0, y: 0 });
   const [selectedSystem, setSelectedSystem] = React.useState<MEPSystemType | 'all'>('all');
   const [zoom, setZoom] = React.useState(1);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
+  const [cursorStyle, setCursorStyle] = React.useState<'grab' | 'grabbing'>('grab');
 
   // Build riser elements from fixtures, nodes, and routes
   const riserElements = useMemo(() => {
@@ -239,6 +243,25 @@ export function RiserDiagramView({
     setPan({ x: 0, y: 0 });
   };
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    isDragging.current = true;
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    panStart.current = { ...pan };
+    setCursorStyle('grabbing');
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPan({ x: panStart.current.x + dx, y: panStart.current.y + dy });
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    setCursorStyle('grab');
+  };
+
   const handleExport = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -289,7 +312,11 @@ export function RiserDiagramView({
           width={800}
           height={400}
           className="w-full h-full rounded border border-border bg-card"
-          style={{ minHeight: 300 }}
+          style={{ minHeight: 300, cursor: cursorStyle }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         />
       </CardContent>
     </Card>
