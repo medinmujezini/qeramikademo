@@ -318,13 +318,12 @@ const PlumbingTabContent: React.FC = () => {
         )}
         
         {activeView === 'riser' && (
-          <div className="w-full h-full p-4 overflow-auto">
-            <RiserDiagramView
-              fixtures={mepState.fixtures}
-              routes={mepState.routes}
-              nodes={mepState.nodes}
-            />
-          </div>
+          <RiserDiagramView
+            fixtures={mepState.fixtures}
+            routes={mepState.routes}
+            nodes={mepState.nodes}
+            selectedSystem={selectedRiserSystem}
+          />
         )}
       </div>
 
