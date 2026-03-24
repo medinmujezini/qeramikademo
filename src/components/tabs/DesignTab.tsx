@@ -837,36 +837,67 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
-  const animTargetPos = useRef(new THREE.Vector3());
-  const animTargetTarget = useRef(new THREE.Vector3());
-  const isAnimatingCamera = useRef(false);
+  const savedOrbitPos = useRef(new THREE.Vector3());
+  const savedOrbitTarget = useRef(new THREE.Vector3());
+  const plcRef = useRef<any>(null);
+  const keysRef = useRef({ w: false, a: false, s: false, d: false });
+  const [isPointerLocked, setIsPointerLocked] = useState(false);
 
-  // Calculate room-based camera position
-  const roomW = (floorPlan.roomWidth || 800) / 100;
-  const roomH = (floorPlan.roomHeight || 600) / 100;
-  const camDist = Math.max(roomW, roomH) * 0.85;
-  const defaultCameraPos: [number, number, number] = [roomW / 2 + camDist, camDist * 0.75, roomH / 2 + camDist];
-  const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
+  // Pointer lock state tracking
+  useEffect(() => {
+    const onChange = () => setIsPointerLocked(!!document.pointerLockElement);
+    document.addEventListener('pointerlockchange', onChange);
+    return () => document.removeEventListener('pointerlockchange', onChange);
+  }, []);
 
-  const handleResetView = useCallback(() => {
-    if (cameraRef.current && orbitControlsRef.current) {
-      setMaxPolarAngle(Math.PI / 2);
-      isAnimatingCamera.current = false;
-      cameraRef.current.position.set(...defaultCameraPos);
-      orbitControlsRef.current.target.set(...defaultTarget);
+  // Enter/exit walkthrough
+  const enterWalkthrough = useCallback(() => {
+    if (cameraRef.current) savedOrbitPos.current.copy(cameraRef.current.position);
+    if (orbitControlsRef.current) savedOrbitTarget.current.copy(orbitControlsRef.current.target);
+    const SCALE = 0.01;
+    let centerX = roomW / 2;
+    let centerZ = roomH / 2;
+    if (floorPlan.points.length > 0) {
+      const xs = floorPlan.points.map(p => p.x * SCALE);
+      const ys = floorPlan.points.map(p => p.y * SCALE);
+      centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+      centerZ = (Math.min(...ys) + Math.max(...ys)) / 2;
+    }
+    if (cameraRef.current) cameraRef.current.position.set(centerX, 1.6, centerZ);
+    isAnimatingCamera.current = false;
+    setViewMode('walkthrough');
+  }, [floorPlan.points, roomW, roomH, isAnimatingCamera]);
+
+  const exitWalkthrough = useCallback(() => {
+    document.exitPointerLock();
+    setViewMode('design');
+    if (cameraRef.current) cameraRef.current.position.copy(savedOrbitPos.current);
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.target.copy(savedOrbitTarget.current);
       orbitControlsRef.current.update();
     }
-  }, [defaultCameraPos, defaultTarget]);
-
-  const applyPreset = useCallback((pos: [number, number, number], target: [number, number, number], eyeLevel = false) => {
-    if (!cameraRef.current || !orbitControlsRef.current) return;
-    const nextMaxPolarAngle = eyeLevel ? Math.PI : Math.PI / 2;
-    setMaxPolarAngle(nextMaxPolarAngle);
-    orbitControlsRef.current.maxPolarAngle = nextMaxPolarAngle;
-    animTargetPos.current.set(...pos);
-    animTargetTarget.current.set(...target);
-    isAnimatingCamera.current = true;
   }, []);
+
+  // WASD keyboard listeners for walkthrough
+  useEffect(() => {
+    if (viewMode !== 'walkthrough') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      if (k in keysRef.current) keysRef.current[k as keyof typeof keysRef.current] = true;
+      if (e.key === 'Escape') exitWalkthrough();
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      if (k in keysRef.current) keysRef.current[k as keyof typeof keysRef.current] = false;
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      keysRef.current = { w: false, a: false, s: false, d: false };
+    };
+  }, [viewMode, exitWalkthrough]);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
