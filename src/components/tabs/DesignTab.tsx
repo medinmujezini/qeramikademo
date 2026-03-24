@@ -12,6 +12,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import { useMEPContext } from '@/contexts/MEPContext';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 import { FurnitureScene } from '@/components/3d/FurnitureScene';
 import { FixtureScene } from '@/components/3d/FixtureScene';
 import { RenderPipelineController } from '@/components/3d/RenderPipelineController';
@@ -34,7 +35,7 @@ import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2,
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY } from '@/types/floorPlan';
-import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile } from '@/types/floorPlan';
+import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
@@ -240,6 +241,29 @@ const Wall3D = ({
   );
 };
 
+/** Wrapper that resolves materialId → textureUrls before rendering TiledWall3D */
+const TiledWall3DWithMaterial: React.FC<
+  React.ComponentProps<typeof TiledWall3D>
+> = (props) => {
+  const { materials: pbrMaterials } = useMaterialContext();
+  const mat = pbrMaterials.find(m => m.id === props.tile.materialId);
+  const textureUrls: TileTextureUrls | undefined = mat ? {
+    albedo: mat.albedo,
+    normal: mat.normal,
+    roughness: mat.roughness,
+    ao: mat.ao,
+    height: mat.height,
+    metallic: mat.metallic,
+  } : undefined;
+  return (
+    <TiledWall3D
+      {...props}
+      textureUrls={textureUrls}
+      textureScaleCm={props.tile.textureScaleCm}
+    />
+  );
+};
+
 const DesignScene: React.FC<DesignSceneProps> = ({
   showTiles,
   showPlumbing,
@@ -440,7 +464,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           <group key={wall.id}>
             {/* Render animated 3D tiles if tile finish is applied */}
             {shouldShow3DTiles ? (
-              <TiledWall3D
+              <TiledWall3DWithMaterial
                 wall={wall}
                 start={start}
                 end={end}
