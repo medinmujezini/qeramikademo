@@ -681,11 +681,20 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   const handleResetView = useCallback(() => {
     if (cameraRef.current && orbitControlsRef.current) {
+      setMaxPolarAngle(Math.PI / 2);
       cameraRef.current.position.set(...defaultCameraPos);
       orbitControlsRef.current.target.set(...defaultTarget);
       orbitControlsRef.current.update();
     }
   }, [defaultCameraPos, defaultTarget]);
+
+  const applyPreset = useCallback((pos: [number, number, number], target: [number, number, number], eyeLevel = false) => {
+    if (!cameraRef.current || !orbitControlsRef.current) return;
+    setMaxPolarAngle(eyeLevel ? Math.PI : Math.PI / 2);
+    cameraRef.current.position.set(...pos);
+    orbitControlsRef.current.target.set(...target);
+    orbitControlsRef.current.update();
+  }, []);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
