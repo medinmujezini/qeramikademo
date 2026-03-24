@@ -1177,6 +1177,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Handle drop for furniture/fixtures from library
   const handleDrop = useCallback((e: React.DragEvent) => {
+    if (viewMode === 'walkthrough') return;
     e.preventDefault();
     setIsDraggingFromLibrary(false);
     
