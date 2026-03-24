@@ -71,6 +71,8 @@ export const TilesTab: React.FC<TilesTabProps> = ({
         pricePerUnit: t.pricePerUnit,
         isFlexible: t.isFlexible,
         minCurveRadius: t.minCurveRadius,
+        materialId: t.materialId,
+        textureScaleCm: t.textureScaleCm,
       }));
     }
     return TILE_LIBRARY;
