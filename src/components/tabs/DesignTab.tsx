@@ -131,6 +131,22 @@ const WalkthroughMovement: React.FC<{
     if (keysRef.current.a) { dx -= right.x; dz -= right.z; }
     if (keysRef.current.d) { dx += right.x; dz += right.z; }
 
+    // Joystick movement — camera-relative, same as WASD
+    if (Math.abs(moveStickRef.current.x) > 0.05 || Math.abs(moveStickRef.current.y) > 0.05) {
+      dx += right.x * moveStickRef.current.x * SPEED * dt;
+      dz += right.z * moveStickRef.current.x * SPEED * dt;
+      dx += forward.x * moveStickRef.current.y * SPEED * dt;
+      dz += forward.z * moveStickRef.current.y * SPEED * dt;
+    }
+
+    // Joystick look — only on touch (desktop look handled by PointerLockControls)
+    if (Math.abs(lookStickRef.current.x) > 0.05 || Math.abs(lookStickRef.current.y) > 0.05) {
+      camera.rotation.order = 'YXZ';
+      camera.rotation.y -= lookStickRef.current.x * 1.8 * dt;
+      camera.rotation.x -= lookStickRef.current.y * 1.2 * dt;
+      camera.rotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, camera.rotation.x));
+    }
+
     if (dx === 0 && dz === 0) return;
 
     let newX = camera.position.x + dx * SPEED * dt;
