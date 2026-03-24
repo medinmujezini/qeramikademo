@@ -469,10 +469,12 @@ export type Database = {
           is_active: boolean
           is_flexible: boolean
           material: string
+          material_id: string | null
           min_curve_radius: number | null
           name: string
           price_per_unit: number
           sort_order: number
+          texture_scale_cm: number | null
           thumbnail_url: string | null
           updated_at: string
         }
@@ -484,10 +486,12 @@ export type Database = {
           is_active?: boolean
           is_flexible?: boolean
           material?: string
+          material_id?: string | null
           min_curve_radius?: number | null
           name: string
           price_per_unit?: number
           sort_order?: number
+          texture_scale_cm?: number | null
           thumbnail_url?: string | null
           updated_at?: string
         }
@@ -499,14 +503,24 @@ export type Database = {
           is_active?: boolean
           is_flexible?: boolean
           material?: string
+          material_id?: string | null
           min_curve_radius?: number | null
           name?: string
           price_per_unit?: number
           sort_order?: number
+          texture_scale_cm?: number | null
           thumbnail_url?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tile_templates_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
