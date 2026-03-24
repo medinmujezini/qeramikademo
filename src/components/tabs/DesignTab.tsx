@@ -665,6 +665,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [giQuality, setGiQuality] = useState<GIQualityTier>('high');
   const [qualitySettings, setQualitySettings] = useState<QualitySettings>(DEFAULT_QUALITY_SETTINGS);
   const [viewMode, setViewMode] = useState<'design' | 'walkthrough'>('design');
+  const [maxPolarAngle, setMaxPolarAngle] = useState(Math.PI / 2);
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
