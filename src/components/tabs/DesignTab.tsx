@@ -1346,7 +1346,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               size="icon"
               className="h-7 w-7 relative"
             >
-              <Bookmark className={cn("h-3.5 w-3.5", (floorPlan.savedCameraViews?.length ?? 0) > 0 && "fill-current")} />
+              <Bookmark className={"h-3.5 w-3.5" + ((floorPlan.savedCameraViews?.length ?? 0) > 0 ? " fill-current" : "")} />
               {(floorPlan.savedCameraViews?.length ?? 0) > 0 && (
                 <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
                   {floorPlan.savedCameraViews!.length}
