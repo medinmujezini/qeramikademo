@@ -106,7 +106,9 @@ const WalkthroughMovement: React.FC<{
   walls: Wall[];
   points: Point[];
   furnitureItems: { position: { x: number; y: number }; dimensions: { width: number; depth: number }; rotation: number }[];
-}> = ({ viewMode, keysRef, walls, points, furnitureItems }) => {
+  moveStickRef: React.MutableRefObject<{ x: number; y: number }>;
+  lookStickRef: React.MutableRefObject<{ x: number; y: number }>;
+}> = ({ viewMode, keysRef, walls, points, furnitureItems, moveStickRef, lookStickRef }) => {
   const { camera } = useThree();
   const SPEED = 3.0;
   const EYE_HEIGHT = 1.6;
@@ -128,6 +130,22 @@ const WalkthroughMovement: React.FC<{
     if (keysRef.current.s) { dx -= forward.x; dz -= forward.z; }
     if (keysRef.current.a) { dx -= right.x; dz -= right.z; }
     if (keysRef.current.d) { dx += right.x; dz += right.z; }
+
+    // Joystick movement — camera-relative, same as WASD
+    if (Math.abs(moveStickRef.current.x) > 0.05 || Math.abs(moveStickRef.current.y) > 0.05) {
+      dx += right.x * moveStickRef.current.x * SPEED * dt;
+      dz += right.z * moveStickRef.current.x * SPEED * dt;
+      dx += forward.x * moveStickRef.current.y * SPEED * dt;
+      dz += forward.z * moveStickRef.current.y * SPEED * dt;
+    }
+
+    // Joystick look — only on touch (desktop look handled by PointerLockControls)
+    if (Math.abs(lookStickRef.current.x) > 0.05 || Math.abs(lookStickRef.current.y) > 0.05) {
+      camera.rotation.order = 'YXZ';
+      camera.rotation.y -= lookStickRef.current.x * 1.8 * dt;
+      camera.rotation.x -= lookStickRef.current.y * 1.2 * dt;
+      camera.rotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, camera.rotation.x));
+    }
 
     if (dx === 0 && dz === 0) return;
 
@@ -890,6 +908,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const savedOrbitTarget = useRef(new THREE.Vector3());
   const plcRef = useRef<any>(null);
   const keysRef = useRef({ w: false, a: false, s: false, d: false });
+  const moveStickRef = useRef({ x: 0, y: 0 });
+  const lookStickRef = useRef({ x: 0, y: 0 });
+  const nippleManagersRef = useRef<{ left: any; right: any } | null>(null);
+  const isTouchDevice = useMemo(() =>
+    typeof navigator !== 'undefined' &&
+    navigator.maxTouchPoints > 0 &&
+    !window.matchMedia('(hover: hover)').matches
+  , []);
   const [isPointerLocked, setIsPointerLocked] = useState(false);
 
   // Calculate room-based camera position
@@ -1011,6 +1037,35 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       keysRef.current = { w: false, a: false, s: false, d: false };
     };
   }, [viewMode, exitWalkthrough]);
+
+  // Nipple joystick managers for mobile walkthrough
+  useEffect(() => {
+    if (viewMode !== 'walkthrough' || !isTouchDevice) return;
+    let aborted = false;
+    import('nipplejs').then(({ default: nipplejs }) => {
+      if (aborted) return;
+      const leftZone = document.getElementById('left-joystick-zone');
+      const rightZone = document.getElementById('right-joystick-zone');
+      if (!leftZone || !rightZone) return;
+      const left = nipplejs.create({ zone: leftZone, mode: 'static', position: { left: '50%', bottom: '50%' }, color: 'white', size: 100 });
+      const right = nipplejs.create({ zone: rightZone, mode: 'static', position: { left: '50%', bottom: '50%' }, color: 'white', size: 100 });
+      left.on('move', (_, data) => { moveStickRef.current = { x: data.vector.x, y: data.vector.y }; });
+      left.on('end', () => { moveStickRef.current = { x: 0, y: 0 }; });
+      right.on('move', (_, data) => { lookStickRef.current = { x: data.vector.x, y: data.vector.y }; });
+      right.on('end', () => { lookStickRef.current = { x: 0, y: 0 }; });
+      nippleManagersRef.current = { left, right };
+    });
+    return () => {
+      aborted = true;
+      if (nippleManagersRef.current) {
+        nippleManagersRef.current.left.destroy();
+        nippleManagersRef.current.right.destroy();
+        nippleManagersRef.current = null;
+      }
+      moveStickRef.current = { x: 0, y: 0 };
+      lookStickRef.current = { x: 0, y: 0 };
+    };
+  }, [viewMode, isTouchDevice]);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -1424,7 +1479,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               }}
             />
           )}
-          {viewMode === 'walkthrough' && (
+          {viewMode === 'walkthrough' && !isTouchDevice && (
             <PointerLockControls ref={plcRef} makeDefault />
           )}
           <WalkthroughMovement
@@ -1433,6 +1488,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             walls={floorPlan.walls}
             points={floorPlan.points}
             furnitureItems={furniture}
+            moveStickRef={moveStickRef}
+            lookStickRef={lookStickRef}
           />
           <Suspense fallback={null}>
             <DesignScene
@@ -1814,7 +1871,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* WALKTHROUGH OVERLAYS */}
-      {viewMode === 'walkthrough' && !isPointerLocked && (
+      {viewMode === 'walkthrough' && !isPointerLocked && !isTouchDevice && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-center">
             <PersonStanding className="h-12 w-12 text-primary" />
@@ -1837,7 +1894,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {viewMode === 'walkthrough' && isPointerLocked && (
+      {viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
         <>
           {/* Crosshair */}
           <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
@@ -1863,8 +1920,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
           {/* WASD hint */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
-            WASD to move · Mouse to look
+            {isTouchDevice ? 'Left stick to move · Right stick to look' : 'WASD to move · Mouse to look'}
           </div>
+        </>
+      )}
+
+      {/* Mobile joystick zones */}
+      {viewMode === 'walkthrough' && isTouchDevice && (
+        <>
+          <div id="left-joystick-zone" className="absolute bottom-0 left-0 w-44 h-44 z-40 pointer-events-auto" />
+          <div id="right-joystick-zone" className="absolute bottom-0 right-0 w-44 h-44 z-40 pointer-events-auto" />
         </>
       )}
 
