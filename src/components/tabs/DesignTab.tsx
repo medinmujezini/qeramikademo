@@ -1720,6 +1720,61 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
+      {/* WALKTHROUGH OVERLAYS */}
+      {viewMode === 'walkthrough' && !isPointerLocked && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <PersonStanding className="h-12 w-12 text-primary" />
+            <h3 className="text-xl font-semibold text-foreground">Walkthrough Mode</h3>
+            <p className="text-sm text-muted-foreground">
+              Move with WASD · Look with mouse · Esc to exit
+            </p>
+            <Button
+              size="lg"
+              className="gap-2"
+              onClick={() => plcRef.current?.lock()}
+            >
+              <MousePointer className="h-4 w-4" />
+              Click to Enter
+            </Button>
+            <Button variant="ghost" size="sm" onClick={exitWalkthrough}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'walkthrough' && isPointerLocked && (
+        <>
+          {/* Crosshair */}
+          <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
+            <div className="relative w-6 h-6">
+              <div className="absolute top-1/2 left-0 w-full h-px bg-foreground/50" />
+              <div className="absolute left-1/2 top-0 h-full w-px bg-foreground/50" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-foreground/70" />
+            </div>
+          </div>
+
+          {/* Exit button */}
+          <div className="absolute top-4 right-4 z-40">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-1.5"
+              onClick={exitWalkthrough}
+            >
+              <X className="h-3.5 w-3.5" />
+              Exit (Esc)
+            </Button>
+          </div>
+
+          {/* WASD hint */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
+            WASD to move · Mouse to look
+          </div>
+        </>
+      )}
+
       {/* Render Image Dialog */}
       <Dialog open={renderDialogOpen} onOpenChange={setRenderDialogOpen}>
         <DialogContent className="max-w-4xl">
