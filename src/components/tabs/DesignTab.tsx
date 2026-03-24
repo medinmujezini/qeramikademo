@@ -31,7 +31,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
@@ -632,7 +632,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 }) => {
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -1336,6 +1336,100 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Birdseye</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+
+        <div className="h-4 w-px bg-border/50" />
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 relative"
+            >
+              <Bookmark className={"h-3.5 w-3.5" + ((floorPlan.savedCameraViews?.length ?? 0) > 0 ? " fill-current" : "")} />
+              {(floorPlan.savedCameraViews?.length ?? 0) > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
+                  {floorPlan.savedCameraViews!.length}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" side="bottom" align="end">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="View name..."
+                  className="flex-1 h-7 px-2 text-xs rounded-md border border-input bg-background"
+                  id="save-view-input"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const input = e.currentTarget;
+                      const name = input.value.trim();
+                      if (!name || !cameraRef.current || !orbitControlsRef.current) return;
+                      addCameraView({
+                        id: crypto.randomUUID(),
+                        name,
+                        position: cameraRef.current.position.toArray() as [number, number, number],
+                        target: orbitControlsRef.current.target.toArray() as [number, number, number],
+                      });
+                      input.value = '';
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => {
+                    const input = document.getElementById('save-view-input') as HTMLInputElement;
+                    const name = input?.value.trim();
+                    if (!name || !cameraRef.current || !orbitControlsRef.current) return;
+                    addCameraView({
+                      id: crypto.randomUUID(),
+                      name,
+                      position: cameraRef.current.position.toArray() as [number, number, number],
+                      target: orbitControlsRef.current.target.toArray() as [number, number, number],
+                    });
+                    input.value = '';
+                  }}
+                >
+                  Save
+                </Button>
+              </div>
+
+              <div className="space-y-1">
+                {(floorPlan.savedCameraViews ?? []).length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-2">No saved views yet.</p>
+                ) : (
+                  (floorPlan.savedCameraViews ?? []).map(view => (
+                    <div key={view.id} className="flex items-center gap-1.5 group">
+                      <span className="text-xs truncate flex-1">{view.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-60 hover:opacity-100"
+                        onClick={() => applyPreset(view.position, view.target)}
+                      >
+                        <Play className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-60 hover:opacity-100 text-destructive"
+                        onClick={() => removeCameraView(view.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <p className="text-[10px] text-muted-foreground italic">Views are saved relative to current room dimensions.</p>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {isDragging && (
           <Badge variant="outline" className="gap-1 animate-pulse bg-white/20">
