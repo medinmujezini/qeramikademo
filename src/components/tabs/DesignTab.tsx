@@ -1235,7 +1235,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Box className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Corner View</TooltipContent>
+            <TooltipContent side="bottom">Corner View</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -1253,7 +1253,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <LayoutGrid className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Top Down</TooltipContent>
+            <TooltipContent side="bottom">Top Down</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -1273,7 +1273,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Eye className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Eye Level</TooltipContent>
+            <TooltipContent side="bottom">Eye Level</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -1291,7 +1291,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Mountain className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Birdseye</TooltipContent>
+            <TooltipContent side="bottom">Birdseye</TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
