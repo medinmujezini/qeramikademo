@@ -318,7 +318,7 @@ const FloorWithTexture: React.FC<{
 
   const urlKeys = Object.keys(urls);
   // Load all textures – useLoader requires stable array
-  const textures = THREE.useLoader(
+  const textures = useLoader(
     THREE.TextureLoader,
     urlKeys.length > 0 ? urlKeys.map(k => urls[k]) : ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAA0lEQVQI12P4z8BQDwAEgAF/QualxwAAAABJRU5ErkJggg==']
   );
