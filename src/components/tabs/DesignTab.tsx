@@ -837,11 +837,41 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
+  const animTargetPos = useRef(new THREE.Vector3());
+  const animTargetTarget = useRef(new THREE.Vector3());
+  const isAnimatingCamera = useRef(false);
   const savedOrbitPos = useRef(new THREE.Vector3());
   const savedOrbitTarget = useRef(new THREE.Vector3());
   const plcRef = useRef<any>(null);
   const keysRef = useRef({ w: false, a: false, s: false, d: false });
   const [isPointerLocked, setIsPointerLocked] = useState(false);
+
+  // Calculate room-based camera position
+  const roomW = (floorPlan.roomWidth || 800) / 100;
+  const roomH = (floorPlan.roomHeight || 600) / 100;
+  const camDist = Math.max(roomW, roomH) * 0.85;
+  const defaultCameraPos: [number, number, number] = [roomW / 2 + camDist, camDist * 0.75, roomH / 2 + camDist];
+  const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
+
+  const handleResetView = useCallback(() => {
+    if (cameraRef.current && orbitControlsRef.current) {
+      setMaxPolarAngle(Math.PI / 2);
+      isAnimatingCamera.current = false;
+      cameraRef.current.position.set(...defaultCameraPos);
+      orbitControlsRef.current.target.set(...defaultTarget);
+      orbitControlsRef.current.update();
+    }
+  }, [defaultCameraPos, defaultTarget]);
+
+  const applyPreset = useCallback((pos: [number, number, number], target: [number, number, number], eyeLevel = false) => {
+    if (!cameraRef.current || !orbitControlsRef.current) return;
+    const nextMaxPolarAngle = eyeLevel ? Math.PI : Math.PI / 2;
+    setMaxPolarAngle(nextMaxPolarAngle);
+    orbitControlsRef.current.maxPolarAngle = nextMaxPolarAngle;
+    animTargetPos.current.set(...pos);
+    animTargetTarget.current.set(...target);
+    isAnimatingCamera.current = true;
+  }, []);
 
   // Pointer lock state tracking
   useEffect(() => {
