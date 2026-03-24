@@ -107,6 +107,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { floorPlan } = useFloorPlanContext();
+  const { materials: pbrMaterials } = useMaterialContext();
   
   // Section management state
   const [sections, setSections] = useState<WallSection[]>([]);
