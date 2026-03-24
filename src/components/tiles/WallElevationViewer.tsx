@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Wall, Tile, TileOrientation, TilePattern, WallTileSection, Point } from '@/types/floorPlan';
 import { isWallSloped, isWallCurved, getWallSlopeAngle, isTileSuitableForCurve, getRecommendedTileSize } from '@/types/floorPlan';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 import { calculateTileLayout, TilePosition } from '@/utils/tileCalculator';
 import { requestBitmap } from '@/utils/tileRenderer';
 import { calculateWallElevationShape, WallElevationShape } from '@/utils/wallHeightUtils';
