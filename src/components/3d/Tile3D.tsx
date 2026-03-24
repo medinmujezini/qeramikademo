@@ -6,6 +6,7 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { PBRTextureProps } from '@/utils/textureUtils';
 
 interface Tile3DProps {
   position: [number, number, number];
@@ -16,6 +17,7 @@ interface Tile3DProps {
   isAnimating: boolean;
   animationProgress: number; // 0-1, overall animation progress
   clippingPlanes?: THREE.Plane[]; // Optional clipping planes for wall boundaries
+  textureProps?: PBRTextureProps; // Optional PBR textures
 }
 
 const TILE_THICKNESS = 0.008; // 8mm tile thickness
@@ -29,6 +31,7 @@ export const Tile3D: React.FC<Tile3DProps> = ({
   isAnimating,
   animationProgress,
   clippingPlanes,
+  textureProps,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -76,6 +79,9 @@ export const Tile3D: React.FC<Tile3DProps> = ({
 
   const [width, height] = size;
 
+  // When a texture map exists, omit the color prop so the texture is visible
+  const hasTextureMap = !!textureProps?.map;
+
   return (
     <mesh
       ref={meshRef}
@@ -86,10 +92,11 @@ export const Tile3D: React.FC<Tile3DProps> = ({
     >
       <boxGeometry args={[width, height, TILE_THICKNESS]} />
       <meshStandardMaterial 
-        color={color} 
+        {...(hasTextureMap ? {} : { color })}
         roughness={0.4}
         metalness={0.1}
         clippingPlanes={clippingPlanes}
+        {...textureProps}
       />
     </mesh>
   );
