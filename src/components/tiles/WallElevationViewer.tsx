@@ -625,6 +625,13 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       // Get tile for this section
       const sectionTile = tiles.find(t => t.id === section.tileId) || selectedTile;
 
+      // Resolve albedo bitmap for this section's tile
+      const sectionAlbedoUrl = sectionTile?.textureUrls?.albedo;
+      const bitmapEntry = sectionAlbedoUrl
+        ? requestBitmap(sectionAlbedoUrl, () => setTextureVersion(v => v + 1))
+        : null;
+      const albedoBitmap = bitmapEntry?.status === 'ready' ? bitmapEntry.bitmap : null;
+
       // For non-sloped walls, draw rectangular grout background
       if (!dims.isSloped) {
         ctx.fillStyle = groutColor;
