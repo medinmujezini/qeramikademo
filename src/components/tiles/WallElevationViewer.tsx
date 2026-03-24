@@ -12,7 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import type { Wall, Tile, TileOrientation, TilePattern, WallTileSection, Point } from '@/types/floorPlan';
 import { isWallSloped, isWallCurved, getWallSlopeAngle, isTileSuitableForCurve, getRecommendedTileSize } from '@/types/floorPlan';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 import { calculateTileLayout, TilePosition } from '@/utils/tileCalculator';
+import { requestBitmap } from '@/utils/tileRenderer';
 import { calculateWallElevationShape, WallElevationShape } from '@/utils/wallHeightUtils';
 import { arcLength as calcArcLength } from '@/utils/arcUtils';
 import { 
@@ -105,6 +107,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { floorPlan } = useFloorPlanContext();
+  const { materials: pbrMaterials } = useMaterialContext();
   
   // Section management state
   const [sections, setSections] = useState<WallSection[]>([]);
@@ -116,6 +119,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
   // Cut tile interaction state
   const [selectedCutTile, setSelectedCutTile] = useState<SelectedCutTile | null>(null);
   const [cutTilePopoverOpen, setCutTilePopoverOpen] = useState(false);
+  const [textureVersion, setTextureVersion] = useState(0);
   const tilePositionsRef = useRef<ScreenTilePosition[]>([]);
   
   // Track previous selected tile to prevent overwriting on section selection
@@ -623,6 +627,14 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       // Get tile for this section
       const sectionTile = tiles.find(t => t.id === section.tileId) || selectedTile;
 
+      // Resolve albedo bitmap for this section's tile
+      const sectionMat = sectionTile?.materialId ? pbrMaterials.find(m => m.id === sectionTile.materialId) : null;
+      const sectionAlbedoUrl = sectionMat?.albedo;
+      const bitmapEntry = sectionAlbedoUrl
+        ? requestBitmap(sectionAlbedoUrl, () => setTextureVersion(v => v + 1))
+        : null;
+      const albedoBitmap = bitmapEntry?.status === 'ready' ? bitmapEntry.bitmap : null;
+
       // For non-sloped walls, draw rectangular grout background
       if (!dims.isSloped) {
         ctx.fillStyle = groutColor;
@@ -837,9 +849,13 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
                 ctx.fillText('✂', screenTileX + 3, screenTileY + 2);
               }
             } else {
-              // Full tile - normal styling
-              ctx.fillStyle = sectionTile.color;
-              ctx.fillRect(screenTileX, screenTileY, screenTileW, screenTileH);
+              // Full tile - normal styling, use albedo bitmap if available
+              if (albedoBitmap) {
+                ctx.drawImage(albedoBitmap, screenTileX, screenTileY, screenTileW, screenTileH);
+              } else {
+                ctx.fillStyle = sectionTile.color;
+                ctx.fillRect(screenTileX, screenTileY, screenTileW, screenTileH);
+              }
 
               // Subtle border
               ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
@@ -1081,7 +1097,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
     }
     ctx.textBaseline = 'alphabetic';
 
-  }, [wall, selectedTile, sections, selectedSectionId, dividers, groutColor, jointWidth, getWallDimensions, tiles, floorPlan.doors, floorPlan.windows]);
+  }, [wall, selectedTile, sections, selectedSectionId, dividers, groutColor, jointWidth, getWallDimensions, tiles, floorPlan.doors, floorPlan.windows, pbrMaterials, textureVersion]);
 
   // Handle canvas resize
   useEffect(() => {
