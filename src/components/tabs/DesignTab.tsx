@@ -1037,6 +1037,35 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       keysRef.current = { w: false, a: false, s: false, d: false };
     };
   }, [viewMode, exitWalkthrough]);
+
+  // Nipple joystick managers for mobile walkthrough
+  useEffect(() => {
+    if (viewMode !== 'walkthrough' || !isTouchDevice) return;
+    let aborted = false;
+    import('nipplejs').then(({ default: nipplejs }) => {
+      if (aborted) return;
+      const leftZone = document.getElementById('left-joystick-zone');
+      const rightZone = document.getElementById('right-joystick-zone');
+      if (!leftZone || !rightZone) return;
+      const left = nipplejs.create({ zone: leftZone, mode: 'static', position: { left: '50%', bottom: '50%' }, color: 'white', size: 100 });
+      const right = nipplejs.create({ zone: rightZone, mode: 'static', position: { left: '50%', bottom: '50%' }, color: 'white', size: 100 });
+      left.on('move', (_, data) => { moveStickRef.current = { x: data.vector.x, y: data.vector.y }; });
+      left.on('end', () => { moveStickRef.current = { x: 0, y: 0 }; });
+      right.on('move', (_, data) => { lookStickRef.current = { x: data.vector.x, y: data.vector.y }; });
+      right.on('end', () => { lookStickRef.current = { x: 0, y: 0 }; });
+      nippleManagersRef.current = { left, right };
+    });
+    return () => {
+      aborted = true;
+      if (nippleManagersRef.current) {
+        nippleManagersRef.current.left.destroy();
+        nippleManagersRef.current.right.destroy();
+        nippleManagersRef.current = null;
+      }
+      moveStickRef.current = { x: 0, y: 0 };
+      lookStickRef.current = { x: 0, y: 0 };
+    };
+  }, [viewMode, isTouchDevice]);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
