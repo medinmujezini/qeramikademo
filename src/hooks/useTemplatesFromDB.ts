@@ -282,6 +282,8 @@ export interface TileTemplate {
   isFlexible: boolean;
   minCurveRadius?: number;
   thumbnailUrl?: string;
+  materialId?: string;
+  textureScaleCm?: number;
 }
 
 export function useTileTemplates() {

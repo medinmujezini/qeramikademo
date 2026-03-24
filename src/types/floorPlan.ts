@@ -246,9 +246,21 @@ export interface Tile {
   pricePerUnit: number;
   material: string;
   color: string;
+  // PBR texture support
+  materialId?: string;
+  textureScaleCm?: number;
   // Curve compatibility
   minCurveRadius?: number;  // Minimum radius this tile can handle (undefined = flat only)
   isFlexible?: boolean;     // Mosaic/small tiles that flex on curves
+}
+
+export type TileTextureUrls = {
+  albedo?: string;
+  normal?: string;
+  roughness?: string;
+  ao?: string;
+  height?: string;
+  metallic?: string;
 }
 
 export interface WallTileSection {
