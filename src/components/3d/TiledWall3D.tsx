@@ -2,13 +2,16 @@
  * TiledWall3D - Renders a wall with animated 3D tile meshes
  * Supports all tile patterns: grid, staggered, herringbone, diagonal
  * Renders grout as a backing plane with properly spaced tiles on top
+ * Supports PBR textures via TileTextureUrls
  */
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Tile3D } from './Tile3D';
-import type { Wall, Point, Tile, TilePattern, TileOrientation, Door, Window as WindowType } from '@/types/floorPlan';
+import type { Wall, Point, Tile, TilePattern, TileOrientation, Door, Window as WindowType, TileTextureUrls } from '@/types/floorPlan';
+import type { PBRTextureProps } from '@/utils/textureUtils';
 import { CM_TO_METERS, MM_TO_CM } from '@/constants/units';
 import { createOpeningZones, createWallShapeWithOpenings, type OpeningZone } from '@/utils/wallOpeningGeometry';
 
@@ -34,6 +37,8 @@ interface TiledWall3DProps {
   onAnimationComplete?: () => void;
   doors?: Door[];
   windows?: WindowType[];
+  textureUrls?: TileTextureUrls;
+  textureScaleCm?: number;
 }
 
 interface TilePosition {
@@ -64,55 +69,47 @@ function calculateTilePositions(
   wallHeight: number,
   tile: Tile,
   pattern: TilePattern = 'grid',
-  jointWidth: number = 3,      // in mm
+  jointWidth: number = 3,
   orientation: TileOrientation = 'horizontal',
-  offsetX: number = 0,         // in cm
-  offsetY: number = 0,         // in cm
+  offsetX: number = 0,
+  offsetY: number = 0,
   openings: OpeningZone[] = []
 ): TilePosition[] {
   const positions: TilePosition[] = [];
   
-  // Convert units using centralized constants
-  const jointM = jointWidth * MM_TO_CM * CM_TO_METERS;   // mm to meters
-  let tileW = tile.width * CM_TO_METERS;                  // cm to meters
-  let tileH = tile.height * CM_TO_METERS;                 // cm to meters
-  const wallL = wallLength * CM_TO_METERS;                // cm to meters
-  const wallH = wallHeight * CM_TO_METERS;                // cm to meters
-  const offX = offsetX * CM_TO_METERS;                    // cm to meters
-  const offY = offsetY * CM_TO_METERS;                    // cm to meters
+  const jointM = jointWidth * MM_TO_CM * CM_TO_METERS;
+  let tileW = tile.width * CM_TO_METERS;
+  let tileH = tile.height * CM_TO_METERS;
+  const wallL = wallLength * CM_TO_METERS;
+  const wallH = wallHeight * CM_TO_METERS;
+  const offX = offsetX * CM_TO_METERS;
+  const offY = offsetY * CM_TO_METERS;
 
-  // Swap dimensions for vertical orientation
   if (orientation === 'vertical') {
     [tileW, tileH] = [tileH, tileW];
   }
 
-  // Calculate pitch (tile + joint)
   const pitchX = tileW + jointM;
   const pitchY = tileH + jointM;
 
-  // Number of tiles needed (with some extra for offsets and partial edge tiles)
   const cols = Math.ceil(wallL / pitchX) + 2;
   const rows = Math.ceil(wallH / pitchY) + 2;
 
-  // Pattern-specific calculations
-  // All patterns use y=0 as wall bottom, y=wallH as wall top (matching grout plane)
   if (pattern === 'herringbone') {
     const stepX = tileH;
     const stepY = tileW;
     
-    let index = 0;
     for (let row = -2; row < Math.ceil(wallH / stepY) + 2; row++) {
       for (let col = -2; col < Math.ceil(wallL / stepX) + 2; col++) {
         const isEven = (row + col) % 2 === 0;
         
         let x = col * stepX - wallL / 2 + offX;
-        let y = row * stepY + offY + wallH / 2; // Center vertically on wall
+        let y = row * stepY + offY + wallH / 2;
         
         if (!isEven) {
           x += stepX / 2;
         }
         
-        // Only include tiles that overlap the wall bounds and don't overlap openings
         if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
             y + tileH > 0 && y - tileH < wallH &&
             !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
@@ -122,27 +119,23 @@ function calculateTilePositions(
           const delay = (normalizedX * 0.3 + normalizedY * 0.5) * 0.8;
           
           positions.push({
-            x,
-            y,
+            x, y,
             width: tileW - jointM,
             height: tileH - jointM,
             delay: Math.max(0, delay),
             rotation: isEven ? Math.PI / 4 : -Math.PI / 4,
           });
-          index++;
         }
       }
     }
   } else if (pattern === 'diagonal') {
     const diagPitch = pitchX * Math.SQRT2 * 0.5;
     
-    let index = 0;
     for (let row = -2; row < Math.ceil(wallH / diagPitch) + 4; row++) {
       for (let col = -2; col < Math.ceil(wallL / diagPitch) + 4; col++) {
         const x = col * diagPitch - wallL / 2 + offX + (row % 2) * diagPitch * 0.5;
         const y = row * diagPitch * 0.5 + offY;
         
-        // Only include tiles that overlap the wall bounds
         if (x + tileW > -wallL / 2 && x - tileW < wallL / 2 &&
             y + tileH > 0 && y - tileH < wallH &&
             !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
@@ -152,25 +145,20 @@ function calculateTilePositions(
           const delay = (normalizedX * 0.3 + normalizedY * 0.5) * 0.8;
           
           positions.push({
-            x,
-            y,
+            x, y,
             width: tileW - jointM,
             height: tileH - jointM,
             delay: Math.max(0, delay),
             rotation: Math.PI / 4,
           });
-          index++;
         }
       }
     }
   } else {
-    // Grid and Staggered patterns
-    // y goes from 0 (floor) to wallH (top), matching grout plane at wallH/2 center
     for (let row = -1; row < rows; row++) {
       for (let col = -1; col < cols; col++) {
         let rowOffset = 0;
         
-        // Staggered pattern: offset every other row by 50%
         if (pattern === 'staggered' && row % 2 === 1) {
           rowOffset = pitchX / 2;
         }
@@ -178,19 +166,16 @@ function calculateTilePositions(
         const x = col * pitchX + rowOffset + offX - wallL / 2 + tileW / 2;
         const y = row * pitchY + offY + tileH / 2;
         
-        // Only include tiles that overlap the wall bounds
         if (x + tileW / 2 > -wallL / 2 && x - tileW / 2 < wallL / 2 &&
             y + tileH / 2 > 0 && y - tileH / 2 < wallH &&
             !tileOverlapsOpening(x, y, tileW, tileH, openings)) {
           
-          // Calculate animation delay based on position (wave from bottom-left)
           const normalizedX = Math.max(0, Math.min(1, (x + wallL / 2) / wallL));
           const normalizedY = Math.max(0, Math.min(1, y / wallH));
           const delay = (normalizedX * 0.3 + normalizedY * 0.5) * 0.8;
 
           positions.push({
-            x,
-            y,
+            x, y,
             width: tileW - jointM,
             height: tileH - jointM,
             delay,
@@ -204,21 +189,77 @@ function calculateTilePositions(
   return positions;
 }
 
-export const TiledWall3D: React.FC<TiledWall3DProps> = ({
-  wall,
-  start,
-  end,
-  tileConfig,
-  tile,
-  scale,
-  animationState,
-  onAnimationComplete,
-  doors = [],
-  windows = [],
+/**
+ * Inner component that loads PBR textures unconditionally via useLoader.
+ * Only rendered when textureUrls has at least one valid URL.
+ */
+const TextureLoader: React.FC<{
+  urls: Record<string, string>;
+  children: (textures: PBRTextureProps) => React.ReactNode;
+}> = ({ urls, children }) => {
+  // Load all textures — useLoader is called unconditionally with stable URL list
+  const urlEntries = Object.entries(urls);
+  const loadedTextures = useLoader(
+    THREE.TextureLoader,
+    urlEntries.map(([, url]) => url)
+  );
+
+  const textureProps = useMemo<PBRTextureProps>(() => {
+    const props: PBRTextureProps = {};
+    urlEntries.forEach(([key, ], idx) => {
+      const tex = loadedTextures[idx];
+      if (tex) {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        // Albedo needs sRGB color space
+        if (key === 'map') {
+          tex.colorSpace = THREE.SRGBColorSpace;
+        }
+        (props as any)[key] = tex;
+      }
+    });
+    return props;
+  }, [loadedTextures, urlEntries]);
+
+  return <>{children(textureProps)}</>;
+};
+
+/**
+ * Resolves TileTextureUrls to a PBR map key → URL mapping for useLoader
+ */
+function resolveTextureUrlMap(textureUrls?: TileTextureUrls): Record<string, string> | null {
+  if (!textureUrls) return null;
+  const map: Record<string, string> = {};
+  if (textureUrls.albedo) map.map = textureUrls.albedo;
+  if (textureUrls.normal) map.normalMap = textureUrls.normal;
+  if (textureUrls.roughness) map.roughnessMap = textureUrls.roughness;
+  if (textureUrls.ao) map.aoMap = textureUrls.ao;
+  if (textureUrls.height) map.displacementMap = textureUrls.height;
+  if (textureUrls.metallic) map.metalnessMap = textureUrls.metallic;
+  return Object.keys(map).length > 0 ? map : null;
+}
+
+/**
+ * Inner wall rendering component — shared by both textured and non-textured paths
+ */
+const TiledWallInner: React.FC<{
+  wall: Wall;
+  start: Point;
+  end: Point;
+  tileConfig: TileConfig;
+  tile: Tile;
+  animationState: 'idle' | 'animating' | 'complete';
+  onAnimationComplete?: () => void;
+  doors: Door[];
+  windows: WindowType[];
+  textureProps?: PBRTextureProps;
+}> = ({
+  wall, start, end, tileConfig, tile,
+  animationState, onAnimationComplete,
+  doors, windows, textureProps,
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
-  // Calculate wall geometry using centralized constants
   const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
   const midX = (start.x + end.x) / 2 * CM_TO_METERS;
@@ -228,27 +269,16 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   const wallHeightM = wall.height * CM_TO_METERS;
 
   const openings = useMemo<OpeningZone[]>(() => {
-    return createOpeningZones({
-      wallLength: wallLengthM,
-      doors,
-      windows,
-      unitScale: CM_TO_METERS,
-    });
+    return createOpeningZones({ wallLength: wallLengthM, doors, windows, unitScale: CM_TO_METERS });
   }, [doors, windows, wallLengthM]);
 
   const wallShape = useMemo(() => {
     return createWallShapeWithOpenings({
-      wallLength: wallLengthM,
-      startHeight: wallHeightM,
-      endHeight: wallHeightM,
-      doors,
-      windows,
-      unitScale: CM_TO_METERS,
+      wallLength: wallLengthM, startHeight: wallHeightM, endHeight: wallHeightM,
+      doors, windows, unitScale: CM_TO_METERS,
     });
   }, [wallLengthM, wallHeightM, doors, windows]);
 
-  // Create clipping planes in world space to cut tiles at all 4 wall boundaries
-  // THREE.js clipping planes operate in world space, so we must transform from local
   const clippingPlanes = useMemo(() => {
     const localPlanes = [
       new THREE.Plane(new THREE.Vector3(1, 0, 0), wallLengthM / 2),
@@ -256,63 +286,40 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
       new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
       new THREE.Plane(new THREE.Vector3(0, -1, 0), wallHeightM),
     ];
-    // Build the wall group's world transform matrix
     const matrix = new THREE.Matrix4();
     matrix.compose(
       new THREE.Vector3(midX, 0, midZ),
       new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -angle, 0)),
       new THREE.Vector3(1, 1, 1)
     );
-    // Transform planes from local to world space
     return localPlanes.map(p => p.clone().applyMatrix4(matrix));
   }, [wallLengthM, wallHeightM, midX, midZ, angle]);
 
-  // Generate tile positions with all config options
   const tilePositions = useMemo(() => {
     return calculateTilePositions(
-      length,
-      wall.height,
-      tile,
-      tileConfig.pattern,
-      tileConfig.jointWidth ?? 3,
+      length, wall.height, tile,
+      tileConfig.pattern, tileConfig.jointWidth ?? 3,
       tileConfig.orientation ?? 'horizontal',
-      tileConfig.offsetX ?? 0,
-      tileConfig.offsetY ?? 0,
+      tileConfig.offsetX ?? 0, tileConfig.offsetY ?? 0,
       openings
     );
-  }, [
-    length, 
-    wall.height, 
-    tile, 
-    tileConfig.pattern, 
-    tileConfig.jointWidth,
-    tileConfig.orientation,
-    tileConfig.offsetX,
-    tileConfig.offsetY,
-    openings
-  ]);
+  }, [length, wall.height, tile, tileConfig.pattern, tileConfig.jointWidth,
+      tileConfig.orientation, tileConfig.offsetX, tileConfig.offsetY, openings]);
 
-  // Handle animation progress
   useFrame((state, delta) => {
     if (animationState === 'animating' && animationProgress < 1) {
       const newProgress = Math.min(animationProgress + delta * 0.8, 1);
       setAnimationProgress(newProgress);
-      
-      if (newProgress >= 1 && onAnimationComplete) {
-        onAnimationComplete();
-      }
+      if (newProgress >= 1 && onAnimationComplete) onAnimationComplete();
     } else if ((animationState === 'complete' || animationState === 'idle') && animationProgress < 1) {
-      // If complete or idle (tiles exist but weren't animated), show immediately
       setAnimationProgress(1);
     }
   });
 
-  // Reset animation when state changes to animating
   useEffect(() => {
     if (animationState === 'animating') {
       setAnimationProgress(0);
     } else if (animationState === 'idle') {
-      // Show immediately for idle state (tiles already exist)
       setAnimationProgress(1);
     }
   }, [animationState]);
@@ -322,25 +329,18 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
   return (
     <group position={[midX, 0, midZ]} rotation={[0, -angle, 0]}>
       {/* Base wall / grout backing plane */}
-      <mesh 
-        position={[0, 0, -wallThicknessM / 2 - 0.002]}
-        castShadow
-        receiveShadow
-      >
+      <mesh position={[0, 0, -wallThicknessM / 2 - 0.002]} castShadow receiveShadow>
         <extrudeGeometry args={[wallShape, { depth: wallThicknessM * 0.5, bevelEnabled: false }]} />
         <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Grout layer - slightly in front of wall base */}
-      <mesh 
-        position={[0, 0, wallThicknessM / 2]}
-        receiveShadow
-      >
+      {/* Grout layer */}
+      <mesh position={[0, 0, wallThicknessM / 2]} receiveShadow>
         <shapeGeometry args={[wallShape]} />
         <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Individual 3D tiles on top of grout */}
+      {/* Individual 3D tiles */}
       {tilePositions.map((pos, idx) => (
         <Tile3D
           key={`tile-${idx}`}
@@ -352,10 +352,37 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = ({
           isAnimating={isAnimating}
           animationProgress={animationProgress}
           clippingPlanes={clippingPlanes}
+          textureProps={textureProps}
         />
       ))}
     </group>
   );
+};
+
+export const TiledWall3D: React.FC<TiledWall3DProps> = (props) => {
+  const { textureUrls, textureScaleCm, ...wallProps } = props;
+  const urlMap = resolveTextureUrlMap(textureUrls);
+
+  if (urlMap) {
+    return (
+      <Suspense fallback={
+        <TiledWallInner {...wallProps} doors={wallProps.doors ?? []} windows={wallProps.windows ?? []} />
+      }>
+        <TextureLoader urls={urlMap}>
+          {(textureProps) => (
+            <TiledWallInner
+              {...wallProps}
+              doors={wallProps.doors ?? []}
+              windows={wallProps.windows ?? []}
+              textureProps={textureProps}
+            />
+          )}
+        </TextureLoader>
+      </Suspense>
+    );
+  }
+
+  return <TiledWallInner {...wallProps} doors={wallProps.doors ?? []} windows={wallProps.windows ?? []} />;
 };
 
 export default TiledWall3D;

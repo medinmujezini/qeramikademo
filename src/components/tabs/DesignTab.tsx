@@ -441,7 +441,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           <group key={wall.id}>
             {/* Render animated 3D tiles if tile finish is applied */}
             {shouldShow3DTiles ? (
-              <TiledWall3D
+              <TiledWall3DWithMaterial
                 wall={wall}
                 start={start}
                 end={end}
