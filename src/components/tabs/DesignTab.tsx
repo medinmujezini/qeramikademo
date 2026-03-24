@@ -890,7 +890,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const savedOrbitTarget = useRef(new THREE.Vector3());
   const plcRef = useRef<any>(null);
   const keysRef = useRef({ w: false, a: false, s: false, d: false });
-  const [isPointerLocked, setIsPointerLocked] = useState(false);
+  const moveStickRef = useRef({ x: 0, y: 0 });
+  const lookStickRef = useRef({ x: 0, y: 0 });
+  const nippleManagersRef = useRef<{ left: any; right: any } | null>(null);
+  const isTouchDevice = useMemo(() =>
+    typeof navigator !== 'undefined' &&
+    navigator.maxTouchPoints > 0 &&
+    !window.matchMedia('(hover: hover)').matches
+  , []);
 
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
