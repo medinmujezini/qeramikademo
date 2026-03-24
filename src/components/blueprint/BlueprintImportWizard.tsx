@@ -318,7 +318,7 @@ export const BlueprintImportWizard: React.FC<BlueprintImportWizardProps> = ({
       let errorMessage = 'Unknown error during processing';
       if (error instanceof Error) {
         if (error.message === 'TIMEOUT' || error.name === 'AbortError') {
-          errorMessage = 'Analysis timed out (60s). The image may be too complex - try a simpler or clearer floor plan.';
+          errorMessage = 'Analysis timed out — the image was compressed automatically. Please click Retry.';
         } else {
           errorMessage = error.message;
         }
