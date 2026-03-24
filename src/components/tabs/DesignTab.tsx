@@ -1253,7 +1253,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <LayoutGrid className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Top Down</TooltipContent>
+            <TooltipContent side="bottom">Top Down</TooltipContent>
           </Tooltip>
 
           <Tooltip>
