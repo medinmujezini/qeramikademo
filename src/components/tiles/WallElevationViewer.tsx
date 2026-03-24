@@ -849,9 +849,13 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
                 ctx.fillText('✂', screenTileX + 3, screenTileY + 2);
               }
             } else {
-              // Full tile - normal styling
-              ctx.fillStyle = sectionTile.color;
-              ctx.fillRect(screenTileX, screenTileY, screenTileW, screenTileH);
+              // Full tile - normal styling, use albedo bitmap if available
+              if (albedoBitmap) {
+                ctx.drawImage(albedoBitmap, screenTileX, screenTileY, screenTileW, screenTileH);
+              } else {
+                ctx.fillStyle = sectionTile.color;
+                ctx.fillRect(screenTileX, screenTileY, screenTileW, screenTileH);
+              }
 
               // Subtle border
               ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
