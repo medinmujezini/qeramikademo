@@ -31,7 +31,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY } from '@/types/floorPlan';
@@ -664,6 +665,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [giQuality, setGiQuality] = useState<GIQualityTier>('high');
   const [qualitySettings, setQualitySettings] = useState<QualitySettings>(DEFAULT_QUALITY_SETTINGS);
   const [viewMode, setViewMode] = useState<'design' | 'walkthrough'>('design');
+  const [maxPolarAngle, setMaxPolarAngle] = useState(Math.PI / 2);
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -679,11 +681,20 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   const handleResetView = useCallback(() => {
     if (cameraRef.current && orbitControlsRef.current) {
+      setMaxPolarAngle(Math.PI / 2);
       cameraRef.current.position.set(...defaultCameraPos);
       orbitControlsRef.current.target.set(...defaultTarget);
       orbitControlsRef.current.update();
     }
   }, [defaultCameraPos, defaultTarget]);
+
+  const applyPreset = useCallback((pos: [number, number, number], target: [number, number, number], eyeLevel = false) => {
+    if (!cameraRef.current || !orbitControlsRef.current) return;
+    setMaxPolarAngle(eyeLevel ? Math.PI : Math.PI / 2);
+    cameraRef.current.position.set(...pos);
+    orbitControlsRef.current.target.set(...target);
+    orbitControlsRef.current.update();
+  }, []);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -1086,7 +1097,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             minDistance={2}
             maxDistance={30}
             minPolarAngle={0}
-            maxPolarAngle={Math.PI / 2}
+            maxPolarAngle={maxPolarAngle}
             target={defaultTarget}
             enabled={!isDragging && !isDraggingFixture}
           />
@@ -1205,6 +1216,84 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           <RotateCcw className="h-3.5 w-3.5" />
           Reset View
         </Button>
+
+        <div className="h-4 w-px bg-border/50" />
+
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  const M = Math.max(roomW, roomH);
+                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
+                  applyPreset([roomW / 2 + M * 0.85, M * 0.85 * 0.75, roomH / 2 + M * 0.85], C);
+                }}
+              >
+                <Box className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Corner View</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  const M = Math.max(roomW, roomH);
+                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
+                  applyPreset([roomW / 2, 1.25 * M, roomH / 2], C);
+                }}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Top Down</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  if (roomW >= roomH) {
+                    applyPreset([roomW / 2, 1.6, roomH * 0.85], [roomW / 2, 1.6, 0], true);
+                  } else {
+                    applyPreset([roomW * 0.85, 1.6, roomH / 2], [0, 1.6, roomH / 2], true);
+                  }
+                }}
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Eye Level</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  const M = Math.max(roomW, roomH);
+                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
+                  applyPreset([roomW * 0.9 + M, M, roomH * 0.9 + M], C);
+                }}
+              >
+                <Mountain className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Birdseye</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {isDragging && (
           <Badge variant="outline" className="gap-1 animate-pulse bg-white/20">
