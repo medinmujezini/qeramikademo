@@ -13,9 +13,14 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Grid3X3, Check, Square } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { TileLibraryPanel } from '@/components/tiles/TileLibraryPanel';
 import { GroutColorPicker } from '@/components/tiles/GroutColorPicker';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 import type { Tile, TilePattern, FloorSurfaceType } from '@/types/floorPlan';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +42,7 @@ interface FloorSurfaceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   floorArea: number; // in square cm
-  onApplyFinish: (type: FloorSurfaceType, color: string) => void;
+  onApplyFinish: (type: FloorSurfaceType, color: string, materialId?: string, textureScaleCm?: number) => void;
   onApplyTiles: (tileId: string, groutColor: string, pattern: TilePattern) => void;
   onRemoveFinish: () => void;
   currentFinish?: { type?: FloorSurfaceType; surfaceType?: FloorSurfaceType; color?: string; tileId?: string };
@@ -57,12 +62,22 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
   const [groutColor, setGroutColor] = useState('#9ca3af');
   const [tilePattern, setTilePattern] = useState<TilePattern>('grid');
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string>('none');
+  const [textureScaleCm, setTextureScaleCm] = useState(30);
+
+  const { materials } = useMaterialContext();
+  const selectedMaterial = materials.find(m => m.id === selectedMaterialId);
 
   const areaInSqM = floorArea / 10000;
 
   const handleApplyFinish = () => {
     if (selectedFinish) {
-      onApplyFinish(selectedFinish.type, selectedFinish.color);
+      onApplyFinish(
+        selectedFinish.type,
+        selectedFinish.color,
+        selectedMaterialId !== 'none' ? selectedMaterialId : undefined,
+        selectedMaterialId !== 'none' ? textureScaleCm : undefined,
+      );
       onOpenChange(false);
     }
   };
@@ -104,7 +119,7 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
           </TabsList>
 
           <TabsContent value="finish" className="mt-4">
-            <ScrollArea className="h-[350px] pr-4">
+            <ScrollArea className="h-[400px] pr-4">
               <div className="grid grid-cols-5 gap-3">
                 {FLOOR_FINISHES.map((finish) => (
                   <button
@@ -126,6 +141,52 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
                     )}
                   </button>
                 ))}
+              </div>
+
+              {/* PBR Material (optional) */}
+              <div className="mt-4 p-3 border rounded-lg bg-muted/30 space-y-3">
+                <p className="text-sm font-medium text-muted-foreground">PBR Material (optional)</p>
+                <div className="flex items-center gap-3">
+                  {selectedMaterial?.albedo && (
+                    <div
+                      className="w-10 h-10 rounded border bg-cover bg-center flex-shrink-0"
+                      style={{ backgroundImage: `url(${selectedMaterial.albedo})` }}
+                    />
+                  )}
+                  <Select value={selectedMaterialId} onValueChange={setSelectedMaterialId}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="None (color only)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None (color only)</SelectItem>
+                      {materials.map(m => (
+                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {selectedMaterialId !== 'none' && (
+                  <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label className="text-xs whitespace-nowrap cursor-help">Scale (cm per repeat)</Label>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          <p className="max-w-[200px] text-xs">How many cm of floor one texture repeat covers — smaller = more repetitions</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={textureScaleCm}
+                      onChange={(e) => setTextureScaleCm(Number(e.target.value) || 30)}
+                      className="w-24 h-8"
+                    />
+                  </div>
+                )}
               </div>
 
               {selectedFinish && (
