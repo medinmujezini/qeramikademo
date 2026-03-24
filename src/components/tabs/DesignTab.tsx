@@ -1479,7 +1479,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               }}
             />
           )}
-          {viewMode === 'walkthrough' && (
+          {viewMode === 'walkthrough' && !isTouchDevice && (
             <PointerLockControls ref={plcRef} makeDefault />
           )}
           <WalkthroughMovement
@@ -1488,6 +1488,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             walls={floorPlan.walls}
             points={floorPlan.points}
             furnitureItems={furniture}
+            moveStickRef={moveStickRef}
+            lookStickRef={lookStickRef}
           />
           <Suspense fallback={null}>
             <DesignScene
