@@ -3,6 +3,27 @@
 import type { Tile, Wall, Point, WallTileSection } from '@/types/floorPlan';
 import { calculateTileLayout } from './tileCalculator';
 
+// ---- Async bitmap cache for PBR albedo textures ----
+type CacheEntry = { status: 'loading' | 'ready' | 'error'; bitmap?: ImageBitmap };
+const bitmapCache = new Map<string, CacheEntry>();
+
+export function requestBitmap(url: string, onReady: () => void): CacheEntry {
+  const existing = bitmapCache.get(url);
+  if (existing) return existing;
+  const entry: CacheEntry = { status: 'loading' };
+  bitmapCache.set(url, entry);
+  fetch(url, { mode: 'cors' })
+    .then(r => r.blob())
+    .then(b => createImageBitmap(b))
+    .then(bitmap => {
+      entry.status = 'ready';
+      entry.bitmap = bitmap;
+      onReady();
+    })
+    .catch(() => { entry.status = 'error'; });
+  return entry;
+}
+
 export interface TileRenderOptions {
   showGrout: boolean;
   groutColor: string;
