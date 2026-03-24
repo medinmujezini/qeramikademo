@@ -68,14 +68,24 @@ const CameraAnimator: React.FC<{
   controlsRef: React.MutableRefObject<any>;
 }> = ({ targetPos, targetTarget, isAnimating, controlsRef }) => {
   const { camera } = useThree();
+
+  // Cancel animation on any user interaction with OrbitControls
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onStart = () => { isAnimating.current = false; };
+    controls.addEventListener('start', onStart);
+    return () => controls.removeEventListener('start', onStart);
+  }, [controlsRef, isAnimating]);
+
   useFrame(() => {
     if (!isAnimating.current || !controlsRef.current) return;
     camera.position.lerp(targetPos.current, 0.08);
     controlsRef.current.target.lerp(targetTarget.current, 0.08);
     controlsRef.current.update();
     if (
-      camera.position.distanceTo(targetPos.current) < 0.01 &&
-      controlsRef.current.target.distanceTo(targetTarget.current) < 0.01
+      camera.position.distanceTo(targetPos.current) < 0.05 &&
+      controlsRef.current.target.distanceTo(targetTarget.current) < 0.05
     ) {
       camera.position.copy(targetPos.current);
       controlsRef.current.target.copy(targetTarget.current);
@@ -1546,7 +1556,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 onClick={() => {
                   const M = Math.max(roomW, roomH);
                   const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
-                  applyPreset([roomW / 2, 1.25 * M, roomH / 2], C);
+                  // Calculate height to fit entire room in view based on FOV (50°)
+                  const fovRad = (50 * Math.PI) / 180;
+                  const topDownHeight = (M / 2) / Math.tan(fovRad / 2) * 1.15;
+                  applyPreset([roomW / 2, topDownHeight, roomH / 2], C);
                 }}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
