@@ -1273,7 +1273,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Eye className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Eye Level</TooltipContent>
+            <TooltipContent side="bottom">Eye Level</TooltipContent>
           </Tooltip>
 
           <Tooltip>
