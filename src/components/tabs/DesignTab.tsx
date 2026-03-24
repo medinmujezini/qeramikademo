@@ -1162,10 +1162,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Handle drag over for drop zone
   const handleDragOver = useCallback((e: React.DragEvent) => {
+    if (viewMode === 'walkthrough') return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     setIsDraggingFromLibrary(true);
-  }, []);
+  }, [viewMode]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     // Only set to false if we're leaving the container entirely
