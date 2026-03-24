@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Canvas2D } from '@/components/floor-plan/Canvas2D';
 import { Toolbar } from '@/components/floor-plan/Toolbar';
 import { PropertiesPanel } from '@/components/floor-plan/PropertiesPanel';
@@ -6,11 +6,15 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
-import { Ruler, ImagePlus } from 'lucide-react';
+import { Ruler, ImagePlus, LayoutTemplate } from 'lucide-react';
 import { BlueprintImportWizard, FloorPlanAnalysis } from '@/components/blueprint/BlueprintImportWizard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import { generateRectangleRoom, generateLShapeRoom } from '@/utils/roomTemplates';
 
 type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
 
@@ -20,6 +24,14 @@ export const FloorPlanTab: React.FC = () => {
   const [isDrawingWall, setIsDrawingWall] = useState(false);
   const [wallChainLength, setWallChainLength] = useState(0);
   const [showImportWizard, setShowImportWizard] = useState(false);
+  const [showNewRoomDialog, setShowNewRoomDialog] = useState(false);
+  const [rectWidth, setRectWidth] = useState('300');
+  const [rectHeight, setRectHeight] = useState('250');
+  const [lWidth, setLWidth] = useState('400');
+  const [lHeight, setLHeight] = useState('350');
+  const [lNotchW, setLNotchW] = useState('150');
+  const [lNotchH, setLNotchH] = useState('150');
+  const [roomTab, setRoomTab] = useState('rectangle');
   const gridSize = 20;
   
   const { 
@@ -33,6 +45,7 @@ export const FloorPlanTab: React.FC = () => {
     deleteWindow,
     deleteFixture,
     resetFloorPlan,
+    loadFloorPlan,
     floorPlan,
     setFloorPlan,
     addPoint,
@@ -213,6 +226,46 @@ export const FloorPlanTab: React.FC = () => {
     };
   }, []);
 
+  const validateRange = (v: string) => {
+    const n = parseFloat(v);
+    return !isNaN(n) && n >= 100 && n <= 2000;
+  };
+
+  const rectErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (!validateRange(rectWidth)) errs.push('Width must be 100–2000 cm');
+    if (!validateRange(rectHeight)) errs.push('Height must be 100–2000 cm');
+    return errs;
+  }, [rectWidth, rectHeight]);
+
+  const lErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (!validateRange(lWidth)) errs.push('Width must be 100–2000 cm');
+    if (!validateRange(lHeight)) errs.push('Height must be 100–2000 cm');
+    if (!validateRange(lNotchW)) errs.push('Notch width must be 100–2000 cm');
+    if (!validateRange(lNotchH)) errs.push('Notch height must be 100–2000 cm');
+    if (validateRange(lNotchW) && validateRange(lWidth) && parseFloat(lNotchW) >= parseFloat(lWidth))
+      errs.push('Notch width must be less than overall width');
+    if (validateRange(lNotchH) && validateRange(lHeight) && parseFloat(lNotchH) >= parseFloat(lHeight))
+      errs.push('Notch height must be less than overall height');
+    return errs;
+  }, [lWidth, lHeight, lNotchW, lNotchH]);
+
+  const handleGenerateRoom = useCallback(() => {
+    if (roomTab === 'rectangle') {
+      if (rectErrors.length > 0) return;
+      const plan = generateRectangleRoom(parseFloat(rectWidth), parseFloat(rectHeight));
+      loadFloorPlan(plan);
+    } else {
+      if (lErrors.length > 0) return;
+      const plan = generateLShapeRoom(parseFloat(lWidth), parseFloat(lHeight), parseFloat(lNotchW), parseFloat(lNotchH));
+      loadFloorPlan(plan);
+    }
+    setShowNewRoomDialog(false);
+    toast.success('Room generated!');
+  }, [roomTab, rectWidth, rectHeight, lWidth, lHeight, lNotchW, lNotchH, rectErrors, lErrors, loadFloorPlan]);
+
+
   return (
     <div className="h-full relative overflow-hidden">
       {/* FULL-SCREEN 2D CANVAS */}
@@ -267,6 +320,15 @@ export const FloorPlanTab: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => setShowNewRoomDialog(true)}
+            className="h-7 text-xs gap-1.5 w-full justify-start"
+          >
+            <LayoutTemplate className="h-3.5 w-3.5" />
+            New Room
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleGenerateFromImage}
             className="h-7 text-xs gap-1.5 w-full justify-start"
           >
@@ -302,6 +364,74 @@ export const FloorPlanTab: React.FC = () => {
         onOpenChange={setShowImportWizard}
         onComplete={handleImportComplete}
       />
+
+      {/* New Room Dialog */}
+      <Dialog open={showNewRoomDialog} onOpenChange={setShowNewRoomDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate New Room</DialogTitle>
+          </DialogHeader>
+          <Tabs value={roomTab} onValueChange={setRoomTab}>
+            <TabsList className="w-full">
+              <TabsTrigger value="rectangle" className="flex-1">Rectangle</TabsTrigger>
+              <TabsTrigger value="lshape" className="flex-1">L-Shape</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="rectangle" className="space-y-3 mt-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="rect-w" className="text-xs">Width (cm)</Label>
+                <Input id="rect-w" type="number" value={rectWidth} onChange={e => setRectWidth(e.target.value)} min={100} max={2000} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rect-h" className="text-xs">Height (cm)</Label>
+                <Input id="rect-h" type="number" value={rectHeight} onChange={e => setRectHeight(e.target.value)} min={100} max={2000} />
+              </div>
+              {rectErrors.map((err, i) => (
+                <p key={i} className="text-xs text-destructive">{err}</p>
+              ))}
+              <Button onClick={handleGenerateRoom} disabled={rectErrors.length > 0} className="w-full">
+                Generate
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="lshape" className="space-y-3 mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-w" className="text-xs">Overall Width (cm)</Label>
+                  <Input id="l-w" type="number" value={lWidth} onChange={e => setLWidth(e.target.value)} min={100} max={2000} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-h" className="text-xs">Overall Height (cm)</Label>
+                  <Input id="l-h" type="number" value={lHeight} onChange={e => setLHeight(e.target.value)} min={100} max={2000} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-nw" className="text-xs">Notch Width (cm)</Label>
+                  <Input id="l-nw" type="number" value={lNotchW} onChange={e => setLNotchW(e.target.value)} min={100} max={2000} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-nh" className="text-xs">Notch Height (cm)</Label>
+                  <Input id="l-nh" type="number" value={lNotchH} onChange={e => setLNotchH(e.target.value)} min={100} max={2000} />
+                </div>
+              </div>
+              {/* L-Shape diagram */}
+              <div className="flex justify-center py-2">
+                <svg width="120" height="100" viewBox="0 0 120 100" className="text-muted-foreground">
+                  <path d="M10 10 L80 10 L80 45 L55 45 L55 90 L10 90 Z" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <text x="45" y="8" fontSize="8" textAnchor="middle" fill="currentColor">W</text>
+                  <text x="4" y="55" fontSize="8" textAnchor="middle" fill="currentColor">H</text>
+                  <text x="90" y="30" fontSize="7" textAnchor="start" fill="hsl(var(--destructive))">notch</text>
+                </svg>
+              </div>
+              {lErrors.map((err, i) => (
+                <p key={i} className="text-xs text-destructive">{err}</p>
+              ))}
+              <Button onClick={handleGenerateRoom} disabled={lErrors.length > 0} className="w-full">
+                Generate
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
