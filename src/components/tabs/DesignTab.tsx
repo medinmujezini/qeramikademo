@@ -700,6 +700,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
+  const animTargetPos = useRef(new THREE.Vector3());
+  const animTargetTarget = useRef(new THREE.Vector3());
+  const isAnimatingCamera = useRef(false);
 
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
@@ -711,6 +714,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const handleResetView = useCallback(() => {
     if (cameraRef.current && orbitControlsRef.current) {
       setMaxPolarAngle(Math.PI / 2);
+      isAnimatingCamera.current = false;
       cameraRef.current.position.set(...defaultCameraPos);
       orbitControlsRef.current.target.set(...defaultTarget);
       orbitControlsRef.current.update();
@@ -722,9 +726,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     const nextMaxPolarAngle = eyeLevel ? Math.PI : Math.PI / 2;
     setMaxPolarAngle(nextMaxPolarAngle);
     orbitControlsRef.current.maxPolarAngle = nextMaxPolarAngle;
-    cameraRef.current.position.set(...pos);
-    orbitControlsRef.current.target.set(...target);
-    orbitControlsRef.current.update();
+    animTargetPos.current.set(...pos);
+    animTargetTarget.current.set(...target);
+    isAnimatingCamera.current = true;
   }, []);
   
   // Collapsible properties panel state
