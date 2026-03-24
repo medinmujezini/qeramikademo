@@ -87,6 +87,72 @@ const CameraAnimator: React.FC<{
 };
 
 // =============================================================================
+// WALKTHROUGH MOVEMENT (must be inside Canvas for useFrame)
+// =============================================================================
+
+const WalkthroughMovement: React.FC<{
+  viewMode: string;
+  keysRef: React.MutableRefObject<{ w: boolean; a: boolean; s: boolean; d: boolean }>;
+  walls: Wall[];
+  points: Point[];
+}> = ({ viewMode, keysRef, walls, points }) => {
+  const { camera } = useThree();
+  const SPEED = 3.0;
+  const EYE_HEIGHT = 1.6;
+  const CLEARANCE = 0.3;
+  const SCALE = 0.01;
+
+  useFrame((_, dt) => {
+    if (viewMode !== 'walkthrough') return;
+
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0;
+    forward.normalize();
+    const right = new THREE.Vector3();
+    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+    let dx = 0, dz = 0;
+    if (keysRef.current.w) { dx += forward.x; dz += forward.z; }
+    if (keysRef.current.s) { dx -= forward.x; dz -= forward.z; }
+    if (keysRef.current.a) { dx -= right.x; dz -= right.z; }
+    if (keysRef.current.d) { dx += right.x; dz += right.z; }
+
+    if (dx === 0 && dz === 0) return;
+
+    let newX = camera.position.x + dx * SPEED * dt;
+    let newZ = camera.position.z + dz * SPEED * dt;
+
+    // Circle-vs-segment collision with push-out (2 passes for corner sliding)
+    for (let pass = 0; pass < 2; pass++) {
+      for (const wall of walls) {
+        const start = points.find(p => p.id === wall.startPointId);
+        const end = points.find(p => p.id === wall.endPointId);
+        if (!start || !end) continue;
+        const ax = start.x * SCALE, az = start.y * SCALE;
+        const bx = end.x * SCALE, bz = end.y * SCALE;
+        const abx = bx - ax, abz = bz - az;
+        const lenSq = abx * abx + abz * abz;
+        if (lenSq === 0) continue;
+        const t = Math.max(0, Math.min(1, ((newX - ax) * abx + (newZ - az) * abz) / lenSq));
+        const closestX = ax + t * abx, closestZ = az + t * abz;
+        const halfThick = (wall.thickness * SCALE) / 2;
+        const minDist = halfThick + CLEARANCE;
+        const distX = newX - closestX, distZ = newZ - closestZ;
+        const dist = Math.sqrt(distX * distX + distZ * distZ);
+        if (dist < minDist && dist > 0.001) {
+          newX = closestX + (distX / dist) * minDist;
+          newZ = closestZ + (distZ / dist) * minDist;
+        }
+      }
+    }
+
+    camera.position.set(newX, EYE_HEIGHT, newZ);
+  });
+  return null;
+};
+
+// =============================================================================
 // 3D SCENE COMPONENTS
 // =============================================================================
 
