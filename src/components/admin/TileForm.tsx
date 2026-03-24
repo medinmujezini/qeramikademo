@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,9 +23,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ColorPickerField from './ColorPickerField';
+import PBRMaterialPanel from './PBRMaterialPanel';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -39,6 +43,8 @@ const formSchema = z.object({
   thumbnail_url: z.string().optional(),
   is_active: z.boolean(),
   sort_order: z.number(),
+  material_id: z.string().nullable().optional(),
+  texture_scale_cm: z.number().nullable().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -59,8 +65,12 @@ const materials = [
   { value: 'mosaic', label: 'Mosaic' },
 ];
 
+const NONE_VALUE = '__none__';
+
 const TileForm = ({ initialData, onSuccess, onCancel }: TileFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [materialDialogOpen, setMaterialDialogOpen] = useState(false);
+  const { materials: pbrMaterials } = useMaterialContext();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -76,8 +86,14 @@ const TileForm = ({ initialData, onSuccess, onCancel }: TileFormProps) => {
       thumbnail_url: initialData?.thumbnail_url || '',
       is_active: initialData?.is_active ?? true,
       sort_order: initialData?.sort_order || 0,
+      material_id: initialData?.material_id || null,
+      texture_scale_cm: initialData?.texture_scale_cm || null,
     },
   });
+
+  const selectedMaterialId = form.watch('material_id');
+  const selectedColor = form.watch('default_color');
+  const selectedPbrMaterial = pbrMaterials.find(m => m.id === selectedMaterialId);
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -96,6 +112,8 @@ const TileForm = ({ initialData, onSuccess, onCancel }: TileFormProps) => {
         thumbnail_url: data.thumbnail_url || null,
         is_active: data.is_active,
         sort_order: data.sort_order,
+        material_id: data.material_id || null,
+        texture_scale_cm: data.texture_scale_cm || null,
       };
 
       if (initialData) {
@@ -237,6 +255,94 @@ const TileForm = ({ initialData, onSuccess, onCancel }: TileFormProps) => {
             </FormItem>
           )}
         />
+
+        {/* PBR Material */}
+        <div className="space-y-2">
+          <Label>Material (PBR Texture)</Label>
+          <div className="flex items-center gap-3">
+            {/* Preview swatch */}
+            <div
+              className="w-10 h-10 rounded-md border border-border flex-shrink-0"
+              style={{
+                backgroundColor: selectedPbrMaterial?.albedo ? undefined : selectedColor,
+                backgroundImage: selectedPbrMaterial?.albedo ? `url(${selectedPbrMaterial.albedo})` : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+            <FormField
+              control={form.control}
+              name="material_id"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <Select
+                    onValueChange={(val) => field.onChange(val === NONE_VALUE ? null : val)}
+                    value={field.value || NONE_VALUE}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="None (color only)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>None (color only)</SelectItem>
+                      {pbrMaterials.map((mat) => (
+                        <SelectItem key={mat.id} value={mat.id}>
+                          {mat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <Dialog open={materialDialogOpen} onOpenChange={setMaterialDialogOpen}>
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline" size="icon">
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit PBR Materials</DialogTitle>
+                </DialogHeader>
+                <PBRMaterialPanel />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        {/* Texture Scale */}
+        {selectedMaterialId && (
+          <FormField
+            control={form.control}
+            name="texture_scale_cm"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel>Texture scale (cm per repeat)</FormLabel>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-xs text-muted-foreground cursor-help">ⓘ</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      How many centimeters of real surface one texture repeat covers.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={field.value ?? form.getValues('width') ?? 30}
+                    onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                  />
+                </FormControl>
+                <FormDescription>Defaults to the tile width</FormDescription>
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Price */}
         <FormField
