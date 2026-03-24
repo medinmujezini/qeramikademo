@@ -494,8 +494,19 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         }}
       >
         <planeGeometry args={[floorWidth, floorDepth]} />
-        <meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />
-      </mesh>
+        {floorPlan.floorFinish?.materialId ? (
+          <Suspense fallback={<meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />}>
+            <FloorWithTexture
+              materialId={floorPlan.floorFinish.materialId}
+              textureScaleCm={floorPlan.floorFinish.textureScaleCm || 30}
+              floorWidth={floorWidth}
+              floorDepth={floorDepth}
+              fallbackColor={floorPlan.floorFinish?.color || "#f3f4f6"}
+            />
+          </Suspense>
+        ) : (
+          <meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />
+        )}
 
       {/* Walls */}
       {floorPlan.walls.map(wall => {
