@@ -1097,7 +1097,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             minDistance={2}
             maxDistance={30}
             minPolarAngle={0}
-            maxPolarAngle={Math.PI / 2}
+            maxPolarAngle={maxPolarAngle}
             target={defaultTarget}
             enabled={!isDragging && !isDraggingFixture}
           />
