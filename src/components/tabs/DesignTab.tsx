@@ -1235,7 +1235,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Box className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Corner View</TooltipContent>
+            <TooltipContent side="bottom">Corner View</TooltipContent>
           </Tooltip>
 
           <Tooltip>
