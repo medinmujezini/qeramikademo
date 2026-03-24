@@ -690,7 +690,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   const applyPreset = useCallback((pos: [number, number, number], target: [number, number, number], eyeLevel = false) => {
     if (!cameraRef.current || !orbitControlsRef.current) return;
-    setMaxPolarAngle(eyeLevel ? Math.PI : Math.PI / 2);
+    const nextMaxPolarAngle = eyeLevel ? Math.PI : Math.PI / 2;
+    setMaxPolarAngle(nextMaxPolarAngle);
+    orbitControlsRef.current.maxPolarAngle = nextMaxPolarAngle;
     cameraRef.current.position.set(...pos);
     orbitControlsRef.current.target.set(...target);
     orbitControlsRef.current.update();
@@ -1263,10 +1265,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => {
+                  const eyeTarget: [number, number, number] = [roomW / 2, 1.6, roomH / 2];
                   if (roomW >= roomH) {
-                    applyPreset([roomW / 2, 1.6, roomH * 0.85], [roomW / 2, 1.6, 0], true);
+                    applyPreset([roomW / 2, 1.6, roomH * 0.85], eyeTarget, true);
                   } else {
-                    applyPreset([roomW * 0.85, 1.6, roomH / 2], [0, 1.6, roomH / 2], true);
+                    applyPreset([roomW * 0.85, 1.6, roomH / 2], eyeTarget, true);
                   }
                 }}
               >
