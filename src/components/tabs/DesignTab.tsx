@@ -8,7 +8,7 @@
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, PointerLockControls } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import { useMEPContext } from '@/contexts/MEPContext';
@@ -31,7 +31,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
@@ -82,6 +82,72 @@ const CameraAnimator: React.FC<{
       controlsRef.current.update();
       isAnimating.current = false;
     }
+  });
+  return null;
+};
+
+// =============================================================================
+// WALKTHROUGH MOVEMENT (must be inside Canvas for useFrame)
+// =============================================================================
+
+const WalkthroughMovement: React.FC<{
+  viewMode: string;
+  keysRef: React.MutableRefObject<{ w: boolean; a: boolean; s: boolean; d: boolean }>;
+  walls: Wall[];
+  points: Point[];
+}> = ({ viewMode, keysRef, walls, points }) => {
+  const { camera } = useThree();
+  const SPEED = 3.0;
+  const EYE_HEIGHT = 1.6;
+  const CLEARANCE = 0.3;
+  const SCALE = 0.01;
+
+  useFrame((_, dt) => {
+    if (viewMode !== 'walkthrough') return;
+
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0;
+    forward.normalize();
+    const right = new THREE.Vector3();
+    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+    let dx = 0, dz = 0;
+    if (keysRef.current.w) { dx += forward.x; dz += forward.z; }
+    if (keysRef.current.s) { dx -= forward.x; dz -= forward.z; }
+    if (keysRef.current.a) { dx -= right.x; dz -= right.z; }
+    if (keysRef.current.d) { dx += right.x; dz += right.z; }
+
+    if (dx === 0 && dz === 0) return;
+
+    let newX = camera.position.x + dx * SPEED * dt;
+    let newZ = camera.position.z + dz * SPEED * dt;
+
+    // Circle-vs-segment collision with push-out (2 passes for corner sliding)
+    for (let pass = 0; pass < 2; pass++) {
+      for (const wall of walls) {
+        const start = points.find(p => p.id === wall.startPointId);
+        const end = points.find(p => p.id === wall.endPointId);
+        if (!start || !end) continue;
+        const ax = start.x * SCALE, az = start.y * SCALE;
+        const bx = end.x * SCALE, bz = end.y * SCALE;
+        const abx = bx - ax, abz = bz - az;
+        const lenSq = abx * abx + abz * abz;
+        if (lenSq === 0) continue;
+        const t = Math.max(0, Math.min(1, ((newX - ax) * abx + (newZ - az) * abz) / lenSq));
+        const closestX = ax + t * abx, closestZ = az + t * abz;
+        const halfThick = (wall.thickness * SCALE) / 2;
+        const minDist = halfThick + CLEARANCE;
+        const distX = newX - closestX, distZ = newZ - closestZ;
+        const dist = Math.sqrt(distX * distX + distZ * distZ);
+        if (dist < minDist && dist > 0.001) {
+          newX = closestX + (distX / dist) * minDist;
+          newZ = closestZ + (distZ / dist) * minDist;
+        }
+      }
+    }
+
+    camera.position.set(newX, EYE_HEIGHT, newZ);
   });
   return null;
 };
@@ -774,6 +840,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const animTargetPos = useRef(new THREE.Vector3());
   const animTargetTarget = useRef(new THREE.Vector3());
   const isAnimatingCamera = useRef(false);
+  const savedOrbitPos = useRef(new THREE.Vector3());
+  const savedOrbitTarget = useRef(new THREE.Vector3());
+  const plcRef = useRef<any>(null);
+  const keysRef = useRef({ w: false, a: false, s: false, d: false });
+  const [isPointerLocked, setIsPointerLocked] = useState(false);
 
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
@@ -801,6 +872,62 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     animTargetTarget.current.set(...target);
     isAnimatingCamera.current = true;
   }, []);
+
+  // Pointer lock state tracking
+  useEffect(() => {
+    const onChange = () => setIsPointerLocked(!!document.pointerLockElement);
+    document.addEventListener('pointerlockchange', onChange);
+    return () => document.removeEventListener('pointerlockchange', onChange);
+  }, []);
+
+  // Enter/exit walkthrough
+  const enterWalkthrough = useCallback(() => {
+    if (cameraRef.current) savedOrbitPos.current.copy(cameraRef.current.position);
+    if (orbitControlsRef.current) savedOrbitTarget.current.copy(orbitControlsRef.current.target);
+    const SCALE = 0.01;
+    let centerX = roomW / 2;
+    let centerZ = roomH / 2;
+    if (floorPlan.points.length > 0) {
+      const xs = floorPlan.points.map(p => p.x * SCALE);
+      const ys = floorPlan.points.map(p => p.y * SCALE);
+      centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+      centerZ = (Math.min(...ys) + Math.max(...ys)) / 2;
+    }
+    if (cameraRef.current) cameraRef.current.position.set(centerX, 1.6, centerZ);
+    isAnimatingCamera.current = false;
+    setViewMode('walkthrough');
+  }, [floorPlan.points, roomW, roomH, isAnimatingCamera]);
+
+  const exitWalkthrough = useCallback(() => {
+    document.exitPointerLock();
+    setViewMode('design');
+    if (cameraRef.current) cameraRef.current.position.copy(savedOrbitPos.current);
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.target.copy(savedOrbitTarget.current);
+      orbitControlsRef.current.update();
+    }
+  }, []);
+
+  // WASD keyboard listeners for walkthrough
+  useEffect(() => {
+    if (viewMode !== 'walkthrough') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      if (k in keysRef.current) keysRef.current[k as keyof typeof keysRef.current] = true;
+      if (e.key === 'Escape') exitWalkthrough();
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      if (k in keysRef.current) keysRef.current[k as keyof typeof keysRef.current] = false;
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      keysRef.current = { w: false, a: false, s: false, d: false };
+    };
+  }, [viewMode, exitWalkthrough]);
   
   // Collapsible properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -1035,10 +1162,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Handle drag over for drop zone
   const handleDragOver = useCallback((e: React.DragEvent) => {
+    if (viewMode === 'walkthrough') return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     setIsDraggingFromLibrary(true);
-  }, []);
+  }, [viewMode]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     // Only set to false if we're leaving the container entirely
@@ -1049,6 +1177,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Handle drop for furniture/fixtures from library
   const handleDrop = useCallback((e: React.DragEvent) => {
+    if (viewMode === 'walkthrough') return;
     e.preventDefault();
     setIsDraggingFromLibrary(false);
     
@@ -1195,17 +1324,28 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           onPointerMissed={handleCanvasPointerMissed}
         >
           <PerspectiveCamera ref={cameraRef} makeDefault position={defaultCameraPos} fov={50} />
-          <OrbitControls 
-            ref={orbitControlsRef}
-            makeDefault
-            enableDamping
-            dampingFactor={0.05}
-            minDistance={2}
-            maxDistance={30}
-            minPolarAngle={0}
-            maxPolarAngle={maxPolarAngle}
-            target={defaultTarget}
-            enabled={!isDragging && !isDraggingFixture}
+          {viewMode === 'design' && (
+            <OrbitControls 
+              ref={orbitControlsRef}
+              makeDefault
+              enableDamping
+              dampingFactor={0.05}
+              minDistance={2}
+              maxDistance={30}
+              minPolarAngle={0}
+              maxPolarAngle={maxPolarAngle}
+              target={defaultTarget}
+              enabled={!isDragging && !isDraggingFixture}
+            />
+          )}
+          {viewMode === 'walkthrough' && (
+            <PointerLockControls ref={plcRef} makeDefault />
+          )}
+          <WalkthroughMovement
+            viewMode={viewMode}
+            keysRef={keysRef}
+            walls={floorPlan.walls}
+            points={floorPlan.points}
           />
           <Suspense fallback={null}>
             <DesignScene
@@ -1327,6 +1467,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         >
           <RotateCcw className="h-3.5 w-3.5" />
           Reset View
+        </Button>
+
+        <Button 
+          variant={viewMode === 'walkthrough' ? 'default' : 'ghost'}
+          size="sm" 
+          className="h-7 gap-1.5"
+          onClick={viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
+        >
+          <PersonStanding className="h-3.5 w-3.5" />
+          {viewMode === 'walkthrough' ? 'Exit Walk' : 'Walkthrough'}
         </Button>
 
         <div className="h-4 w-px bg-border/50" />
@@ -1511,7 +1661,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* LEFT PANEL - Library */}
-      <div className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]">
+      <div 
+        className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
+        style={{ pointerEvents: viewMode === 'walkthrough' ? 'none' : 'auto', opacity: viewMode === 'walkthrough' ? 0.4 : 1 }}
+      >
         <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
           <div className="panel-header shrink-0">
             <span className="panel-header-title">Library</span>
@@ -1565,6 +1718,61 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
           Click walls/floor for surface • Drag library items to place
         </div>
+      )}
+
+      {/* WALKTHROUGH OVERLAYS */}
+      {viewMode === 'walkthrough' && !isPointerLocked && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <PersonStanding className="h-12 w-12 text-primary" />
+            <h3 className="text-xl font-semibold text-foreground">Walkthrough Mode</h3>
+            <p className="text-sm text-muted-foreground">
+              Move with WASD · Look with mouse · Esc to exit
+            </p>
+            <Button
+              size="lg"
+              className="gap-2"
+              onClick={() => plcRef.current?.lock()}
+            >
+              <MousePointer className="h-4 w-4" />
+              Click to Enter
+            </Button>
+            <Button variant="ghost" size="sm" onClick={exitWalkthrough}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'walkthrough' && isPointerLocked && (
+        <>
+          {/* Crosshair */}
+          <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
+            <div className="relative w-6 h-6">
+              <div className="absolute top-1/2 left-0 w-full h-px bg-foreground/50" />
+              <div className="absolute left-1/2 top-0 h-full w-px bg-foreground/50" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-foreground/70" />
+            </div>
+          </div>
+
+          {/* Exit button */}
+          <div className="absolute top-4 right-4 z-40">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-1.5"
+              onClick={exitWalkthrough}
+            >
+              <X className="h-3.5 w-3.5" />
+              Exit (Esc)
+            </Button>
+          </div>
+
+          {/* WASD hint */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
+            WASD to move · Mouse to look
+          </div>
+        </>
       )}
 
       {/* Render Image Dialog */}
