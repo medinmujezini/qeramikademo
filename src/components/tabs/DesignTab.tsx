@@ -58,6 +58,35 @@ interface WallPreviewState {
 }
 
 // =============================================================================
+// CAMERA ANIMATOR (must be inside Canvas for useFrame)
+// =============================================================================
+
+const CameraAnimator: React.FC<{
+  targetPos: React.MutableRefObject<THREE.Vector3>;
+  targetTarget: React.MutableRefObject<THREE.Vector3>;
+  isAnimating: React.MutableRefObject<boolean>;
+  controlsRef: React.MutableRefObject<any>;
+}> = ({ targetPos, targetTarget, isAnimating, controlsRef }) => {
+  const { camera } = useThree();
+  useFrame(() => {
+    if (!isAnimating.current || !controlsRef.current) return;
+    camera.position.lerp(targetPos.current, 0.08);
+    controlsRef.current.target.lerp(targetTarget.current, 0.08);
+    controlsRef.current.update();
+    if (
+      camera.position.distanceTo(targetPos.current) < 0.01 &&
+      controlsRef.current.target.distanceTo(targetTarget.current) < 0.01
+    ) {
+      camera.position.copy(targetPos.current);
+      controlsRef.current.target.copy(targetTarget.current);
+      controlsRef.current.update();
+      isAnimating.current = false;
+    }
+  });
+  return null;
+};
+
+// =============================================================================
 // 3D SCENE COMPONENTS
 // =============================================================================
 
@@ -671,6 +700,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
+  const animTargetPos = useRef(new THREE.Vector3());
+  const animTargetTarget = useRef(new THREE.Vector3());
+  const isAnimatingCamera = useRef(false);
 
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
@@ -682,6 +714,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const handleResetView = useCallback(() => {
     if (cameraRef.current && orbitControlsRef.current) {
       setMaxPolarAngle(Math.PI / 2);
+      isAnimatingCamera.current = false;
       cameraRef.current.position.set(...defaultCameraPos);
       orbitControlsRef.current.target.set(...defaultTarget);
       orbitControlsRef.current.update();
@@ -693,9 +726,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     const nextMaxPolarAngle = eyeLevel ? Math.PI : Math.PI / 2;
     setMaxPolarAngle(nextMaxPolarAngle);
     orbitControlsRef.current.maxPolarAngle = nextMaxPolarAngle;
-    cameraRef.current.position.set(...pos);
-    orbitControlsRef.current.target.set(...target);
-    orbitControlsRef.current.update();
+    animTargetPos.current.set(...pos);
+    animTargetTarget.current.set(...target);
+    isAnimatingCamera.current = true;
   }, []);
   
   // Collapsible properties panel state
@@ -1120,6 +1153,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               floorPlan={floorPlan}
             />
           </Suspense>
+          <CameraAnimator
+            targetPos={animTargetPos}
+            targetTarget={animTargetTarget}
+            isAnimating={isAnimatingCamera}
+            controlsRef={orbitControlsRef}
+          />
         </Canvas>
         
         {/* Drop zone indicator */}
