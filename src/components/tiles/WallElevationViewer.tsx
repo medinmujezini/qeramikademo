@@ -117,6 +117,7 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
   // Cut tile interaction state
   const [selectedCutTile, setSelectedCutTile] = useState<SelectedCutTile | null>(null);
   const [cutTilePopoverOpen, setCutTilePopoverOpen] = useState(false);
+  const [textureVersion, setTextureVersion] = useState(0);
   const tilePositionsRef = useRef<ScreenTilePosition[]>([]);
   
   // Track previous selected tile to prevent overwriting on section selection
