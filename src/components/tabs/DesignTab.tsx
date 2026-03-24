@@ -507,6 +507,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         ) : (
           <meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />
         )}
+      </mesh>
 
       {/* Walls */}
       {floorPlan.walls.map(wall => {
