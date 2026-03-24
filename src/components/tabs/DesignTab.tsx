@@ -895,6 +895,43 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
   const roomH = (floorPlan.roomHeight || 600) / 100;
+
+  const roomBounds = useMemo(() => {
+    if (floorPlan.points.length === 0) {
+      return {
+        minX: 0,
+        maxX: roomW,
+        minZ: 0,
+        maxZ: roomH,
+        width: roomW,
+        depth: roomH,
+        centerX: roomW / 2,
+        centerZ: roomH / 2,
+      };
+    }
+
+    const xs = floorPlan.points.map((p) => p.x * 0.01);
+    const zs = floorPlan.points.map((p) => p.y * 0.01);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minZ = Math.min(...zs);
+    const maxZ = Math.max(...zs);
+
+    return {
+      minX,
+      maxX,
+      minZ,
+      maxZ,
+      width: Math.max(maxX - minX, 0.1),
+      depth: Math.max(maxZ - minZ, 0.1),
+      centerX: (minX + maxX) / 2,
+      centerZ: (minZ + maxZ) / 2,
+    };
+  }, [floorPlan.points, roomW, roomH]);
+
+  const presetCenterX = roomBounds.centerX;
+  const presetCenterZ = roomBounds.centerZ;
+  const presetMaxSpan = Math.max(roomBounds.width, roomBounds.depth);
   const camDist = Math.max(roomW, roomH) * 0.85;
   const defaultCameraPos: [number, number, number] = [roomW / 2 + camDist, camDist * 0.75, roomH / 2 + camDist];
   const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
@@ -1377,11 +1414,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               enableDamping
               dampingFactor={0.05}
               minDistance={2}
-              maxDistance={30}
+              maxDistance={Math.max(30, presetMaxSpan * 6)}
               minPolarAngle={0}
               maxPolarAngle={maxPolarAngle}
               target={defaultTarget}
               enabled={!isDragging && !isDraggingFixture}
+              onStart={() => {
+                isAnimatingCamera.current = false;
+              }}
             />
           )}
           {viewMode === 'walkthrough' && (
@@ -1536,9 +1576,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => {
-                  const M = Math.max(roomW, roomH);
-                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
-                  applyPreset([roomW / 2 + M * 0.85, M * 0.85 * 0.75, roomH / 2 + M * 0.85], C);
+                  const M = presetMaxSpan;
+                  const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                  applyPreset([presetCenterX + M * 0.85, M * 0.85 * 0.75, presetCenterZ + M * 0.85], C);
                 }}
               >
                 <Box className="h-3.5 w-3.5" />
@@ -1554,12 +1594,15 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => {
-                  const M = Math.max(roomW, roomH);
-                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
-                  // Calculate height to fit entire room in view based on FOV (50°)
+                  const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
                   const fovRad = (50 * Math.PI) / 180;
-                  const topDownHeight = (M / 2) / Math.tan(fovRad / 2) * 1.15;
-                  applyPreset([roomW / 2, topDownHeight, roomH / 2], C);
+                  const containerW = canvasContainerRef.current?.clientWidth ?? 16;
+                  const containerH = canvasContainerRef.current?.clientHeight ?? 9;
+                  const aspect = containerW / Math.max(containerH, 1);
+                  const heightForDepth = (roomBounds.depth / 2) / Math.tan(fovRad / 2);
+                  const heightForWidth = (roomBounds.width / 2) / (Math.tan(fovRad / 2) * aspect);
+                  const topDownHeight = Math.max(heightForDepth, heightForWidth) * 1.2;
+                  applyPreset([presetCenterX, topDownHeight, presetCenterZ], C);
                 }}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -1575,11 +1618,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => {
-                  const eyeTarget: [number, number, number] = [roomW / 2, 1.6, roomH / 2];
-                  if (roomW >= roomH) {
-                    applyPreset([roomW / 2, 1.6, roomH * 0.85], eyeTarget, true);
+                  const eyeTarget: [number, number, number] = [presetCenterX, 1.6, presetCenterZ];
+                  if (roomBounds.width >= roomBounds.depth) {
+                    applyPreset([presetCenterX, 1.6, presetCenterZ + roomBounds.depth * 0.35], eyeTarget, true);
                   } else {
-                    applyPreset([roomW * 0.85, 1.6, roomH / 2], eyeTarget, true);
+                    applyPreset([presetCenterX + roomBounds.width * 0.35, 1.6, presetCenterZ], eyeTarget, true);
                   }
                 }}
               >
@@ -1596,9 +1639,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => {
-                  const M = Math.max(roomW, roomH);
-                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
-                  applyPreset([roomW * 0.9 + M, M, roomH * 0.9 + M], C);
+                  const M = presetMaxSpan;
+                  const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                  applyPreset([presetCenterX + M, M, presetCenterZ + M], C);
                 }}
               >
                 <Mountain className="h-3.5 w-3.5" />
