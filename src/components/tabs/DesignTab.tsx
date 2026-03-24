@@ -1469,6 +1469,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           Reset View
         </Button>
 
+        <Button 
+          variant={viewMode === 'walkthrough' ? 'default' : 'ghost'}
+          size="sm" 
+          className="h-7 gap-1.5"
+          onClick={viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
+        >
+          <PersonStanding className="h-3.5 w-3.5" />
+          {viewMode === 'walkthrough' ? 'Exit Walk' : 'Walkthrough'}
+        </Button>
+
         <div className="h-4 w-px bg-border/50" />
 
         <TooltipProvider delayDuration={300}>
