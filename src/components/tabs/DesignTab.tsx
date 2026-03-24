@@ -622,6 +622,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           pricePerUnit: t.pricePerUnit,
           isFlexible: t.isFlexible,
           minCurveRadius: t.minCurveRadius,
+          materialId: t.materialId,
+          textureScaleCm: t.textureScaleCm,
         });
       });
     }
