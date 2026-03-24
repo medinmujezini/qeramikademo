@@ -95,7 +95,8 @@ const WalkthroughMovement: React.FC<{
   keysRef: React.MutableRefObject<{ w: boolean; a: boolean; s: boolean; d: boolean }>;
   walls: Wall[];
   points: Point[];
-}> = ({ viewMode, keysRef, walls, points }) => {
+  furnitureItems: { position: { x: number; y: number }; dimensions: { width: number; depth: number }; rotation: number }[];
+}> = ({ viewMode, keysRef, walls, points, furnitureItems }) => {
   const { camera } = useThree();
   const SPEED = 3.0;
   const EYE_HEIGHT = 1.6;
@@ -123,8 +124,9 @@ const WalkthroughMovement: React.FC<{
     let newX = camera.position.x + dx * SPEED * dt;
     let newZ = camera.position.z + dz * SPEED * dt;
 
-    // Circle-vs-segment collision with push-out (2 passes for corner sliding)
+    // 2-pass push-out for smooth corner sliding
     for (let pass = 0; pass < 2; pass++) {
+      // Wall collision (circle-vs-segment)
       for (const wall of walls) {
         const start = points.find(p => p.id === wall.startPointId);
         const end = points.find(p => p.id === wall.endPointId);
@@ -143,6 +145,40 @@ const WalkthroughMovement: React.FC<{
         if (dist < minDist && dist > 0.001) {
           newX = closestX + (distX / dist) * minDist;
           newZ = closestZ + (distZ / dist) * minDist;
+        }
+      }
+
+      // Furniture collision (circle-vs-OBB, 4 edges per item)
+      for (const item of furnitureItems) {
+        const cx = item.position.x * SCALE;
+        const cz = item.position.y * SCALE;
+        const hw = (item.dimensions.width * SCALE) / 2;
+        const hd = (item.dimensions.depth * SCALE) / 2;
+        const rad = -(item.rotation || 0) * (Math.PI / 180);
+        const cosR = Math.cos(rad), sinR = Math.sin(rad);
+
+        // 4 corners of the oriented bounding box
+        const corners = [
+          { x: cx + (-hw) * cosR - (-hd) * sinR, z: cz + (-hw) * sinR + (-hd) * cosR },
+          { x: cx + ( hw) * cosR - (-hd) * sinR, z: cz + ( hw) * sinR + (-hd) * cosR },
+          { x: cx + ( hw) * cosR - ( hd) * sinR, z: cz + ( hw) * sinR + ( hd) * cosR },
+          { x: cx + (-hw) * cosR - ( hd) * sinR, z: cz + (-hw) * sinR + ( hd) * cosR },
+        ];
+
+        // Check each edge as a segment
+        for (let i = 0; i < 4; i++) {
+          const c1 = corners[i], c2 = corners[(i + 1) % 4];
+          const ex = c2.x - c1.x, ez = c2.z - c1.z;
+          const eLenSq = ex * ex + ez * ez;
+          if (eLenSq === 0) continue;
+          const et = Math.max(0, Math.min(1, ((newX - c1.x) * ex + (newZ - c1.z) * ez) / eLenSq));
+          const closestX = c1.x + et * ex, closestZ = c1.z + et * ez;
+          const fdx = newX - closestX, fdz = newZ - closestZ;
+          const fDist = Math.sqrt(fdx * fdx + fdz * fdz);
+          if (fDist < CLEARANCE && fDist > 0.001) {
+            newX = closestX + (fdx / fDist) * CLEARANCE;
+            newZ = closestZ + (fdz / fDist) * CLEARANCE;
+          }
         }
       }
     }
@@ -1346,6 +1382,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             keysRef={keysRef}
             walls={floorPlan.walls}
             points={floorPlan.points}
+            furnitureItems={furniture}
           />
           <Suspense fallback={null}>
             <DesignScene
