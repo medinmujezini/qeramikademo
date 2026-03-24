@@ -1291,7 +1291,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Mountain className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Birdseye</TooltipContent>
+            <TooltipContent side="bottom">Birdseye</TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
