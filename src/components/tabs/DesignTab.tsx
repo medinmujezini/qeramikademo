@@ -58,6 +58,35 @@ interface WallPreviewState {
 }
 
 // =============================================================================
+// CAMERA ANIMATOR (must be inside Canvas for useFrame)
+// =============================================================================
+
+const CameraAnimator: React.FC<{
+  targetPos: React.MutableRefObject<THREE.Vector3>;
+  targetTarget: React.MutableRefObject<THREE.Vector3>;
+  isAnimating: React.MutableRefObject<boolean>;
+  controlsRef: React.MutableRefObject<any>;
+}> = ({ targetPos, targetTarget, isAnimating, controlsRef }) => {
+  const { camera } = useThree();
+  useFrame(() => {
+    if (!isAnimating.current || !controlsRef.current) return;
+    camera.position.lerp(targetPos.current, 0.08);
+    controlsRef.current.target.lerp(targetTarget.current, 0.08);
+    controlsRef.current.update();
+    if (
+      camera.position.distanceTo(targetPos.current) < 0.01 &&
+      controlsRef.current.target.distanceTo(targetTarget.current) < 0.01
+    ) {
+      camera.position.copy(targetPos.current);
+      controlsRef.current.target.copy(targetTarget.current);
+      controlsRef.current.update();
+      isAnimating.current = false;
+    }
+  });
+  return null;
+};
+
+// =============================================================================
 // 3D SCENE COMPONENTS
 // =============================================================================
 
