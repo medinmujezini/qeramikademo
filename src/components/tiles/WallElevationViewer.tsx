@@ -13,6 +13,7 @@ import type { Wall, Tile, TileOrientation, TilePattern, WallTileSection, Point }
 import { isWallSloped, isWallCurved, getWallSlopeAngle, isTileSuitableForCurve, getRecommendedTileSize } from '@/types/floorPlan';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { calculateTileLayout, TilePosition } from '@/utils/tileCalculator';
+import { requestBitmap } from '@/utils/tileRenderer';
 import { calculateWallElevationShape, WallElevationShape } from '@/utils/wallHeightUtils';
 import { arcLength as calcArcLength } from '@/utils/arcUtils';
 import { 
