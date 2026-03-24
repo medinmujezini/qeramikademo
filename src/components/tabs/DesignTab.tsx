@@ -7,7 +7,7 @@
  */
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
+import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
