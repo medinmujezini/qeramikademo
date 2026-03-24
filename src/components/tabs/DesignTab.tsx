@@ -600,10 +600,13 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         position={[floorCenterX, 0, floorCenterZ]} 
         receiveShadow
         onPointerDown={(e) => {
+          // Only register if the floor is the first intersected object (not furniture on top)
+          if (e.intersections.length > 0 && e.intersections[0].object !== e.object) return;
           e.stopPropagation();
           (e.object as any)._pointerDownPos = { x: e.clientX, y: e.clientY };
         }}
         onPointerUp={(e) => {
+          if (e.intersections.length > 0 && e.intersections[0].object !== e.object) return;
           e.stopPropagation();
           const down = (e.object as any)._pointerDownPos;
           if (down) {
