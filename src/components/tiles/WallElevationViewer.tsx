@@ -627,7 +627,8 @@ export const WallElevationViewer: React.FC<WallElevationViewerProps> = ({
       const sectionTile = tiles.find(t => t.id === section.tileId) || selectedTile;
 
       // Resolve albedo bitmap for this section's tile
-      const sectionAlbedoUrl = sectionTile?.textureUrls?.albedo;
+      const sectionMat = sectionTile?.materialId ? pbrMaterials.find(m => m.id === sectionTile.materialId) : null;
+      const sectionAlbedoUrl = sectionMat?.albedo;
       const bitmapEntry = sectionAlbedoUrl
         ? requestBitmap(sectionAlbedoUrl, () => setTextureVersion(v => v + 1))
         : null;
