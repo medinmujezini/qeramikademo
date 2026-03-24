@@ -916,6 +916,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     navigator.maxTouchPoints > 0 &&
     !window.matchMedia('(hover: hover)').matches
   , []);
+  const [isPointerLocked, setIsPointerLocked] = useState(false);
 
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
