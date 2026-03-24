@@ -1153,6 +1153,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               floorPlan={floorPlan}
             />
           </Suspense>
+          <CameraAnimator
+            targetPos={animTargetPos}
+            targetTarget={animTargetTarget}
+            isAnimating={isAnimatingCamera}
+            controlsRef={orbitControlsRef}
+          />
         </Canvas>
         
         {/* Drop zone indicator */}
