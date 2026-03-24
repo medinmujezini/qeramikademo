@@ -320,6 +320,15 @@ export const FloorPlanTab: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => setShowNewRoomDialog(true)}
+            className="h-7 text-xs gap-1.5 w-full justify-start"
+          >
+            <LayoutTemplate className="h-3.5 w-3.5" />
+            New Room
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleGenerateFromImage}
             className="h-7 text-xs gap-1.5 w-full justify-start"
           >
@@ -355,6 +364,74 @@ export const FloorPlanTab: React.FC = () => {
         onOpenChange={setShowImportWizard}
         onComplete={handleImportComplete}
       />
+
+      {/* New Room Dialog */}
+      <Dialog open={showNewRoomDialog} onOpenChange={setShowNewRoomDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate New Room</DialogTitle>
+          </DialogHeader>
+          <Tabs value={roomTab} onValueChange={setRoomTab}>
+            <TabsList className="w-full">
+              <TabsTrigger value="rectangle" className="flex-1">Rectangle</TabsTrigger>
+              <TabsTrigger value="lshape" className="flex-1">L-Shape</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="rectangle" className="space-y-3 mt-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="rect-w" className="text-xs">Width (cm)</Label>
+                <Input id="rect-w" type="number" value={rectWidth} onChange={e => setRectWidth(e.target.value)} min={100} max={2000} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rect-h" className="text-xs">Height (cm)</Label>
+                <Input id="rect-h" type="number" value={rectHeight} onChange={e => setRectHeight(e.target.value)} min={100} max={2000} />
+              </div>
+              {rectErrors.map((err, i) => (
+                <p key={i} className="text-xs text-destructive">{err}</p>
+              ))}
+              <Button onClick={handleGenerateRoom} disabled={rectErrors.length > 0} className="w-full">
+                Generate
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="lshape" className="space-y-3 mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-w" className="text-xs">Overall Width (cm)</Label>
+                  <Input id="l-w" type="number" value={lWidth} onChange={e => setLWidth(e.target.value)} min={100} max={2000} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-h" className="text-xs">Overall Height (cm)</Label>
+                  <Input id="l-h" type="number" value={lHeight} onChange={e => setLHeight(e.target.value)} min={100} max={2000} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-nw" className="text-xs">Notch Width (cm)</Label>
+                  <Input id="l-nw" type="number" value={lNotchW} onChange={e => setLNotchW(e.target.value)} min={100} max={2000} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="l-nh" className="text-xs">Notch Height (cm)</Label>
+                  <Input id="l-nh" type="number" value={lNotchH} onChange={e => setLNotchH(e.target.value)} min={100} max={2000} />
+                </div>
+              </div>
+              {/* L-Shape diagram */}
+              <div className="flex justify-center py-2">
+                <svg width="120" height="100" viewBox="0 0 120 100" className="text-muted-foreground">
+                  <path d="M10 10 L80 10 L80 45 L55 45 L55 90 L10 90 Z" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <text x="45" y="8" fontSize="8" textAnchor="middle" fill="currentColor">W</text>
+                  <text x="4" y="55" fontSize="8" textAnchor="middle" fill="currentColor">H</text>
+                  <text x="90" y="30" fontSize="7" textAnchor="start" fill="hsl(var(--destructive))">notch</text>
+                </svg>
+              </div>
+              {lErrors.map((err, i) => (
+                <p key={i} className="text-xs text-destructive">{err}</p>
+              ))}
+              <Button onClick={handleGenerateRoom} disabled={lErrors.length > 0} className="w-full">
+                Generate
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
