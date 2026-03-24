@@ -1414,11 +1414,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               enableDamping
               dampingFactor={0.05}
               minDistance={2}
-              maxDistance={30}
+              maxDistance={Math.max(30, presetMaxSpan * 6)}
               minPolarAngle={0}
               maxPolarAngle={maxPolarAngle}
               target={defaultTarget}
               enabled={!isDragging && !isDraggingFixture}
+              onStart={() => {
+                isAnimatingCamera.current = false;
+              }}
             />
           )}
           {viewMode === 'walkthrough' && (
