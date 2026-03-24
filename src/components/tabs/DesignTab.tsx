@@ -12,6 +12,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import { useMEPContext } from '@/contexts/MEPContext';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 import { FurnitureScene } from '@/components/3d/FurnitureScene';
 import { FixtureScene } from '@/components/3d/FixtureScene';
 import { RenderPipelineController } from '@/components/3d/RenderPipelineController';
