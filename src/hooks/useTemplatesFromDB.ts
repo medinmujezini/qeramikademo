@@ -313,6 +313,8 @@ export function useTileTemplates() {
           isFlexible: t.is_flexible,
           minCurveRadius: t.min_curve_radius || undefined,
           thumbnailUrl: t.thumbnail_url || undefined,
+          materialId: (t as any).material_id || undefined,
+          textureScaleCm: (t as any).texture_scale_cm ? Number((t as any).texture_scale_cm) : undefined,
         };
       });
     },
