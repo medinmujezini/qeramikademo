@@ -1131,7 +1131,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* FLOATING TOP TOOLBAR */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar flex items-center gap-4 flex-wrap">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 glass-toolbar flex items-center gap-4 flex-wrap overflow-visible">
         <div className="flex items-center gap-2">
           <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-90" />
           <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-sm">
@@ -1235,7 +1235,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Box className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Corner View</TooltipContent>
+            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Corner View</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -1253,7 +1253,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <LayoutGrid className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Top Down</TooltipContent>
+            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Top Down</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -1273,7 +1273,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Eye className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Eye Level</TooltipContent>
+            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Eye Level</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -1291,7 +1291,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Mountain className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Birdseye</TooltipContent>
+            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Birdseye</TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
