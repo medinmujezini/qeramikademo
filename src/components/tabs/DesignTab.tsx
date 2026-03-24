@@ -1536,7 +1536,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           </Label>
         </div>
         
-        {giEnabled && (
+        {viewMode === 'design' && giEnabled && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 gap-1.5">
@@ -1566,52 +1566,56 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           </Label>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-90" />
-          <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-sm">
-            <Droplets className="h-3.5 w-3.5 text-blue-500" />
-            Plumbing
-          </Label>
-        </div>
-        
-        <div className="h-4 w-px bg-border/50" />
-        
-        <div className="flex items-center gap-2 text-sm">
-          <Badge variant="secondary" className="gap-1 bg-white/20">
-            {furnitureCount} Furniture
-          </Badge>
-          <Badge variant="secondary" className="gap-1 bg-white/20">
-            {fixtureCount} Fixtures
-          </Badge>
-        </div>
-        
-        <div className="h-4 w-px bg-border/50" />
-        
-        {/* Render Image Button */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 gap-1.5"
-          onClick={handleRenderImage}
-          disabled={isRendering}
-        >
-          {isRendering ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Camera className="h-3.5 w-3.5" />
-          )}
-          Render
-        </Button>
+        {viewMode === 'design' && (
+          <>
+            <div className="flex items-center gap-2">
+              <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-90" />
+              <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-sm">
+                <Droplets className="h-3.5 w-3.5 text-blue-500" />
+                Plumbing
+              </Label>
+            </div>
+            
+            <div className="h-4 w-px bg-border/50" />
+            
+            <div className="flex items-center gap-2 text-sm">
+              <Badge variant="secondary" className="gap-1 bg-white/20">
+                {furnitureCount} Furniture
+              </Badge>
+              <Badge variant="secondary" className="gap-1 bg-white/20">
+                {fixtureCount} Fixtures
+              </Badge>
+            </div>
+            
+            <div className="h-4 w-px bg-border/50" />
+            
+            {/* Render Image Button */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 gap-1.5"
+              onClick={handleRenderImage}
+              disabled={isRendering}
+            >
+              {isRendering ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Camera className="h-3.5 w-3.5" />
+              )}
+              Render
+            </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 gap-1.5"
-          onClick={handleResetView}
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Reset View
-        </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 gap-1.5"
+              onClick={handleResetView}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reset View
+            </Button>
+          </>
+        )}
 
         <Button 
           variant={viewMode === 'walkthrough' ? 'default' : 'ghost'}
@@ -1623,184 +1627,188 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           {viewMode === 'walkthrough' ? 'Exit Walk' : 'Walkthrough'}
         </Button>
 
-        <div className="h-4 w-px bg-border/50" />
+        {viewMode === 'design' && (
+          <>
+            <div className="h-4 w-px bg-border/50" />
 
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => {
-                  const M = presetMaxSpan;
-                  const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
-                  applyPreset([presetCenterX + M * 0.85, M * 0.85 * 0.75, presetCenterZ + M * 0.85], C);
-                }}
-              >
-                <Box className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Corner View</TooltipContent>
-          </Tooltip>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => {
+                      const M = presetMaxSpan;
+                      const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                      applyPreset([presetCenterX + M * 0.85, M * 0.85 * 0.75, presetCenterZ + M * 0.85], C);
+                    }}
+                  >
+                    <Box className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Corner View</TooltipContent>
+              </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => {
-                  const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
-                  const fovRad = (50 * Math.PI) / 180;
-                  const containerW = canvasContainerRef.current?.clientWidth ?? 16;
-                  const containerH = canvasContainerRef.current?.clientHeight ?? 9;
-                  const aspect = containerW / Math.max(containerH, 1);
-                  const heightForDepth = (roomBounds.depth / 2) / Math.tan(fovRad / 2);
-                  const heightForWidth = (roomBounds.width / 2) / (Math.tan(fovRad / 2) * aspect);
-                  const topDownHeight = Math.max(heightForDepth, heightForWidth) * 1.2;
-                  applyPreset([presetCenterX, topDownHeight, presetCenterZ], C);
-                }}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Top Down</TooltipContent>
-          </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => {
+                      const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                      const fovRad = (50 * Math.PI) / 180;
+                      const containerW = canvasContainerRef.current?.clientWidth ?? 16;
+                      const containerH = canvasContainerRef.current?.clientHeight ?? 9;
+                      const aspect = containerW / Math.max(containerH, 1);
+                      const heightForDepth = (roomBounds.depth / 2) / Math.tan(fovRad / 2);
+                      const heightForWidth = (roomBounds.width / 2) / (Math.tan(fovRad / 2) * aspect);
+                      const topDownHeight = Math.max(heightForDepth, heightForWidth) * 1.2;
+                      applyPreset([presetCenterX, topDownHeight, presetCenterZ], C);
+                    }}
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Top Down</TooltipContent>
+              </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => {
-                  const eyeTarget: [number, number, number] = [presetCenterX, 1.6, presetCenterZ];
-                  if (roomBounds.width >= roomBounds.depth) {
-                    applyPreset([presetCenterX, 1.6, presetCenterZ + roomBounds.depth * 0.35], eyeTarget, true);
-                  } else {
-                    applyPreset([presetCenterX + roomBounds.width * 0.35, 1.6, presetCenterZ], eyeTarget, true);
-                  }
-                }}
-              >
-                <Eye className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Eye Level</TooltipContent>
-          </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => {
+                      const eyeTarget: [number, number, number] = [presetCenterX, 1.6, presetCenterZ];
+                      if (roomBounds.width >= roomBounds.depth) {
+                        applyPreset([presetCenterX, 1.6, presetCenterZ + roomBounds.depth * 0.35], eyeTarget, true);
+                      } else {
+                        applyPreset([presetCenterX + roomBounds.width * 0.35, 1.6, presetCenterZ], eyeTarget, true);
+                      }
+                    }}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Eye Level</TooltipContent>
+              </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => {
-                  const M = presetMaxSpan;
-                  const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
-                  applyPreset([presetCenterX + M, M, presetCenterZ + M], C);
-                }}
-              >
-                <Mountain className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Birdseye</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => {
+                      const M = presetMaxSpan;
+                      const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                      applyPreset([presetCenterX + M, M, presetCenterZ + M], C);
+                    }}
+                  >
+                    <Mountain className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Birdseye</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-        <div className="h-4 w-px bg-border/50" />
+            <div className="h-4 w-px bg-border/50" />
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 relative"
-            >
-              <Bookmark className={"h-3.5 w-3.5" + ((floorPlan.savedCameraViews?.length ?? 0) > 0 ? " fill-current" : "")} />
-              {(floorPlan.savedCameraViews?.length ?? 0) > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
-                  {floorPlan.savedCameraViews!.length}
-                </span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-3" side="bottom" align="end">
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="View name..."
-                  className="flex-1 h-7 px-2 text-xs rounded-md border border-input bg-background"
-                  id="save-view-input"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const input = e.currentTarget;
-                      const name = input.value.trim();
-                      if (!name || !cameraRef.current || !orbitControlsRef.current) return;
-                      addCameraView({
-                        id: crypto.randomUUID(),
-                        name,
-                        position: cameraRef.current.position.toArray() as [number, number, number],
-                        target: orbitControlsRef.current.target.toArray() as [number, number, number],
-                      });
-                      input.value = '';
-                    }
-                  }}
-                />
+            <Popover>
+              <PopoverTrigger asChild>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs px-2"
-                  onClick={() => {
-                    const input = document.getElementById('save-view-input') as HTMLInputElement;
-                    const name = input?.value.trim();
-                    if (!name || !cameraRef.current || !orbitControlsRef.current) return;
-                    addCameraView({
-                      id: crypto.randomUUID(),
-                      name,
-                      position: cameraRef.current.position.toArray() as [number, number, number],
-                      target: orbitControlsRef.current.target.toArray() as [number, number, number],
-                    });
-                    input.value = '';
-                  }}
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 relative"
                 >
-                  Save
+                  <Bookmark className={"h-3.5 w-3.5" + ((floorPlan.savedCameraViews?.length ?? 0) > 0 ? " fill-current" : "")} />
+                  {(floorPlan.savedCameraViews?.length ?? 0) > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center">
+                      {floorPlan.savedCameraViews!.length}
+                    </span>
+                  )}
                 </Button>
-              </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3" side="bottom" align="end">
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="View name..."
+                      className="flex-1 h-7 px-2 text-xs rounded-md border border-input bg-background"
+                      id="save-view-input"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const input = e.currentTarget;
+                          const name = input.value.trim();
+                          if (!name || !cameraRef.current || !orbitControlsRef.current) return;
+                          addCameraView({
+                            id: crypto.randomUUID(),
+                            name,
+                            position: cameraRef.current.position.toArray() as [number, number, number],
+                            target: orbitControlsRef.current.target.toArray() as [number, number, number],
+                          });
+                          input.value = '';
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs px-2"
+                      onClick={() => {
+                        const input = document.getElementById('save-view-input') as HTMLInputElement;
+                        const name = input?.value.trim();
+                        if (!name || !cameraRef.current || !orbitControlsRef.current) return;
+                        addCameraView({
+                          id: crypto.randomUUID(),
+                          name,
+                          position: cameraRef.current.position.toArray() as [number, number, number],
+                          target: orbitControlsRef.current.target.toArray() as [number, number, number],
+                        });
+                        input.value = '';
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </div>
 
-              <div className="space-y-1">
-                {(floorPlan.savedCameraViews ?? []).length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-2">No saved views yet.</p>
-                ) : (
-                  (floorPlan.savedCameraViews ?? []).map(view => (
-                    <div key={view.id} className="flex items-center gap-1.5 group">
-                      <span className="text-xs truncate flex-1">{view.name}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-60 hover:opacity-100"
-                        onClick={() => applyPreset(view.position, view.target)}
-                      >
-                        <Play className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-60 hover:opacity-100 text-destructive"
-                        onClick={() => removeCameraView(view.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
+                  <div className="space-y-1">
+                    {(floorPlan.savedCameraViews ?? []).length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-2">No saved views yet.</p>
+                    ) : (
+                      (floorPlan.savedCameraViews ?? []).map(view => (
+                        <div key={view.id} className="flex items-center gap-1.5 group">
+                          <span className="text-xs truncate flex-1">{view.name}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-60 hover:opacity-100"
+                            onClick={() => applyPreset(view.position, view.target)}
+                          >
+                            <Play className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-60 hover:opacity-100 text-destructive"
+                            onClick={() => removeCameraView(view.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
 
-              <p className="text-[10px] text-muted-foreground italic">Views are saved relative to current room dimensions.</p>
-            </div>
-          </PopoverContent>
-        </Popover>
+                  <p className="text-[10px] text-muted-foreground italic">Views are saved relative to current room dimensions.</p>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </>
+        )}
 
         {isDragging && (
           <Badge variant="outline" className="gap-1 animate-pulse bg-white/20">
@@ -1811,22 +1819,23 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* LEFT PANEL - Library */}
-      <div 
-        className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
-        style={{ pointerEvents: viewMode === 'walkthrough' ? 'none' : 'auto', opacity: viewMode === 'walkthrough' ? 0.4 : 1 }}
-      >
-        <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
-          <div className="panel-header shrink-0">
-            <span className="panel-header-title">Library</span>
+      {viewMode === 'design' && (
+        <div 
+          className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
+        >
+          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
+            <div className="panel-header shrink-0">
+              <span className="panel-header-title">Library</span>
+            </div>
+            <ScrollArea className="flex-1">
+              <UnifiedLibrary />
+            </ScrollArea>
           </div>
-          <ScrollArea className="flex-1">
-            <UnifiedLibrary />
-          </ScrollArea>
         </div>
-      </div>
+      )}
       
       {/* RIGHT PANEL - Properties */}
-      {isPanelOpen && (
+      {viewMode === 'design' && isPanelOpen && (
         <div className="absolute top-32 right-6 z-20 w-64 max-h-[calc(100%-196px)]">
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0">
@@ -1852,7 +1861,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
       
       {/* Panel toggle button (when closed) */}
-      {!isPanelOpen && (
+      {viewMode === 'design' && !isPanelOpen && (
         <Button 
           variant="ghost" 
           size="icon" 
