@@ -462,8 +462,8 @@ serve(async (req) => {
           { model: "google/gemini-2.5-flash", maxTokens: 16000 },
         ]
       : [
-          { model: "google/gemini-2.5-pro", maxTokens: 16000 },
           { model: "google/gemini-2.5-flash", maxTokens: 12000 },
+          { model: "google/gemini-2.5-pro", maxTokens: 16000 },
         ];
 
     for (const attempt of attempts) {
