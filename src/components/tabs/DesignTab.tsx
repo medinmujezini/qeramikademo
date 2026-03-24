@@ -1382,6 +1382,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             keysRef={keysRef}
             walls={floorPlan.walls}
             points={floorPlan.points}
+            furnitureItems={furniture}
           />
           <Suspense fallback={null}>
             <DesignScene
