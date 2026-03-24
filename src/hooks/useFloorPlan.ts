@@ -1195,6 +1195,9 @@ export const useFloorPlan = () => {
     resetFloorPlan,
     loadFloorPlan,
     // Smart wall updates with height sync
-    updateWallWithSync
+    updateWallWithSync,
+    // Camera views
+    addCameraView,
+    removeCameraView,
   };
 };
