@@ -45,6 +45,7 @@ export const FloorPlanTab: React.FC = () => {
     deleteWindow,
     deleteFixture,
     resetFloorPlan,
+    loadFloorPlan,
     floorPlan,
     setFloorPlan,
     addPoint,
