@@ -241,6 +241,29 @@ const Wall3D = ({
   );
 };
 
+/** Wrapper that resolves materialId → textureUrls before rendering TiledWall3D */
+const TiledWall3DWithMaterial: React.FC<
+  React.ComponentProps<typeof TiledWall3D>
+> = (props) => {
+  const { materials: pbrMaterials } = useMaterialContext();
+  const mat = pbrMaterials.find(m => m.id === props.tile.materialId);
+  const textureUrls: TileTextureUrls | undefined = mat ? {
+    albedo: mat.albedo,
+    normal: mat.normal,
+    roughness: mat.roughness,
+    ao: mat.ao,
+    height: mat.height,
+    metallic: mat.metallic,
+  } : undefined;
+  return (
+    <TiledWall3D
+      {...props}
+      textureUrls={textureUrls}
+      textureScaleCm={props.tile.textureScaleCm}
+    />
+  );
+};
+
 const DesignScene: React.FC<DesignSceneProps> = ({
   showTiles,
   showPlumbing,
