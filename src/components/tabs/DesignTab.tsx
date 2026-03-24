@@ -1819,22 +1819,23 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* LEFT PANEL - Library */}
-      <div 
-        className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
-        style={{ pointerEvents: viewMode === 'walkthrough' ? 'none' : 'auto', opacity: viewMode === 'walkthrough' ? 0.4 : 1 }}
-      >
-        <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
-          <div className="panel-header shrink-0">
-            <span className="panel-header-title">Library</span>
+      {viewMode === 'design' && (
+        <div 
+          className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
+        >
+          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
+            <div className="panel-header shrink-0">
+              <span className="panel-header-title">Library</span>
+            </div>
+            <ScrollArea className="flex-1">
+              <UnifiedLibrary />
+            </ScrollArea>
           </div>
-          <ScrollArea className="flex-1">
-            <UnifiedLibrary />
-          </ScrollArea>
         </div>
-      </div>
+      )}
       
       {/* RIGHT PANEL - Properties */}
-      {isPanelOpen && (
+      {viewMode === 'design' && isPanelOpen && (
         <div className="absolute top-32 right-6 z-20 w-64 max-h-[calc(100%-196px)]">
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0">
@@ -1860,7 +1861,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
       
       {/* Panel toggle button (when closed) */}
-      {!isPanelOpen && (
+      {viewMode === 'design' && !isPanelOpen && (
         <Button 
           variant="ghost" 
           size="icon" 
