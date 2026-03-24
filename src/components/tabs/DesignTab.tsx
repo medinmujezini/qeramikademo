@@ -690,7 +690,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   const applyPreset = useCallback((pos: [number, number, number], target: [number, number, number], eyeLevel = false) => {
     if (!cameraRef.current || !orbitControlsRef.current) return;
-    setMaxPolarAngle(eyeLevel ? Math.PI : Math.PI / 2);
+    const nextMaxPolarAngle = eyeLevel ? Math.PI : Math.PI / 2;
+    setMaxPolarAngle(nextMaxPolarAngle);
+    orbitControlsRef.current.maxPolarAngle = nextMaxPolarAngle;
     cameraRef.current.position.set(...pos);
     orbitControlsRef.current.target.set(...target);
     orbitControlsRef.current.update();
