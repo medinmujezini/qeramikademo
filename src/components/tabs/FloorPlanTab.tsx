@@ -24,6 +24,14 @@ export const FloorPlanTab: React.FC = () => {
   const [isDrawingWall, setIsDrawingWall] = useState(false);
   const [wallChainLength, setWallChainLength] = useState(0);
   const [showImportWizard, setShowImportWizard] = useState(false);
+  const [showNewRoomDialog, setShowNewRoomDialog] = useState(false);
+  const [rectWidth, setRectWidth] = useState('300');
+  const [rectHeight, setRectHeight] = useState('250');
+  const [lWidth, setLWidth] = useState('400');
+  const [lHeight, setLHeight] = useState('350');
+  const [lNotchW, setLNotchW] = useState('150');
+  const [lNotchH, setLNotchH] = useState('150');
+  const [roomTab, setRoomTab] = useState('rectangle');
   const gridSize = 20;
   
   const { 
