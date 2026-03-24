@@ -245,8 +245,30 @@ export const BlueprintImportWizard: React.FC<BlueprintImportWizardProps> = ({
     }, 90000);
 
     try {
+      // Resize & compress image client-side to stay within edge function limits
+      const compressedImage = await new Promise<string>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_EDGE = 1200;
+          let w = img.width;
+          let h = img.height;
+          if (Math.max(w, h) > MAX_EDGE) {
+            const scale = MAX_EDGE / Math.max(w, h);
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = state.normalizedImage!;
+      });
+
       const { data, error } = await supabase.functions.invoke('analyze-floorplan', {
-        body: { imageDataUrl: state.normalizedImage },
+        body: { imageDataUrl: compressedImage },
       });
 
       // Clear intervals
@@ -296,7 +318,7 @@ export const BlueprintImportWizard: React.FC<BlueprintImportWizardProps> = ({
       let errorMessage = 'Unknown error during processing';
       if (error instanceof Error) {
         if (error.message === 'TIMEOUT' || error.name === 'AbortError') {
-          errorMessage = 'Analysis timed out (60s). The image may be too complex - try a simpler or clearer floor plan.';
+          errorMessage = 'Analysis timed out — the image was compressed automatically. Please click Retry.';
         } else {
           errorMessage = error.message;
         }
