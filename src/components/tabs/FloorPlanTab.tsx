@@ -226,7 +226,46 @@ export const FloorPlanTab: React.FC = () => {
     };
   }, []);
 
-  return (
+  const validateRange = (v: string) => {
+    const n = parseFloat(v);
+    return !isNaN(n) && n >= 100 && n <= 2000;
+  };
+
+  const rectErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (!validateRange(rectWidth)) errs.push('Width must be 100–2000 cm');
+    if (!validateRange(rectHeight)) errs.push('Height must be 100–2000 cm');
+    return errs;
+  }, [rectWidth, rectHeight]);
+
+  const lErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (!validateRange(lWidth)) errs.push('Width must be 100–2000 cm');
+    if (!validateRange(lHeight)) errs.push('Height must be 100–2000 cm');
+    if (!validateRange(lNotchW)) errs.push('Notch width must be 100–2000 cm');
+    if (!validateRange(lNotchH)) errs.push('Notch height must be 100–2000 cm');
+    if (validateRange(lNotchW) && validateRange(lWidth) && parseFloat(lNotchW) >= parseFloat(lWidth))
+      errs.push('Notch width must be less than overall width');
+    if (validateRange(lNotchH) && validateRange(lHeight) && parseFloat(lNotchH) >= parseFloat(lHeight))
+      errs.push('Notch height must be less than overall height');
+    return errs;
+  }, [lWidth, lHeight, lNotchW, lNotchH]);
+
+  const handleGenerateRoom = useCallback(() => {
+    if (roomTab === 'rectangle') {
+      if (rectErrors.length > 0) return;
+      const plan = generateRectangleRoom(parseFloat(rectWidth), parseFloat(rectHeight));
+      loadFloorPlan(plan);
+    } else {
+      if (lErrors.length > 0) return;
+      const plan = generateLShapeRoom(parseFloat(lWidth), parseFloat(lHeight), parseFloat(lNotchW), parseFloat(lNotchH));
+      loadFloorPlan(plan);
+    }
+    setShowNewRoomDialog(false);
+    toast.success('Room generated!');
+  }, [roomTab, rectWidth, rectHeight, lWidth, lHeight, lNotchW, lNotchH, rectErrors, lErrors, loadFloorPlan]);
+
+
     <div className="h-full relative overflow-hidden">
       {/* FULL-SCREEN 2D CANVAS */}
       <div className="absolute inset-0 z-0">
