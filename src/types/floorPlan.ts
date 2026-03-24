@@ -440,6 +440,15 @@ export interface FloorPlan {
   wallFinishes?: WallFinish[];
   // Floor finish
   floorFinish?: FloorFinish;
+  // Saved camera viewpoints
+  savedCameraViews?: SavedCameraView[];
+}
+
+export interface SavedCameraView {
+  id: string;
+  name: string;
+  position: [number, number, number];
+  target: [number, number, number];
 }
 
 export const DEFAULT_MAIN_CONNECTIONS: MainConnectionPoints = {
