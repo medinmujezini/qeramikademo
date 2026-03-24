@@ -1217,6 +1217,84 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           Reset View
         </Button>
 
+        <div className="h-4 w-px bg-border/50" />
+
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  const M = Math.max(roomW, roomH);
+                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
+                  applyPreset([roomW / 2 + M * 0.85, M * 0.85 * 0.75, roomH / 2 + M * 0.85], C);
+                }}
+              >
+                <Box className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Corner View</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  const M = Math.max(roomW, roomH);
+                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
+                  applyPreset([roomW / 2, 1.25 * M, roomH / 2], C);
+                }}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Top Down</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  if (roomW >= roomH) {
+                    applyPreset([roomW / 2, 1.6, roomH * 0.85], [roomW / 2, 1.6, 0], true);
+                  } else {
+                    applyPreset([roomW * 0.85, 1.6, roomH / 2], [0, 1.6, roomH / 2], true);
+                  }
+                }}
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Eye Level</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  const M = Math.max(roomW, roomH);
+                  const C: [number, number, number] = [roomW / 2, 0, roomH / 2];
+                  applyPreset([roomW * 0.9 + M, M, roomH * 0.9 + M], C);
+                }}
+              >
+                <Mountain className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Birdseye</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         {isDragging && (
           <Badge variant="outline" className="gap-1 animate-pulse bg-white/20">
             <Move3D className="h-3 w-3" />
