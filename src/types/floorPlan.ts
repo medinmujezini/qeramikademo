@@ -382,6 +382,8 @@ export interface FloorFinish {
   tileId?: string;
   pattern?: TilePattern;
   groutColor?: string;
+  materialId?: string;
+  textureScaleCm?: number;
 }
 
 // Paint color presets

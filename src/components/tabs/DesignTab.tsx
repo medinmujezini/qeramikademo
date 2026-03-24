@@ -7,7 +7,7 @@
  */
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
+import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
@@ -294,6 +294,65 @@ const TiledWall3DWithMaterial: React.FC<
   );
 };
 
+/** Floor mesh with PBR texture support */
+const FloorWithTexture: React.FC<{
+  materialId: string;
+  textureScaleCm: number;
+  floorWidth: number;
+  floorDepth: number;
+  fallbackColor: string;
+}> = ({ materialId, textureScaleCm, floorWidth, floorDepth, fallbackColor }) => {
+  const { materials: pbrMaterials } = useMaterialContext();
+  const mat = pbrMaterials.find(m => m.id === materialId);
+
+  const urls = useMemo(() => {
+    if (!mat) return {};
+    const result: Record<string, string> = {};
+    if (mat.albedo) result.map = mat.albedo;
+    if (mat.normal) result.normalMap = mat.normal;
+    if (mat.roughness) result.roughnessMap = mat.roughness;
+    if (mat.ao) result.aoMap = mat.ao;
+    if (mat.metallic) result.metalnessMap = mat.metallic;
+    return result;
+  }, [mat]);
+
+  const urlKeys = Object.keys(urls);
+  // Load all textures – useLoader requires stable array
+  const textures = useLoader(
+    THREE.TextureLoader,
+    urlKeys.length > 0 ? urlKeys.map(k => urls[k]) : ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAA0lEQVQI12P4z8BQDwAEgAF/QualxwAAAABJRU5ErkJggg==']
+  );
+
+  // Configure textures
+  const textureProps = useMemo(() => {
+    if (urlKeys.length === 0) return {};
+    const props: Record<string, THREE.Texture> = {};
+    const scaleCm = textureScaleCm || 30;
+    const repeatX = (floorWidth * 100) / scaleCm;
+    const repeatY = (floorDepth * 100) / scaleCm;
+
+    urlKeys.forEach((key, i) => {
+      const tex = textures[i].clone();
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(repeatX, repeatY);
+      if (key === 'map') tex.colorSpace = THREE.SRGBColorSpace;
+      props[key] = tex;
+    });
+    return props;
+  }, [textures, urlKeys, textureScaleCm, floorWidth, floorDepth]);
+
+  const hasTexture = urlKeys.length > 0 && Object.keys(textureProps).length > 0;
+
+  return (
+    <meshStandardMaterial
+      {...textureProps}
+      {...(!hasTexture ? { color: fallbackColor } : {})}
+      roughness={0.8}
+    />
+  );
+};
+
 const DesignScene: React.FC<DesignSceneProps> = ({
   showTiles,
   showPlumbing,
@@ -435,7 +494,19 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         }}
       >
         <planeGeometry args={[floorWidth, floorDepth]} />
-        <meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />
+        {floorPlan.floorFinish?.materialId ? (
+          <Suspense fallback={<meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />}>
+            <FloorWithTexture
+              materialId={floorPlan.floorFinish.materialId}
+              textureScaleCm={floorPlan.floorFinish.textureScaleCm || 30}
+              floorWidth={floorWidth}
+              floorDepth={floorDepth}
+              fallbackColor={floorPlan.floorFinish?.color || "#f3f4f6"}
+            />
+          </Suspense>
+        ) : (
+          <meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />
+        )}
       </mesh>
 
       {/* Walls */}
@@ -886,8 +957,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   }, [removeWallFinish]);
 
   // Floor surface callbacks
-  const handleApplyFloorFinish = useCallback((type: FloorSurfaceType, color: string) => {
-    setFloorFinish(type as 'tiles' | 'hardwood' | 'carpet', { color });
+  const handleApplyFloorFinish = useCallback((type: FloorSurfaceType, color: string, materialId?: string, textureScaleCm?: number) => {
+    setFloorFinish(type as 'tiles' | 'hardwood' | 'carpet', { color, materialId, textureScaleCm });
     toast.success(`${type} applied to floor`);
   }, [setFloorFinish]);
 

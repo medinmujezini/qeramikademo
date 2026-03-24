@@ -1084,7 +1084,7 @@ export const useFloorPlan = () => {
 
   const setFloorFinish = useCallback((
     surfaceType: 'tiles' | 'hardwood' | 'carpet',
-    options: { color?: string; tileId?: string; groutColor?: string; pattern?: 'grid' | 'staggered' | 'herringbone' | 'diagonal' }
+    options: { color?: string; tileId?: string; groutColor?: string; pattern?: 'grid' | 'staggered' | 'herringbone' | 'diagonal'; materialId?: string; textureScaleCm?: number }
   ) => {
     setFloorPlan(prev => {
       const floorFinish = {
@@ -1094,6 +1094,8 @@ export const useFloorPlan = () => {
         tileId: options.tileId,
         pattern: options.pattern,
         groutColor: options.groutColor,
+        materialId: options.materialId,
+        textureScaleCm: options.textureScaleCm,
       };
       
       const updated = { ...prev, floorFinish };
