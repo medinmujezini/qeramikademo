@@ -266,6 +266,7 @@ export const FloorPlanTab: React.FC = () => {
   }, [roomTab, rectWidth, rectHeight, lWidth, lHeight, lNotchW, lNotchH, rectErrors, lErrors, loadFloorPlan]);
 
 
+  return (
     <div className="h-full relative overflow-hidden">
       {/* FULL-SCREEN 2D CANVAS */}
       <div className="absolute inset-0 z-0">
