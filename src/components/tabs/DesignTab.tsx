@@ -895,6 +895,43 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   // Calculate room-based camera position
   const roomW = (floorPlan.roomWidth || 800) / 100;
   const roomH = (floorPlan.roomHeight || 600) / 100;
+
+  const roomBounds = useMemo(() => {
+    if (floorPlan.points.length === 0) {
+      return {
+        minX: 0,
+        maxX: roomW,
+        minZ: 0,
+        maxZ: roomH,
+        width: roomW,
+        depth: roomH,
+        centerX: roomW / 2,
+        centerZ: roomH / 2,
+      };
+    }
+
+    const xs = floorPlan.points.map((p) => p.x * 0.01);
+    const zs = floorPlan.points.map((p) => p.y * 0.01);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minZ = Math.min(...zs);
+    const maxZ = Math.max(...zs);
+
+    return {
+      minX,
+      maxX,
+      minZ,
+      maxZ,
+      width: Math.max(maxX - minX, 0.1),
+      depth: Math.max(maxZ - minZ, 0.1),
+      centerX: (minX + maxX) / 2,
+      centerZ: (minZ + maxZ) / 2,
+    };
+  }, [floorPlan.points, roomW, roomH]);
+
+  const presetCenterX = roomBounds.centerX;
+  const presetCenterZ = roomBounds.centerZ;
+  const presetMaxSpan = Math.max(roomBounds.width, roomBounds.depth);
   const camDist = Math.max(roomW, roomH) * 0.85;
   const defaultCameraPos: [number, number, number] = [roomW / 2 + camDist, camDist * 0.75, roomH / 2 + camDist];
   const defaultTarget: [number, number, number] = [roomW / 2, 0, roomH / 2];
