@@ -418,6 +418,10 @@ export interface FloorPlan {
   roomWidth: number;
   roomHeight: number;
   wallHeight: number;
+  /** Uniform scale factor: pixels per centimeter */
+  pxPerCm?: number;
+  /** Canvas origin offset for centering the room */
+  originPx?: { x: number; y: number };
   // Ceiling plane - room-level source of truth for heights
   ceilingPlane?: CeilingPlane;
   // Wall surface finishes (paint/wallpaper)
