@@ -1894,7 +1894,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {viewMode === 'walkthrough' && isPointerLocked && (
+      {viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
         <>
           {/* Crosshair */}
           <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
@@ -1920,8 +1920,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
           {/* WASD hint */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
-            WASD to move · Mouse to look
+            {isTouchDevice ? 'Left stick to move · Right stick to look' : 'WASD to move · Mouse to look'}
           </div>
+        </>
+      )}
+
+      {/* Mobile joystick zones */}
+      {viewMode === 'walkthrough' && isTouchDevice && (
+        <>
+          <div id="left-joystick-zone" className="absolute bottom-0 left-0 w-44 h-44 z-40 pointer-events-auto" />
+          <div id="right-joystick-zone" className="absolute bottom-0 right-0 w-44 h-44 z-40 pointer-events-auto" />
         </>
       )}
 
