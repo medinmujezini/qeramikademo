@@ -106,7 +106,9 @@ const WalkthroughMovement: React.FC<{
   walls: Wall[];
   points: Point[];
   furnitureItems: { position: { x: number; y: number }; dimensions: { width: number; depth: number }; rotation: number }[];
-}> = ({ viewMode, keysRef, walls, points, furnitureItems }) => {
+  moveStickRef: React.MutableRefObject<{ x: number; y: number }>;
+  lookStickRef: React.MutableRefObject<{ x: number; y: number }>;
+}> = ({ viewMode, keysRef, walls, points, furnitureItems, moveStickRef, lookStickRef }) => {
   const { camera } = useThree();
   const SPEED = 3.0;
   const EYE_HEIGHT = 1.6;
