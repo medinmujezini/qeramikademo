@@ -945,8 +945,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   }, [removeWallFinish]);
 
   // Floor surface callbacks
-  const handleApplyFloorFinish = useCallback((type: FloorSurfaceType, color: string) => {
-    setFloorFinish(type as 'tiles' | 'hardwood' | 'carpet', { color });
+  const handleApplyFloorFinish = useCallback((type: FloorSurfaceType, color: string, materialId?: string, textureScaleCm?: number) => {
+    setFloorFinish(type as 'tiles' | 'hardwood' | 'carpet', { color, materialId, textureScaleCm });
     toast.success(`${type} applied to floor`);
   }, [setFloorFinish]);
 
