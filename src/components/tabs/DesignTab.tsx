@@ -35,7 +35,7 @@ import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2,
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY } from '@/types/floorPlan';
-import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile } from '@/types/floorPlan';
+import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
