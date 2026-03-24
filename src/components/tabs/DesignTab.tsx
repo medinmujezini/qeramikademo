@@ -294,6 +294,65 @@ const TiledWall3DWithMaterial: React.FC<
   );
 };
 
+/** Floor mesh with PBR texture support */
+const FloorWithTexture: React.FC<{
+  materialId: string;
+  textureScaleCm: number;
+  floorWidth: number;
+  floorDepth: number;
+  fallbackColor: string;
+}> = ({ materialId, textureScaleCm, floorWidth, floorDepth, fallbackColor }) => {
+  const { materials: pbrMaterials } = useMaterialContext();
+  const mat = pbrMaterials.find(m => m.id === materialId);
+
+  const urls = useMemo(() => {
+    if (!mat) return {};
+    const result: Record<string, string> = {};
+    if (mat.albedo) result.map = mat.albedo;
+    if (mat.normal) result.normalMap = mat.normal;
+    if (mat.roughness) result.roughnessMap = mat.roughness;
+    if (mat.ao) result.aoMap = mat.ao;
+    if (mat.metallic) result.metalnessMap = mat.metallic;
+    return result;
+  }, [mat]);
+
+  const urlKeys = Object.keys(urls);
+  // Load all textures – useLoader requires stable array
+  const textures = THREE.useLoader(
+    THREE.TextureLoader,
+    urlKeys.length > 0 ? urlKeys.map(k => urls[k]) : ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAA0lEQVQI12P4z8BQDwAEgAF/QualxwAAAABJRU5ErkJggg==']
+  );
+
+  // Configure textures
+  const textureProps = useMemo(() => {
+    if (urlKeys.length === 0) return {};
+    const props: Record<string, THREE.Texture> = {};
+    const scaleCm = textureScaleCm || 30;
+    const repeatX = (floorWidth * 100) / scaleCm;
+    const repeatY = (floorDepth * 100) / scaleCm;
+
+    urlKeys.forEach((key, i) => {
+      const tex = textures[i].clone();
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(repeatX, repeatY);
+      if (key === 'map') tex.colorSpace = THREE.SRGBColorSpace;
+      props[key] = tex;
+    });
+    return props;
+  }, [textures, urlKeys, textureScaleCm, floorWidth, floorDepth]);
+
+  const hasTexture = urlKeys.length > 0 && Object.keys(textureProps).length > 0;
+
+  return (
+    <meshStandardMaterial
+      {...textureProps}
+      {...(!hasTexture ? { color: fallbackColor } : {})}
+      roughness={0.8}
+    />
+  );
+};
+
 const DesignScene: React.FC<DesignSceneProps> = ({
   showTiles,
   showPlumbing,
