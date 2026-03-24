@@ -1129,6 +1129,23 @@ export const useFloorPlan = () => {
     saveToHistory(planWithColumns);
   }, [saveToHistory]);
 
+  // Camera views
+  const addCameraView = useCallback((view: import('@/types/floorPlan').SavedCameraView) => {
+    setFloorPlan(prev => {
+      const updated = { ...prev, savedCameraViews: [...(prev.savedCameraViews ?? []), view] };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
+  const removeCameraView = useCallback((id: string) => {
+    setFloorPlan(prev => {
+      const updated = { ...prev, savedCameraViews: (prev.savedCameraViews ?? []).filter(v => v.id !== id) };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
   return {
     floorPlan,
     setFloorPlan,
