@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Canvas2D } from '@/components/floor-plan/Canvas2D';
 import { Toolbar } from '@/components/floor-plan/Toolbar';
 import { PropertiesPanel } from '@/components/floor-plan/PropertiesPanel';
@@ -6,11 +6,15 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
-import { Ruler, ImagePlus } from 'lucide-react';
+import { Ruler, ImagePlus, LayoutTemplate } from 'lucide-react';
 import { BlueprintImportWizard, FloorPlanAnalysis } from '@/components/blueprint/BlueprintImportWizard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import { generateRectangleRoom, generateLShapeRoom } from '@/utils/roomTemplates';
 
 type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
 
