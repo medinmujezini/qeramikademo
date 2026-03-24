@@ -1661,7 +1661,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* LEFT PANEL - Library */}
-      <div className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]">
+      <div 
+        className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
+        style={{ pointerEvents: viewMode === 'walkthrough' ? 'none' : 'auto', opacity: viewMode === 'walkthrough' ? 0.4 : 1 }}
+      >
         <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
           <div className="panel-header shrink-0">
             <span className="panel-header-title">Library</span>
