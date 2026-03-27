@@ -267,17 +267,16 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
 
     // Draw rooms (filled polygons)
     if (showRooms && localAnalysis.rooms) {
-      localAnalysis.rooms.forEach((room, idx) => {
+      localAnalysis.rooms.forEach((room) => {
         if (room.vertices.length < 3) return;
 
-        const colors = [
-          'hsla(200, 70%, 50%, 0.15)',
-          'hsla(120, 70%, 50%, 0.15)',
-          'hsla(280, 70%, 50%, 0.15)',
-          'hsla(40, 70%, 50%, 0.15)',
-          'hsla(320, 70%, 50%, 0.15)',
-        ];
-        const color = colors[idx % colors.length];
+        // Color by room label
+        const label = (room.label || '').toLowerCase();
+        let color = 'rgba(150, 150, 255, 0.15)';
+        if (label.includes('living')) color = 'rgba(100, 200, 100, 0.15)';
+        else if (label.includes('bed')) color = 'rgba(100, 150, 255, 0.15)';
+        else if (label.includes('kitchen') || label.includes('dining')) color = 'rgba(255, 200, 100, 0.15)';
+        else if (label.includes('bath') || label.includes('wc') || label.includes('toilet')) color = 'rgba(100, 220, 220, 0.15)';
 
         ctx.fillStyle = color;
         ctx.beginPath();
@@ -290,16 +289,22 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
         ctx.closePath();
         ctx.fill();
 
-        // Room label
+        // Room label with background
         if (room.label) {
           const centerX = room.vertices.reduce((sum, v) => sum + v.x, 0) / room.vertices.length;
           const centerY = room.vertices.reduce((sum, v) => sum + v.y, 0) / room.vertices.length;
+          const lx = drawX + centerX * cmToCanvas;
+          const ly = drawY + centerY * cmToCanvas;
           
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.font = '12px sans-serif';
+          ctx.font = '11px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(room.label, drawX + centerX * cmToCanvas, drawY + centerY * cmToCanvas);
+          const metrics = ctx.measureText(room.label);
+          const pad = 4;
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.fillRect(lx - metrics.width / 2 - pad, ly - 7 - pad, metrics.width + pad * 2, 14 + pad * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+          ctx.fillText(room.label, lx, ly);
         }
       });
     }
@@ -431,7 +436,7 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(x, y, Math.max(6, width / 4), 0, Math.PI * 2);
+        ctx.arc(x, y, Math.min(12, Math.max(4, width / 4)), 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
