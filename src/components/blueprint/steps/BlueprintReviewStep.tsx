@@ -817,18 +817,59 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
           <canvas
             ref={canvasRef}
             className="w-full h-full"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
+            onPointerDown={(e) => {
+              if (e.button === 1 || e.altKey) {
+                isPanningRef.current = true;
+                panStartRef.current = { x: e.clientX - viewPan.x, y: e.clientY - viewPan.y };
+                e.preventDefault();
+                return;
+              }
+              handlePointerDown(e);
+            }}
+            onPointerMove={(e) => {
+              if (isPanningRef.current) {
+                setViewPan({ x: e.clientX - panStartRef.current.x, y: e.clientY - panStartRef.current.y });
+                return;
+              }
+              handlePointerMove(e);
+            }}
+            onPointerUp={(e) => {
+              if (isPanningRef.current) {
+                isPanningRef.current = false;
+                return;
+              }
+              handlePointerUp(e);
+            }}
             onPointerLeave={() => {
+              isPanningRef.current = false;
               setHoveredHandle(null);
               setHoveredWall(null);
               if (canvasRef.current) {
                 canvasRef.current.style.cursor = 'default';
               }
             }}
+            onWheel={(e) => {
+              e.preventDefault();
+              const delta = e.deltaY > 0 ? 0.9 : 1.1;
+              setViewZoom(z => Math.max(0.3, Math.min(5, z * delta)));
+            }}
           />
           
+          {/* Zoom hint + reset */}
+          <div className="absolute bottom-3 left-3 flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded">
+              Scroll to zoom · Alt+drag to pan
+            </span>
+            {(viewZoom !== 1 || viewPan.x !== 0 || viewPan.y !== 0) && (
+              <button
+                onClick={() => { setViewZoom(1); setViewPan({ x: 0, y: 0 }); }}
+                className="text-[10px] text-primary bg-background/80 px-2 py-1 rounded hover:bg-background"
+              >
+                Reset View
+              </button>
+            )}
+          </div>
+
           {/* Edit mode indicator */}
           {editMode && (
             <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2">
