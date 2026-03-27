@@ -309,16 +309,16 @@ function postProcessWalls(walls: WallData[]): WallData[] {
   processed = removeShortWalls(processed, 15);
   
   // Step 2: Remove duplicates
-  processed = removeDuplicateWalls(processed, 20);
+  processed = removeDuplicateWalls(processed, 35);
   
   // Step 3: Snap endpoints
-  processed = snapWallEndpoints(processed, 25);
+  processed = snapWallEndpoints(processed, 35);
   
   // Step 4: Merge collinear walls
-  processed = mergeCollinearWalls(processed, 8, 30);
+  processed = mergeCollinearWalls(processed, 8, 40);
   
   // Step 5: Final snap after merging
-  processed = snapWallEndpoints(processed, 15);
+  processed = snapWallEndpoints(processed, 25);
   
   console.log(`Post-processing complete: ${processed.length} walls`);
   return processed;
