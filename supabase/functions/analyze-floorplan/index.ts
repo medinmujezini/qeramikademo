@@ -466,15 +466,15 @@ serve(async (req) => {
     let analysis: object | null = null;
     let lastError: Error | null = null;
 
-    // Try with Gemini Pro first (best quality), then Flash (faster, more reliable)
+    // Flash-first for speed; high accuracy uses a faster pro model to stay within 60s limit
     const attempts = highAccuracy 
       ? [
-          { model: "google/gemini-2.5-pro", maxTokens: 24000 },
           { model: "google/gemini-2.5-flash", maxTokens: 16000 },
+          { model: "google/gemini-3-flash-preview", maxTokens: 12000 },
         ]
       : [
+          { model: "google/gemini-3-flash-preview", maxTokens: 12000 },
           { model: "google/gemini-2.5-flash", maxTokens: 12000 },
-          { model: "google/gemini-2.5-pro", maxTokens: 16000 },
         ];
 
     for (const attempt of attempts) {
