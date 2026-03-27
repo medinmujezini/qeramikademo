@@ -172,17 +172,68 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate fit scale
-    const fitScale = Math.min(
-      (canvas.width - 40) / img.width,
-      (canvas.height - 40) / img.height
-    );
+    let fitScale: number;
+    let drawX: number;
+    let drawY: number;
+    let drawWidth: number;
+    let drawHeight: number;
+    let cmToCanvas: number;
 
-    const drawWidth = img.width * fitScale;
-    const drawHeight = img.height * fitScale;
-    const drawX = (canvas.width - drawWidth) / 2;
-    const drawY = (canvas.height - drawHeight) / 2;
-    const cmToCanvas = pixelsPerCm * fitScale;
+    const useBboxFit = !showImage && localAnalysis.walls.length > 0;
+
+    if (useBboxFit) {
+      // Compute bounding box from all detected content
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+      for (const wall of localAnalysis.walls) {
+        minX = Math.min(minX, wall.startX, wall.endX);
+        maxX = Math.max(maxX, wall.startX, wall.endX);
+        minY = Math.min(minY, wall.startY, wall.endY);
+        maxY = Math.max(maxY, wall.startY, wall.endY);
+      }
+      if (localAnalysis.doors) {
+        for (const door of localAnalysis.doors) {
+          minX = Math.min(minX, door.x);
+          maxX = Math.max(maxX, door.x);
+          minY = Math.min(minY, door.y);
+          maxY = Math.max(maxY, door.y);
+        }
+      }
+      if (localAnalysis.windows) {
+        for (const win of localAnalysis.windows) {
+          minX = Math.min(minX, win.x);
+          maxX = Math.max(maxX, win.x);
+          minY = Math.min(minY, win.y);
+          maxY = Math.max(maxY, win.y);
+        }
+      }
+
+      const bboxW = (maxX - minX) * 1.3 || 100;
+      const bboxH = (maxY - minY) * 1.3 || 100;
+      const bboxCenterX = (minX + maxX) / 2;
+      const bboxCenterY = (minY + maxY) / 2;
+
+      fitScale = Math.min(
+        (canvas.width - 40) / bboxW,
+        (canvas.height - 40) / bboxH
+      );
+      cmToCanvas = pixelsPerCm * fitScale;
+      drawX = canvas.width / 2 - bboxCenterX * cmToCanvas;
+      drawY = canvas.height / 2 - bboxCenterY * cmToCanvas;
+      drawWidth = img.width * fitScale;
+      drawHeight = img.height * fitScale;
+    } else {
+      // Image-based fit (default when showing image or no walls)
+      fitScale = Math.min(
+        (canvas.width - 40) / img.width,
+        (canvas.height - 40) / img.height
+      );
+      drawWidth = img.width * fitScale;
+      drawHeight = img.height * fitScale;
+      drawX = (canvas.width - drawWidth) / 2;
+      drawY = (canvas.height - drawHeight) / 2;
+      cmToCanvas = pixelsPerCm * fitScale;
+    }
 
     // Store transform for interaction
     setCanvasTransform({ drawX, drawY, fitScale, cmToCanvas });
