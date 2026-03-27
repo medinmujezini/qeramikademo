@@ -41,6 +41,14 @@ CRITICAL INSTRUCTIONS FOR WALL DETECTION:
    - Windows appear as DOUBLE PARALLEL LINES on walls
    - Or as rectangular breaks with small perpendicular lines
 
+7. ROOM DETECTION — REQUIRED:
+   - Identify ALL enclosed spaces formed by wall intersections
+   - Even if room labels are not visible, detect rooms from closed wall loops
+   - Trace the wall network to find every enclosed polygon — each one is a room
+   - Label rooms by their likely function based on size and position: bathroom (small), bedroom (medium), kitchen, living room (large)
+   - Every floor plan has at least one room — always return at least one room entry
+   - Room vertices should trace the inner perimeter of the wall centerlines
+
 Return ONLY valid JSON (no markdown, no explanation):
 {
   "walls": [
@@ -53,7 +61,7 @@ Return ONLY valid JSON (no markdown, no explanation):
     {"id": "window_1", "x": <int>, "y": <int>, "width": <int>, "height": <int>, "confidence": <0.6-1.0>}
   ],
   "rooms": [
-    {"id": "room_1", "vertices": [{"x": <int>, "y": <int>}, ...], "label": "<room name if visible>", "confidence": <0.5-1.0>}
+    {"id": "room_1", "vertices": [{"x": <int>, "y": <int>}, ...], "label": "<room name>", "confidence": <0.5-1.0>}
   ],
   "ignoreRegions": [],
   "imageWidth": <int>,
@@ -66,6 +74,9 @@ QUALITY CHECKLIST:
 ✓ Exterior walls form a closed perimeter
 ✓ No duplicate or overlapping walls
 ✓ Wall thickness is consistent (10-15cm interior, 15-25cm exterior)
+✓ At least one room detected and returned
+✓ Room vertices form closed polygons
+✓ Room boundaries derived from wall intersection network
 ✓ Limit: max 30 walls, 15 doors, 15 windows for precision`;
 
 // Wall post-processing types
