@@ -52,7 +52,7 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
   const [showDoors, setShowDoors] = useState(true);
   const [showWindows, setShowWindows] = useState(true);
   const [showRooms, setShowRooms] = useState(true);
-  const [showImage, setShowImage] = useState(true);
+  const [showImage, setShowImage] = useState(false);
   
   // Edit mode state
   const [editMode, setEditMode] = useState(false);
