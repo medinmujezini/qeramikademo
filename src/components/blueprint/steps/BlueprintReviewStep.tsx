@@ -807,8 +807,8 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
   }, [addWallStart]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 flex">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Canvas area */}
         <div 
           ref={containerRef}
@@ -1057,7 +1057,7 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
         </div>
       </div>
       
-      <div className="p-4 border-t bg-background">
+      <div className="p-4 border-t bg-background shrink-0">
         <div className="flex justify-between">
           <Button variant="outline" onClick={onBack}>
             <ChevronLeft className="h-4 w-4 mr-2" />
