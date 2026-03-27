@@ -133,6 +133,8 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
   // Find wall at position (for delete tool)
   const findWallAt = useCallback((canvasX: number, canvasY: number): string | null => {
     const { drawX, drawY, cmToCanvas } = canvasTransform;
+    const adjX = (canvasX - viewPan.x) / viewZoom;
+    const adjY = (canvasY - viewPan.y) / viewZoom;
     
     for (const wall of localAnalysis.walls) {
       const startX = drawX + wall.startX * cmToCanvas;
@@ -147,11 +149,11 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
       
       if (lengthSq === 0) continue;
       
-      const t = Math.max(0, Math.min(1, ((canvasX - startX) * dx + (canvasY - startY) * dy) / lengthSq));
+      const t = Math.max(0, Math.min(1, ((adjX - startX) * dx + (adjY - startY) * dy) / lengthSq));
       const projX = startX + t * dx;
       const projY = startY + t * dy;
       
-      const dist = Math.sqrt((canvasX - projX) ** 2 + (canvasY - projY) ** 2);
+      const dist = Math.sqrt((adjX - projX) ** 2 + (adjY - projY) ** 2);
       const wallWidth = Math.max(5, wall.thickness * cmToCanvas * 0.5);
       
       if (dist < wallWidth + 5) {
