@@ -466,15 +466,15 @@ serve(async (req) => {
     let analysis: object | null = null;
     let lastError: Error | null = null;
 
-    // Flash-first for speed; high accuracy uses a faster pro model to stay within 60s limit
+    // Use gemini-2.5-flash for reliability; high accuracy gets more tokens for detail
     const attempts = highAccuracy 
       ? [
           { model: "google/gemini-2.5-flash", maxTokens: 16000 },
-          { model: "google/gemini-3-flash-preview", maxTokens: 12000 },
+          { model: "google/gemini-2.5-flash-lite", maxTokens: 12000 },
         ]
       : [
-          { model: "google/gemini-3-flash-preview", maxTokens: 12000 },
           { model: "google/gemini-2.5-flash", maxTokens: 12000 },
+          { model: "google/gemini-2.5-flash-lite", maxTokens: 8000 },
         ];
 
     for (const attempt of attempts) {
