@@ -68,6 +68,12 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
   const [addWallStart, setAddWallStart] = useState<{ x: number; y: number } | null>(null);
   const [addWallPreview, setAddWallPreview] = useState<{ x: number; y: number } | null>(null);
 
+  // Pan and zoom state
+  const [viewZoom, setViewZoom] = useState(1);
+  const [viewPan, setViewPan] = useState({ x: 0, y: 0 });
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+
   // Transform state for canvas coordinates
   const [canvasTransform, setCanvasTransform] = useState({ 
     drawX: 0, 
@@ -127,6 +133,8 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
   // Find wall at position (for delete tool)
   const findWallAt = useCallback((canvasX: number, canvasY: number): string | null => {
     const { drawX, drawY, cmToCanvas } = canvasTransform;
+    const adjX = (canvasX - viewPan.x) / viewZoom;
+    const adjY = (canvasY - viewPan.y) / viewZoom;
     
     for (const wall of localAnalysis.walls) {
       const startX = drawX + wall.startX * cmToCanvas;
@@ -141,11 +149,11 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
       
       if (lengthSq === 0) continue;
       
-      const t = Math.max(0, Math.min(1, ((canvasX - startX) * dx + (canvasY - startY) * dy) / lengthSq));
+      const t = Math.max(0, Math.min(1, ((adjX - startX) * dx + (adjY - startY) * dy) / lengthSq));
       const projX = startX + t * dx;
       const projY = startY + t * dy;
       
-      const dist = Math.sqrt((canvasX - projX) ** 2 + (canvasY - projY) ** 2);
+      const dist = Math.sqrt((adjX - projX) ** 2 + (adjY - projY) ** 2);
       const wallWidth = Math.max(5, wall.thickness * cmToCanvas * 0.5);
       
       if (dist < wallWidth + 5) {
@@ -171,6 +179,10 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
 
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(viewPan.x, viewPan.y);
+    ctx.scale(viewZoom, viewZoom);
 
     let fitScale: number;
     let drawX: number;
@@ -463,7 +475,9 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
         ctx.strokeRect(x - width / 2, y - 3, width, 6);
       });
     }
-  }, [localAnalysis, pixelsPerCm, showWalls, showDoors, showWindows, showRooms, showImage, editMode, editTool, hoveredHandle, hoveredWall, dragState, showGrid, snapIndicator, addWallStart, addWallPreview]);
+
+    ctx.restore();
+  }, [localAnalysis, pixelsPerCm, showWalls, showDoors, showWindows, showRooms, showImage, editMode, editTool, hoveredHandle, hoveredWall, dragState, showGrid, snapIndicator, addWallStart, addWallPreview, viewZoom, viewPan]);
 
   useEffect(() => {
     const img = new Image();
@@ -485,18 +499,22 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [draw]);
 
-  // Convert canvas coordinates to cm
+  // Convert canvas coordinates to cm (accounting for pan/zoom)
   const canvasToCm = useCallback((canvasX: number, canvasY: number) => {
     const { drawX, drawY, cmToCanvas } = canvasTransform;
+    const adjustedX = (canvasX - viewPan.x) / viewZoom;
+    const adjustedY = (canvasY - viewPan.y) / viewZoom;
     return {
-      x: (canvasX - drawX) / cmToCanvas,
-      y: (canvasY - drawY) / cmToCanvas,
+      x: (adjustedX - drawX) / cmToCanvas,
+      y: (adjustedY - drawY) / cmToCanvas,
     };
-  }, [canvasTransform]);
+  }, [canvasTransform, viewPan, viewZoom]);
 
   // Find handle at position
   const findHandleAt = useCallback((canvasX: number, canvasY: number): HoveredHandle | null => {
     const { drawX, drawY, cmToCanvas } = canvasTransform;
+    const adjX = (canvasX - viewPan.x) / viewZoom;
+    const adjY = (canvasY - viewPan.y) / viewZoom;
     
     for (const wall of localAnalysis.walls) {
       const startX = drawX + wall.startX * cmToCanvas;
@@ -504,18 +522,18 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
       const endX = drawX + wall.endX * cmToCanvas;
       const endY = drawY + wall.endY * cmToCanvas;
 
-      const distStart = Math.sqrt((canvasX - startX) ** 2 + (canvasY - startY) ** 2);
+      const distStart = Math.sqrt((adjX - startX) ** 2 + (adjY - startY) ** 2);
       if (distStart <= HANDLE_RADIUS + 4) {
         return { wallId: wall.id, endpoint: 'start' };
       }
 
-      const distEnd = Math.sqrt((canvasX - endX) ** 2 + (canvasY - endY) ** 2);
+      const distEnd = Math.sqrt((adjX - endX) ** 2 + (adjY - endY) ** 2);
       if (distEnd <= HANDLE_RADIUS + 4) {
         return { wallId: wall.id, endpoint: 'end' };
       }
     }
     return null;
-  }, [localAnalysis.walls, canvasTransform]);
+  }, [localAnalysis.walls, canvasTransform, viewPan, viewZoom]);
 
   // Delete wall handler
   const handleDeleteWall = useCallback((wallId: string) => {
@@ -799,18 +817,59 @@ export const BlueprintReviewStep: React.FC<BlueprintReviewStepProps> = ({
           <canvas
             ref={canvasRef}
             className="w-full h-full"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
+            onPointerDown={(e) => {
+              if (e.button === 1 || e.altKey) {
+                isPanningRef.current = true;
+                panStartRef.current = { x: e.clientX - viewPan.x, y: e.clientY - viewPan.y };
+                e.preventDefault();
+                return;
+              }
+              handlePointerDown(e);
+            }}
+            onPointerMove={(e) => {
+              if (isPanningRef.current) {
+                setViewPan({ x: e.clientX - panStartRef.current.x, y: e.clientY - panStartRef.current.y });
+                return;
+              }
+              handlePointerMove(e);
+            }}
+            onPointerUp={(e) => {
+              if (isPanningRef.current) {
+                isPanningRef.current = false;
+                return;
+              }
+              handlePointerUp(e);
+            }}
             onPointerLeave={() => {
+              isPanningRef.current = false;
               setHoveredHandle(null);
               setHoveredWall(null);
               if (canvasRef.current) {
                 canvasRef.current.style.cursor = 'default';
               }
             }}
+            onWheel={(e) => {
+              e.preventDefault();
+              const delta = e.deltaY > 0 ? 0.9 : 1.1;
+              setViewZoom(z => Math.max(0.3, Math.min(5, z * delta)));
+            }}
           />
           
+          {/* Zoom hint + reset */}
+          <div className="absolute bottom-3 left-3 flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded">
+              Scroll to zoom · Alt+drag to pan
+            </span>
+            {(viewZoom !== 1 || viewPan.x !== 0 || viewPan.y !== 0) && (
+              <button
+                onClick={() => { setViewZoom(1); setViewPan({ x: 0, y: 0 }); }}
+                className="text-[10px] text-primary bg-background/80 px-2 py-1 rounded hover:bg-background"
+              >
+                Reset View
+              </button>
+            )}
+          </div>
+
           {/* Edit mode indicator */}
           {editMode && (
             <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2">
