@@ -446,12 +446,13 @@ const DefaultFloorTexture: React.FC<{
   floorWidth: number;
   floorDepth: number;
 }> = ({ floorWidth, floorDepth }) => {
-  const [albedo, normal] = useLoader(THREE.TextureLoader, [
+  const [albedo, normal, rough] = useLoader(THREE.TextureLoader, [
     '/textures/default-floor.jpg',
     '/textures/default-floor-normal.jpg',
+    '/textures/default-floor-roughness.jpg',
   ]);
 
-  const [albedoTex, normalTex] = useMemo(() => {
+  const [albedoTex, normalTex, roughTex] = useMemo(() => {
     const repeatX = (floorWidth * 100) / 100;
     const repeatY = (floorDepth * 100) / 100;
 
@@ -466,14 +467,19 @@ const DefaultFloorTexture: React.FC<{
     n.wrapT = THREE.RepeatWrapping;
     n.repeat.set(repeatX, repeatY);
 
-    return [a, n];
-  }, [albedo, normal, floorWidth, floorDepth]);
+    const r = rough.clone();
+    r.wrapS = THREE.RepeatWrapping;
+    r.wrapT = THREE.RepeatWrapping;
+    r.repeat.set(repeatX, repeatY);
+
+    return [a, n, r];
+  }, [albedo, normal, rough, floorWidth, floorDepth]);
 
   return (
     <meshStandardMaterial
       map={albedoTex}
       normalMap={normalTex}
-      roughness={0.45}
+      roughnessMap={roughTex}
       metalness={0.0}
     />
   );
