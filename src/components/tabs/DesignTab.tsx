@@ -31,7 +31,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Upload } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
@@ -42,6 +42,9 @@ import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
 import { isFixturePositionValid } from '@/utils/fixtureCollision';
 import { createWallShapeWithOpenings } from '@/utils/wallOpeningGeometry';
+import { exportSceneToGLBBlob } from '@/utils/glbExporter';
+import { generateRoomManifest, manifestToBlob } from '@/utils/roomManifest';
+import { isInsideUnreal, startUnrealWalkthrough } from '@/utils/unrealBridge';
 import { toast } from 'sonner';
 import type { FurnitureTemplate } from '@/data/furnitureLibrary';
 import type { FixtureTemplate } from '@/data/fixtureLibrary';
@@ -58,6 +61,15 @@ interface WallPreviewState {
 }
 
 // =============================================================================
+// SCENE REF CAPTURER (must be inside Canvas to access useThree)
+// =============================================================================
+
+const SceneRefCapturer: React.FC<{ sceneRef: React.MutableRefObject<THREE.Scene | null> }> = ({ sceneRef: ref }) => {
+  const { scene } = useThree();
+  React.useEffect(() => { ref.current = scene; }, [scene, ref]);
+  return null;
+};
+
 // CAMERA ANIMATOR (must be inside Canvas for useFrame)
 // =============================================================================
 
@@ -902,6 +914,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
   const animTargetPos = useRef(new THREE.Vector3());
@@ -1157,6 +1171,60 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       setIsRendering(false);
     }
   }, []);
+
+  // Export for Unreal Engine
+  const handleExportForUnreal = useCallback(async () => {
+    const scene = sceneRef.current;
+    if (!scene) {
+      toast.error('Scene not ready');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const manifest = generateRoomManifest(floorPlan);
+
+      // If inside Unreal WebUI, send command directly
+      if (isInsideUnreal()) {
+        const glbBlob = await exportSceneToGLBBlob(scene);
+        // For UE WebUI, we'd write to filesystem — for now send the command
+        startUnrealWalkthrough(manifest as unknown as Record<string, unknown>);
+        toast.success('Walkthrough started in Unreal Engine');
+        return;
+      }
+
+      // Standalone: download GLB + manifest as separate files
+      const glbBlob = await exportSceneToGLBBlob(scene);
+      const manifestBlob = manifestToBlob(manifest);
+
+      // Download GLB
+      const glbUrl = URL.createObjectURL(glbBlob);
+      const glbLink = document.createElement('a');
+      glbLink.href = glbUrl;
+      glbLink.download = 'room.glb';
+      glbLink.click();
+      URL.revokeObjectURL(glbUrl);
+
+      // Download manifest
+      const manifestUrl = URL.createObjectURL(manifestBlob);
+      const manifestLink = document.createElement('a');
+      manifestLink.href = manifestUrl;
+      manifestLink.download = 'room.json';
+      manifestLink.click();
+      URL.revokeObjectURL(manifestUrl);
+
+      toast.success('Room exported for Unreal Engine', {
+        description: 'room.glb + room.json downloaded',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export scene', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [floorPlan]);
 
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
@@ -1464,6 +1532,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           }}
           onPointerMissed={handleCanvasPointerMissed}
         >
+          <SceneRefCapturer sceneRef={sceneRef} />
           <PerspectiveCamera ref={cameraRef} makeDefault position={defaultCameraPos} fov={50} />
           {viewMode === 'design' && (
             <OrbitControls 
@@ -1616,6 +1685,23 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Reset View
+            </Button>
+
+            <div className="h-4 w-px bg-border/50" />
+
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 gap-1.5"
+              onClick={handleExportForUnreal}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              Export GLB
             </Button>
           </>
         )}
