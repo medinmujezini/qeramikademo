@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { AnimatedTabsList, AnimatedTabsTrigger } from '@/components/ui/animated-tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -23,8 +22,6 @@ import {
   Droplets, 
   Grid2X2, 
   FileDown, 
-  Cuboid, 
-  Scan,
   Palette,
   DollarSign,
   FolderOpen,
@@ -58,97 +55,68 @@ const WorkerPlatform = () => {
 
   return (
     <AuthProvider>
-      <div className="h-screen flex flex-col bg-background relative overflow-hidden">
-        {/* Background gradient orbs */}
-        <div className="gradient-orbs">
-          <div className="orb orb-1" />
-          <div className="orb orb-2" />
-          <div className="orb orb-3" />
-          <div className="orb orb-4" />
-        </div>
-
-        {/* Professional Header */}
-        <header className="header-tech px-4 py-2.5 relative z-10">
-          <div className="flex items-center justify-between">
-            {/* Left section - Back button and branding */}
-            <div className="flex items-center gap-4">
-              <BackToHome />
-              <div className="divider-tech" />
-              <div className="flex items-center gap-2">
-                <Wrench className="h-5 w-5 text-accent" />
-                <span className="font-semibold text-foreground">Worker Platform</span>
-              </div>
-            </div>
-            
-            {/* Right section - navigation */}
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <FolderOpen className="h-4 w-4" />
-                    Projects
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link to="/platform?tab=projects" className="flex items-center gap-2">
-                      <FolderOpen className="h-4 w-4" />
-                      My Projects
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/platform?tab=export" className="flex items-center gap-2">
-                      <FileDown className="h-4 w-4" />
-                      Export
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <div className="divider-tech" />
-              
-              <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <Link to="/cornell">
-                  <Cuboid className="h-4 w-4 mr-1.5" />
-                  Cornell
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <Link to="/raytracing">
-                  <Scan className="h-4 w-4 mr-1.5" />
-                  Raytracing
-                </Link>
-              </Button>
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
+        {/* Header */}
+        <header className="border-b border-border bg-card/80 backdrop-blur-sm px-4 h-12 flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-3">
+            <BackToHome />
+            <div className="w-px h-5 bg-border" />
+            <div className="flex items-center gap-1.5">
+              <Wrench className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium text-sm text-foreground">Worker Platform</span>
             </div>
           </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                <FolderOpen className="h-4 w-4" />
+                Projects
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/platform?tab=projects" className="flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4" />
+                  My Projects
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/platform?tab=export" className="flex items-center gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Export
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col relative z-10">
-          {/* Animated Glassmorphic Tab Navigation */}
-          <div className="flex justify-center py-3">
-            <AnimatedTabsList value={activeTab}>
-              <AnimatedTabsTrigger value="floor-plan">
+          {/* Tab Navigation */}
+          <div className="border-b border-border bg-card/50 flex justify-center px-4">
+            <TabsList className="h-10">
+              <TabsTrigger value="floor-plan" className="gap-1.5">
                 <PenTool className="h-3.5 w-3.5" />
                 Floor Plan
-              </AnimatedTabsTrigger>
-              <AnimatedTabsTrigger value="tiles">
+              </TabsTrigger>
+              <TabsTrigger value="tiles" className="gap-1.5">
                 <Grid2X2 className="h-3.5 w-3.5" />
                 Tiles
-              </AnimatedTabsTrigger>
-              <AnimatedTabsTrigger value="design">
+              </TabsTrigger>
+              <TabsTrigger value="design" className="gap-1.5">
                 <Palette className="h-3.5 w-3.5" />
                 Design
-              </AnimatedTabsTrigger>
-              <AnimatedTabsTrigger value="plumbing">
+              </TabsTrigger>
+              <TabsTrigger value="plumbing" className="gap-1.5">
                 <Droplets className="h-3.5 w-3.5" />
                 Plumbing
-              </AnimatedTabsTrigger>
-              <AnimatedTabsTrigger value="estimate">
+              </TabsTrigger>
+              <TabsTrigger value="estimate" className="gap-1.5">
                 <DollarSign className="h-3.5 w-3.5" />
                 Estimate
-              </AnimatedTabsTrigger>
-            </AnimatedTabsList>
+              </TabsTrigger>
+            </TabsList>
           </div>
 
           <TabsContent value="floor-plan" className="flex-1 m-0">
