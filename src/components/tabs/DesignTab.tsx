@@ -493,7 +493,7 @@ const FloorWithTexture: React.FC<{
     <meshStandardMaterial
       {...textureProps}
       {...(!hasAlbedo ? { color: fallbackColor } : {})}
-      roughness={hasTexture ? 1.0 : 0.8}
+      roughness={hasAnyTexture ? 1.0 : 0.8}
     />
   );
 };
