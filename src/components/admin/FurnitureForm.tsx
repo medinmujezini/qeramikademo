@@ -66,6 +66,7 @@ interface FurnitureFormProps {
     sort_order: number;
     price?: number | null;
     currency?: string | null;
+    description?: string | null;
   } | null;
   onSuccess: () => void;
   onCancel: () => void;
