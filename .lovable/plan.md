@@ -1,22 +1,64 @@
 
 
-## Plan: Fix Reset View Camera Distance
+## Updated Plan: Unreal Engine Walkthrough Integration
 
-### Problem
-The current camera position formula `[roomW, roomW * 0.8, roomH]` places the camera too close to the room, resulting in a zoomed-in view that cuts off parts of the room.
+### Change from previous plan
+Remove all interactive object editing, selection, and semantic ID mapping from the walkthrough. The UE walkthrough is **view-only** — users design in Lovable, then walk through a static scene in Unreal. No furniture moving, no material swapping, no click-to-select during walkthrough.
 
-### Solution
-Pull the camera back by using a distance multiplier based on the room diagonal, ensuring the full room is always visible with comfortable padding.
+### Simplified Architecture
 
-### Changes — `src/components/tabs/DesignTab.tsx`
+```text
+Lovable (design) → Export GLB + manifest → UE loads scene → First-person walkthrough (view only)
+```
 
-1. Calculate `maxDim = Math.max(roomW, roomH)` and use it to set a comfortable viewing distance:
-   - `position = [roomW/2 + maxDim, maxDim * 0.9, roomH/2 + maxDim]`
-   - `target = [roomW/2, 0, roomH/2]` (stays centered on room)
-   
-   This ensures the camera is always far enough back to see the entire room regardless of dimensions, with an isometric-ish angle.
+### Lovable Side (3 files)
 
-2. Same formula applied in both the initial `<PerspectiveCamera>` position and the `handleResetView` callback.
+**1. `src/utils/glbExporter.ts`** — Scene exporter
+- Use Three.js `GLTFExporter` to serialize the current R3F scene (walls, floor, furniture, fixtures, tiles) into a single `.glb`
+- Embed PBR textures (albedo, normal, roughness) into the binary
+- No semantic IDs or interactive object metadata needed
 
-No other files changed.
+**2. `src/utils/roomManifest.ts`** — Minimal manifest
+```json
+{
+  "projectId": "uuid",
+  "revision": 1,
+  "sceneScale": 0.01,
+  "spawnPoint": { "x": 150, "y": 160, "z": 200 },
+  "spawnRotation": 0,
+  "roomDimensions": { "width": 400, "depth": 300, "height": 280 },
+  "collisionMode": "mesh"
+}
+```
+- `spawnPoint` defaults to room center at eye height (160cm)
+- No `interactiveObjects` array — removed since walkthrough is view-only
+
+**3. `src/utils/unrealBridge.ts`** — WebUI bridge
+- Detect UE environment (`window.ue5` exists)
+- `sendToUnreal("startWalkthrough", { bundlePath, manifest })` 
+- Listen for `exitWalkthrough` callback to restore Lovable UI
+- No position sync or object selection callbacks needed
+
+**4. `src/components/tabs/DesignTab.tsx`** — Export button
+- Add "Export for Unreal" button in design mode toolbar
+- Downloads `room.glb` + `room.json` as zip (standalone mode)
+- When inside UE WebUI, calls `ue5("startWalkthrough", ...)` instead
+
+### Unreal Side (guidance only, not built by Lovable)
+
+UE has exactly 4 jobs:
+1. Receive `startWalkthrough` via WebUI OnBroadcast
+2. Load `room.glb` via glTFRuntime
+3. Spawn imported meshes with mesh collision
+4. Spawn/possess first-person pawn at manifest spawn point
+
+No object selection, no material editing, no UI overlays during walkthrough. ESC exits back to Lovable UI.
+
+### What was removed
+- `interactiveObjects` from manifest
+- Semantic mesh naming/IDs in GLB export
+- Object click-to-select in UE
+- Material swap callbacks
+- Position sync from UE back to web UI
+- Any bidirectional state during walkthrough
 
