@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
 import { Palette, RotateCw, MoreHorizontal, Trash2, X, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import type { FurnitureItem } from '@/data/furnitureLibrary';
 import type { FloorPlan } from '@/types/floorPlan';
