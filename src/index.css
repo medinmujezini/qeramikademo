@@ -784,25 +784,25 @@
   }
 
 /* Smaller glass variant for compact controls */
-.glass-control {
-  position: relative;
-  isolation: isolate;
-  border-radius: 12px;
-  overflow: hidden;
-  
-  background-image: linear-gradient(
-    135deg, 
-    rgba(255, 255, 255, 0.20) 0%, 
-    rgba(255, 255, 255, 0.08) 100%
-  );
-  
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  
-  box-shadow: 
-    0 4px 16px -2px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.2);
-}
+  .glass-control {
+    position: relative;
+    isolation: isolate;
+    border-radius: 12px;
+    overflow: hidden;
+    
+    background-image: linear-gradient(
+      135deg, 
+      rgba(255, 255, 255, 0.06) 0%, 
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    
+    box-shadow: 
+      0 4px 16px -2px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
 
 /* Compact toolbar glass - horizontal pill */
 .glass-toolbar {
