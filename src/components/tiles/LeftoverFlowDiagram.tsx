@@ -260,27 +260,17 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                   
                   return (
                     <g key={`conn-${idx}`}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <path
-                            d={path}
-                            fill="none"
-                            stroke={highlighted ? '#7c3aed' : '#a78bfa'}
-                            strokeWidth={Math.min(1 + conn.count * 0.8, 4)}
-                            strokeOpacity={highlighted ? 1 : 0.7}
-                            markerEnd={highlighted ? 'url(#arrowhead-highlighted)' : 'url(#arrowhead)'}
-                            className="cursor-pointer transition-all duration-200"
-                            onMouseEnter={() => setHoveredConnection(conn)}
-                            onMouseLeave={() => setHoveredConnection(null)}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-xs">
-                            <p className="font-medium">{conn.fromNode?.name} → {conn.toNode?.name}</p>
-                            <p className="text-muted-foreground">{conn.count} piece{conn.count > 1 ? 's' : ''} transferred</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+                      <path
+                        d={path}
+                        fill="none"
+                        stroke={highlighted ? '#7c3aed' : '#a78bfa'}
+                        strokeWidth={Math.min(1 + conn.count * 0.8, 4)}
+                        strokeOpacity={highlighted ? 1 : 0.7}
+                        markerEnd={highlighted ? 'url(#arrowhead-highlighted)' : 'url(#arrowhead)'}
+                        className="cursor-pointer transition-all duration-200"
+                        onMouseEnter={() => setHoveredConnection(conn)}
+                        onMouseLeave={() => setHoveredConnection(null)}
+                      />
                       
                       {/* Connection count label */}
                       {conn.count > 1 && conn.fromNode && conn.toNode && (
