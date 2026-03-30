@@ -15,10 +15,22 @@ export interface PBRMaterial {
   createdAt: Date;
 }
 
+export interface PBRMaterialFiles {
+  name: string;
+  albedo?: File;
+  normal?: File;
+  roughness?: File;
+  metallic?: File;
+  ao?: File;
+  arm?: File;
+  height?: File;
+}
+
 interface MaterialContextType {
   materials: PBRMaterial[];
   loading: boolean;
   addMaterial: (material: Omit<PBRMaterial, 'id' | 'createdAt'>) => Promise<void>;
+  addMaterialFromFiles: (material: PBRMaterialFiles) => Promise<void>;
   removeMaterial: (id: string) => Promise<void>;
   updateMaterial: (id: string, updates: Partial<PBRMaterial>) => Promise<void>;
   previewMaterialId: string | null;
@@ -67,8 +79,40 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
     refreshMaterials();
   }, [refreshMaterials]);
 
+  /** Upload a File directly to Supabase storage */
+  const uploadFile = async (file: File, textureType: string, materialName: string): Promise<string | null> => {
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const safeName = materialName.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `${safeName}_${textureType}_${Date.now()}.${ext}`;
+      const filePath = `pbr-materials/${fileName}`;
+
+      console.log(`Uploading ${textureType}: ${file.name} (${file.size} bytes) → ${filePath}`);
+
+      const { error: uploadError } = await supabase.storage
+        .from('materials')
+        .upload(filePath, file, { contentType: file.type });
+
+      if (uploadError) {
+        console.error(`Storage upload error for ${textureType}:`, uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('materials')
+        .getPublicUrl(filePath);
+
+      console.log(`Uploaded ${textureType} → ${publicUrl}`);
+      return publicUrl;
+    } catch (error) {
+      console.error(`Failed to upload ${textureType} texture:`, error);
+      toast.error(`Failed to upload ${textureType} texture`);
+      return null;
+    }
+  };
+
+  /** Legacy method: accepts string URLs (blob: or https:) */
   const uploadTexture = async (file: string, textureType: string, materialName: string): Promise<string | null> => {
-    // If it's a blob URL, we need to fetch and upload it
     if (file.startsWith('blob:')) {
       try {
         const response = await fetch(file);
@@ -96,13 +140,11 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     }
-    // If it's already a URL, return as-is
     return file;
   };
 
   const addMaterial = useCallback(async (material: Omit<PBRMaterial, 'id' | 'createdAt'>) => {
     try {
-      // Upload textures to storage
       const [albedo, normal, roughness, metallic, ao, arm, height] = await Promise.all([
         material.albedo ? uploadTexture(material.albedo, 'albedo', material.name) : null,
         material.normal ? uploadTexture(material.normal, 'normal', material.name) : null,
@@ -112,6 +154,52 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
         material.arm ? uploadTexture(material.arm, 'arm', material.name) : null,
         material.height ? uploadTexture(material.height, 'height', material.name) : null,
       ]);
+
+      const { error } = await supabase
+        .from('materials')
+        .insert({
+          name: material.name,
+          albedo_url: albedo,
+          normal_url: normal,
+          roughness_url: roughness,
+          metallic_url: metallic,
+          ao_url: ao,
+          arm_url: arm,
+          height_url: height,
+        });
+
+      if (error) throw error;
+
+      await refreshMaterials();
+      toast.success('Material saved');
+    } catch (error) {
+      console.error('Failed to add material:', error);
+      toast.error('Failed to save material');
+    }
+  }, [refreshMaterials]);
+
+  /** New method: accepts File objects directly — no blob URL intermediary */
+  const addMaterialFromFiles = useCallback(async (material: PBRMaterialFiles) => {
+    try {
+      const slots: Array<[keyof Omit<PBRMaterialFiles, 'name'>, File | undefined]> = [
+        ['albedo', material.albedo],
+        ['normal', material.normal],
+        ['roughness', material.roughness],
+        ['metallic', material.metallic],
+        ['ao', material.ao],
+        ['arm', material.arm],
+        ['height', material.height],
+      ];
+
+      // Upload all files in parallel
+      const results = await Promise.all(
+        slots.map(async ([type, file]) => {
+          if (!file) return null;
+          return uploadFile(file, type, material.name);
+        })
+      );
+
+      const [albedo, normal, roughness, metallic, ao, arm, height] = results;
 
       const { error } = await supabase
         .from('materials')
@@ -194,6 +282,7 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
       materials,
       loading,
       addMaterial,
+      addMaterialFromFiles,
       removeMaterial,
       updateMaterial,
       previewMaterialId,
