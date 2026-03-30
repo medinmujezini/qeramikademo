@@ -61,6 +61,15 @@ interface WallPreviewState {
 }
 
 // =============================================================================
+// SCENE REF CAPTURER (must be inside Canvas to access useThree)
+// =============================================================================
+
+const SceneRefCapturer: React.FC<{ sceneRef: React.MutableRefObject<THREE.Scene | null> }> = ({ sceneRef: ref }) => {
+  const { scene } = useThree();
+  React.useEffect(() => { ref.current = scene; }, [scene, ref]);
+  return null;
+};
+
 // CAMERA ANIMATOR (must be inside Canvas for useFrame)
 // =============================================================================
 
