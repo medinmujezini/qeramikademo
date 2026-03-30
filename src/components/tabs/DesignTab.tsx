@@ -1532,6 +1532,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           }}
           onPointerMissed={handleCanvasPointerMissed}
         >
+          <SceneRefCapturer sceneRef={sceneRef} />
           <PerspectiveCamera ref={cameraRef} makeDefault position={defaultCameraPos} fov={50} />
           {viewMode === 'design' && (
             <OrbitControls 
