@@ -31,7 +31,7 @@ export function generateRoomManifest(
   projectId: string = 'local',
   revision: number = 1
 ): RoomManifest {
-  const unitScale = UNIT_SCALE[floorPlan.unit] ?? 0.01;
+  const unitScale = CM_TO_METERS;
 
   // Compute room bounding box from wall points
   const points = floorPlan.points;
