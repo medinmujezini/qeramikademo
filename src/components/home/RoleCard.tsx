@@ -46,7 +46,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500
         ${variant === 'primary'
           ? 'bg-gradient-to-br from-primary/5 to-transparent'
-          : 'bg-gradient-to-br from-accent/5 to-transparent'
+          : 'bg-gradient-to-br from-muted/30 to-transparent'
         }
       `} />
       
