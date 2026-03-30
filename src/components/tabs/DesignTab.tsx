@@ -524,6 +524,7 @@ const FloorWithTexture: React.FC<{
 const DesignScene: React.FC<DesignSceneProps> = ({
   showTiles,
   showPlumbing,
+  showCeiling,
   giEnabled,
   giQuality,
   qualitySettings,
