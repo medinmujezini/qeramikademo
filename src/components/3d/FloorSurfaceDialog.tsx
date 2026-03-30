@@ -71,15 +71,17 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
   const areaInSqM = floorArea / 10000;
 
   const handleApplyFinish = () => {
-    if (selectedFinish) {
-      onApplyFinish(
-        selectedFinish.type,
-        selectedFinish.color,
-        selectedMaterialId !== 'none' ? selectedMaterialId : undefined,
-        selectedMaterialId !== 'none' ? textureScaleCm : undefined,
-      );
-      onOpenChange(false);
-    }
+    // Allow applying with just a PBR material (no preset needed)
+    const finishType = selectedFinish?.type || 'hardwood';
+    const finishColor = selectedFinish?.color || '#d4cdc5';
+    
+    onApplyFinish(
+      finishType,
+      finishColor,
+      selectedMaterialId !== 'none' ? selectedMaterialId : undefined,
+      selectedMaterialId !== 'none' ? textureScaleCm : undefined,
+    );
+    onOpenChange(false);
   };
 
   const handleApplyTiles = () => {
