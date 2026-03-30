@@ -35,20 +35,22 @@ Lovable (design) → Export GLB + manifest → UE loads scene → First-person w
 
 **3. `src/utils/unrealBridge.ts`** — WebUI bridge
 - Detect UE environment (`window.ue5` exists)
-- `sendToUnreal("startWalkthrough", { bundlePath, manifest })` 
+- `sendToUnreal("startWalkthrough", { glbBase64, manifest })` — sends GLB inline as base64
 - Listen for `exitWalkthrough` callback to restore Lovable UI
 - No position sync or object selection callbacks needed
 
-**4. `src/components/tabs/DesignTab.tsx`** — Export button
-- Add "Export for Unreal" button in design mode toolbar
-- Downloads `room.glb` + `room.json` as zip (standalone mode)
-- When inside UE WebUI, calls `ue5("startWalkthrough", ...)` instead
+**4. `src/components/tabs/DesignTab.tsx`** — Automatic export on walkthrough
+- **No manual export button** — GLB is generated automatically when user clicks "Walkthrough"
+- Shows loading overlay ("Preparing walkthrough…") while generating
+- If inside UE WebUI: converts GLB to base64, sends via `ue5("startWalkthrough", {...})`
+- If standalone: proceeds with local WASD walkthrough
+- Listens for UE `exitWalkthrough` callback to restore design mode
 
 ### Unreal Side (guidance only, not built by Lovable)
 
 UE has exactly 4 jobs:
 1. Receive `startWalkthrough` via WebUI OnBroadcast
-2. Load `room.glb` via glTFRuntime
+2. Decode base64 GLB and load via glTFRuntime
 3. Spawn imported meshes with mesh collision
 4. Spawn/possess first-person pawn at manifest spawn point
 
@@ -61,4 +63,4 @@ No object selection, no material editing, no UI overlays during walkthrough. ESC
 - Material swap callbacks
 - Position sync from UE back to web UI
 - Any bidirectional state during walkthrough
-
+- Manual "Export GLB" button (replaced by automatic export on walkthrough)
