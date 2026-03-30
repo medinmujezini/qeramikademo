@@ -102,7 +102,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             w-full font-semibold
             ${variant === 'primary' ? 'btn-glow' : ''}
           `}
-          variant={variant === 'primary' ? 'default' : 'outline'}
+          variant={variant === 'primary' ? 'default' : 'default'}
           size="lg"
         >
           <Link to={to}>{ctaText}</Link>
