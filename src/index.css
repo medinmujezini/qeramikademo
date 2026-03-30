@@ -616,6 +616,15 @@
   }
 }
 
+/* Admin glass sidebar */
+.glass-sidebar {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid hsl(var(--border) / 0.3);
+  box-shadow: 4px 0 24px -4px rgba(0, 0, 0, 0.3);
+}
+
 /* ========================================
    FLOATING PANEL SYSTEM
    Corner-anchored cards that keep canvas as hero
