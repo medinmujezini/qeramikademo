@@ -938,8 +938,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   
   const [showTiles, setShowTiles] = useState(true);
   const [showPlumbing, setShowPlumbing] = useState(false);
+  const [showCeiling, setShowCeiling] = useState(true);
   const [giEnabled, setGiEnabled] = useState(false);
   const [giQuality, setGiQuality] = useState<GIQualityTier>('high');
+  const [selectedLightId, setSelectedLightId] = useState<string | null>(null);
   const [qualitySettings, setQualitySettings] = useState<QualitySettings>(DEFAULT_QUALITY_SETTINGS);
   const [viewMode, setViewMode] = useState<'design' | 'walkthrough'>('design');
   const [maxPolarAngle, setMaxPolarAngle] = useState(Math.PI / 2);
