@@ -2011,18 +2011,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             </div>
           </div>
 
-          {/* Exit button */}
-          <div className="absolute top-4 right-4 z-40">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="gap-1.5"
-              onClick={exitWalkthrough}
-            >
-              <X className="h-3.5 w-3.5" />
-              Exit (Esc)
-            </Button>
-          </div>
+          {/* Walkthrough overlay with exit, render, minimap */}
+          <WalkthroughOverlay
+            floorPlan={floorPlan}
+            spawn={spawnPoint}
+            onExit={exitWalkthrough}
+            onRender={handleRenderImage}
+            visible={true}
+          />
 
           {/* WASD hint */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
