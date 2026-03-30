@@ -12,11 +12,11 @@ const HomePage = () => {
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse at 20% 20%, hsl(217 91% 60% / 0.28) 0%, transparent 55%),
-            radial-gradient(ellipse at 80% 30%, hsl(190 80% 50% / 0.22) 0%, transparent 55%),
-            radial-gradient(ellipse at 60% 70%, hsl(260 70% 60% / 0.20) 0%, transparent 55%),
-            radial-gradient(ellipse at 30% 80%, hsl(170 70% 50% / 0.18) 0%, transparent 55%),
-            hsl(210 40% 98%)
+            radial-gradient(ellipse at 20% 20%, hsl(217 91% 60% / 0.15) 0%, transparent 55%),
+            radial-gradient(ellipse at 80% 30%, hsl(190 80% 50% / 0.10) 0%, transparent 55%),
+            radial-gradient(ellipse at 60% 70%, hsl(260 70% 60% / 0.10) 0%, transparent 55%),
+            radial-gradient(ellipse at 30% 80%, hsl(170 70% 50% / 0.08) 0%, transparent 55%),
+            hsl(222 47% 11%)
           `
         }}
       />
