@@ -442,8 +442,31 @@ export interface FloorPlan {
   wallFinishes?: WallFinish[];
   // Floor finish
   floorFinish?: FloorFinish;
+  // Room lights (rect lights that export to Unreal)
+  roomLights?: RoomLight[];
   // Saved camera viewpoints
   savedCameraViews?: SavedCameraView[];
+}
+
+// Room light for ceiling-mounted rect lights
+export interface RoomLight {
+  id: string;
+  /** Center X position in cm (plan coords) */
+  cx: number;
+  /** Center Y position in cm (plan coords) */
+  cy: number;
+  /** Width in cm */
+  width: number;
+  /** Depth in cm */
+  depth: number;
+  /** Rotation in degrees */
+  rotation: number;
+  /** Light intensity (0-10) */
+  intensity: number;
+  /** Light color hex */
+  color: string;
+  /** Whether the light is on */
+  enabled: boolean;
 }
 
 export interface SavedCameraView {
