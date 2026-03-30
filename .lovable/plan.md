@@ -1,64 +1,42 @@
 
 
-# Full UI/UX Enhancement Plan
+# Remove Tooltips & Continue UI Cleanup
 
-## Current Issues
+## What's Changing
 
-1. **Headers** use glassmorphism pill styling (`glass glass-pill glass-shine-sweep` on Home, `header-tech` on platforms) — overly decorative, not traditional
-2. **Animated tabs** use `glass glass-shine-sweep` with rounded-full pill shape and animated indicator — flashy, not professional
-3. **Background orbs** (`gradient-orbs`, `orb-1` through `orb-4`) appear on every page — distracting animated blobs
-4. **Home page** has excessive glass effects (shine sweeps, gradient overlays, caustics on RoleCards)
-5. **RoleCard** uses `GlassCard variant="premium" showOrbs` with shine layers — over-designed
-6. **Cornell/Raytracing demo links** clutter headers — these are dev demos, not user features
-7. **"Worker Platform" / "Design Studio" branding** is confusing — just show the app name consistently
-
-## Plan
-
-### 1. Simplify Headers (Home, WorkerPlatform, EndUserPlatform)
-
-**Home page header**: Replace glass pill with a clean flat bar using `bg-card border-b border-border`. Remove Cornell/Raytracing links from main nav (keep only in footer or remove entirely). Keep Admin link.
-
-**WorkerPlatform header**: Already uses `header-tech` (clean). Remove Cornell/Raytracing links. Clean up the right side to just show Projects dropdown.
-
-**EndUserPlatform header**: Same cleanup — flat `header-tech` bar, remove decorative elements.
-
-### 2. Replace Animated Tabs with Standard Tabs
-
-Replace `AnimatedTabsList`/`AnimatedTabsTrigger` usage in both platforms with standard `TabsList`/`TabsTrigger` from the existing `tabs.tsx` component. These already have a clean, traditional underline/highlight style. Remove the `animated-tabs.tsx` file or leave it unused.
-
-### 3. Remove Background Orbs
-
-Remove the `gradient-orbs` div from `Home.tsx`, `WorkerPlatform.tsx`, and `EndUserPlatform.tsx`. The radial gradient background on Home can stay (it's subtle), but the animated floating orbs go.
-
-### 4. Simplify Home Page
-
-- Replace glass pill header with flat `bg-card border-b` bar
-- Replace `RoleCard` glass effects: use standard `Card` component instead of `GlassCard variant="premium"` with shine/orbs
-- Remove gradient overlay divs and shine layers from RoleCard
-- Keep the hero text and two-card layout — just make cards clean
-
-### 5. Clean Up RoleCard
-
-Rewrite to use `Card` from shadcn instead of `GlassCard`. Remove `glass-shine-sweep`, `shine-layer`, gradient overlays. Simple border hover effect.
-
-### 6. Remove Demo Links from Headers
-
-Cornell and Raytracing links removed from Home header and WorkerPlatform header. These are development tools. If user wants them, they can navigate directly. Keep `/admin` accessible.
+Remove all `Tooltip`/`TooltipProvider`/`TooltipContent`/`TooltipTrigger` usage across the app. Buttons already have visible labels or recognizable icons — tooltips add visual clutter and interfere with 3D interactions.
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/pages/Home.tsx` | Flat header, remove orbs, simplify layout |
-| `src/pages/WorkerPlatform.tsx` | Remove orbs, replace AnimatedTabs with standard Tabs, remove demo links |
-| `src/pages/EndUserPlatform.tsx` | Same as WorkerPlatform |
-| `src/components/home/RoleCard.tsx` | Use `Card` instead of `GlassCard`, remove effects |
-| `src/components/home/BackToHome.tsx` | No changes needed |
+### 1. `src/App.tsx`
+Remove the `<TooltipProvider>` wrapper from the app root. No longer needed.
 
-## What Stays
+### 2. `src/components/3d/FurnitureMiniToolbar.tsx`
+Strip all `Tooltip`/`TooltipProvider` wrapping from the 6 buttons (Color, Rotate, Details, 3D View, Delete, Close). Keep the buttons as-is, just unwrap them.
 
-- `header-tech` CSS class (it's already clean/flat)
-- Admin panel layout (already fixed previously)
-- Glass floating panels inside canvas tabs (Design/Tiles/Plumbing) — those are appropriate for overlay UI on 3D canvas
-- All functional features (floor plan, tiles, design, plumbing, estimate, projects, export)
+### 3. `src/components/3d/FixtureMiniToolbar.tsx`
+Same — strip tooltip wrappers from Rotate, Info, Delete, Close buttons.
+
+### 4. `src/components/tabs/DesignTab.tsx`
+Remove `TooltipProvider` block around the 4 camera preset buttons (Corner, Top Down, Eye Level, Birdseye). Keep the icon buttons.
+
+### 5. `src/components/3d/FloorSurfaceDialog.tsx`
+Remove tooltip around the "Scale" label — just show the label directly.
+
+### 6. `src/components/floor-plan/CeilingPlanePanel.tsx`
+Remove tooltip wrappers from the info badges.
+
+### 7. `src/components/tiles/LeftoverFlowDiagram.tsx`
+Remove tooltip wrappers from the header help icon and SVG nodes.
+
+### 8. `src/components/floor-plan/PropertiesPanel.tsx`
+Remove tooltip import (check if actually used in the component body).
+
+### 9. `src/components/3d/RoomLightMarker.tsx`
+Check and remove any tooltip usage.
+
+## Approach
+- For each file: remove `Tooltip`, `TooltipContent`, `TooltipTrigger`, `TooltipProvider` wrappers while keeping the inner content (buttons, labels, etc.) intact.
+- Remove unused imports of tooltip components.
+- The `tooltip.tsx` component file itself stays (no harm), but won't be imported anywhere.
 
