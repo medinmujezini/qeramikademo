@@ -1592,6 +1592,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             <DesignScene
               showTiles={showTiles}
               showPlumbing={showPlumbing}
+              showCeiling={showCeiling}
               giEnabled={giEnabled}
               giQuality={giQuality}
               qualitySettings={qualitySettings}
