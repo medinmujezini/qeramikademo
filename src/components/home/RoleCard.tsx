@@ -56,7 +56,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
           w-16 h-16 rounded-2xl flex items-center justify-center mb-6
           ${variant === 'primary'
             ? 'bg-primary/10 text-primary'
-            : 'bg-muted text-muted-foreground'
+            : 'bg-primary/10 text-primary/70'
           }
         `}>
           <Icon className="w-8 h-8" />
@@ -86,7 +86,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             <li key={index} className="flex items-start gap-3">
               <div className={`
                 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
-                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}
+                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-primary/15 text-primary/70'}
               `}>
                 <Check className="w-3 h-3" />
               </div>
@@ -102,7 +102,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             w-full font-semibold
             ${variant === 'primary' ? 'btn-glow' : ''}
           `}
-          variant={variant === 'primary' ? 'default' : 'outline'}
+          variant={variant === 'primary' ? 'default' : 'default'}
           size="lg"
         >
           <Link to={to}>{ctaText}</Link>
