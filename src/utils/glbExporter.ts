@@ -12,6 +12,63 @@ import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 export interface GLBExportOptions {
   binary?: boolean;
   includeInvisible?: boolean;
+  enhanceMaterials?: boolean;
+}
+
+/**
+ * Enhance materials on the export scene clone so the GLB has better PBR defaults.
+ * This does NOT mutate the live scene — only the clone.
+ */
+function enhanceExportMaterials(scene: THREE.Object3D): void {
+  scene.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+
+    const mat = obj.material;
+    if (!mat || Array.isArray(mat)) return; // skip multi-material
+    if (!(mat instanceof THREE.MeshStandardMaterial)) return;
+
+    const name = (obj.name || '').toLowerCase();
+    const colorHex = '#' + mat.color.getHexString();
+
+    // Floor detection: mesh rotated -90° on X with large flat geometry, or named floor
+    const isFloor = name.includes('floor') ||
+      (obj.rotation.x < -1.5 && obj.rotation.x > -1.6 && obj.geometry instanceof THREE.PlaneGeometry);
+
+    // Wall detection: extruded geometry or named wall
+    const isWall = name.includes('wall') ||
+      obj.geometry instanceof THREE.ExtrudeBufferGeometry ||
+      obj.geometry?.type === 'ExtrudeGeometry';
+
+    // Door detection
+    const isDoor = name.includes('door') || colorHex === '#8b5a2b';
+
+    if (isFloor) {
+      // Better floor defaults — slightly reflective, lower roughness
+      if (mat.roughness > 0.75 && !mat.map) {
+        mat.roughness = 0.45;
+        mat.metalness = 0.0;
+        // If the floor is the default grey, give it a warmer concrete look
+        if (colorHex === '#f3f4f6' || colorHex === '#e5e7eb') {
+          mat.color.set('#d4cdc5');
+          mat.roughness = 0.55;
+        }
+      }
+    } else if (isWall) {
+      // Walls — slight sheen, not fully matte
+      if (mat.roughness > 0.85 && !mat.map) {
+        mat.roughness = 0.7;
+        mat.metalness = 0.0;
+        // Slightly warm the default wall color
+        if (colorHex === '#e5e7eb') {
+          mat.color.set('#eae6e1');
+        }
+      }
+    } else if (isDoor) {
+      // Wood doors — warmer, slight sheen
+      mat.roughness = 0.5;
+      mat.metalness = 0.0;
+    }
+  });
 }
 
 /**
@@ -22,7 +79,7 @@ export async function exportSceneToGLB(
   scene: THREE.Object3D,
   options: GLBExportOptions = {}
 ): Promise<ArrayBuffer> {
-  const { binary = true } = options;
+  const { binary = true, enhanceMaterials = true } = options;
 
   // Clone the scene to avoid mutating the live scene
   const exportScene = scene.clone(true);
@@ -38,12 +95,18 @@ export async function exportSceneToGLB(
       obj instanceof THREE.PointLightHelper ||
       obj instanceof THREE.SpotLightHelper ||
       obj.name.startsWith('__helper') ||
-      obj.name.startsWith('__gizmo')
+      obj.name.startsWith('__gizmo') ||
+      obj.name === '__spawn_marker'
     ) {
       toRemove.push(obj);
     }
   });
   toRemove.forEach((obj) => obj.removeFromParent());
+
+  // Enhance materials for better UE appearance
+  if (enhanceMaterials) {
+    enhanceExportMaterials(exportScene);
+  }
 
   const exporter = new GLTFExporter();
 
