@@ -24,6 +24,8 @@ import { QualitySettingsPanel, QualitySettings, DEFAULT_QUALITY_SETTINGS } from 
 import { WallSurfaceDialog } from '@/components/3d/WallSurfaceDialog';
 import { FloorSurfaceDialog } from '@/components/3d/FloorSurfaceDialog';
 import { TiledWall3D } from '@/components/3d/TiledWall3D';
+import { Ceiling3D } from '@/components/3d/Ceiling3D';
+import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -33,7 +35,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
@@ -237,6 +239,7 @@ const WalkthroughMovement: React.FC<{
 interface DesignSceneProps {
   showTiles: boolean;
   showPlumbing: boolean;
+  showCeiling: boolean;
   giEnabled: boolean;
   giQuality: GIQualityTier;
   qualitySettings: QualitySettings;
@@ -523,6 +526,7 @@ const FloorWithTexture: React.FC<{
 const DesignScene: React.FC<DesignSceneProps> = ({
   showTiles,
   showPlumbing,
+  showCeiling,
   giEnabled,
   giQuality,
   qualitySettings,
@@ -852,6 +856,9 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         <meshStandardMaterial color="#92400e" />
       </mesh>
 
+      {/* Ceiling */}
+      <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
+
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
     </>
@@ -873,7 +880,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 }) => {
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -931,8 +938,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   
   const [showTiles, setShowTiles] = useState(true);
   const [showPlumbing, setShowPlumbing] = useState(false);
+  const [showCeiling, setShowCeiling] = useState(true);
   const [giEnabled, setGiEnabled] = useState(false);
   const [giQuality, setGiQuality] = useState<GIQualityTier>('high');
+  const [selectedLightId, setSelectedLightId] = useState<string | null>(null);
   const [qualitySettings, setQualitySettings] = useState<QualitySettings>(DEFAULT_QUALITY_SETTINGS);
   const [viewMode, setViewMode] = useState<'design' | 'walkthrough'>('design');
   const [maxPolarAngle, setMaxPolarAngle] = useState(Math.PI / 2);
@@ -1583,6 +1592,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             <DesignScene
               showTiles={showTiles}
               showPlumbing={showPlumbing}
+              showCeiling={showCeiling}
               giEnabled={giEnabled}
               giQuality={giQuality}
               qualitySettings={qualitySettings}
@@ -1611,6 +1621,28 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               }}
             />
           )}
+          {/* Room light markers in design mode */}
+          {viewMode === 'design' && (floorPlan.roomLights ?? []).map(light => (
+            <RoomLightMarker
+              key={light.id}
+              light={light}
+              ceilingHeight={(floorPlan.walls[0]?.height ?? 280) * 0.01}
+              isSelected={selectedLightId === light.id}
+              onSelect={() => setSelectedLightId(light.id)}
+              onMove={(cx, cy) => updateRoomLight(light.id, { cx, cy })}
+              onRotate={(rot) => updateRoomLight(light.id, { rotation: rot })}
+              onDelete={() => {
+                deleteRoomLight(light.id);
+                if (selectedLightId === light.id) setSelectedLightId(null);
+              }}
+              floorBounds={{
+                minX: roomBounds.minX,
+                maxX: roomBounds.maxX,
+                minZ: roomBounds.minZ,
+                maxZ: roomBounds.maxZ,
+              }}
+            />
+          ))}
           <CameraAnimator
             targetPos={animTargetPos}
             targetTarget={animTargetTarget}
@@ -1672,12 +1704,32 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         {viewMode === 'design' && (
           <>
             <div className="flex items-center gap-2">
+              <Switch id="show-ceiling" checked={showCeiling} onCheckedChange={setShowCeiling} className="scale-90" />
+              <Label htmlFor="show-ceiling" className="text-sm">Ceiling</Label>
+            </div>
+
+            <div className="flex items-center gap-2">
               <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-90" />
               <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-sm">
                 <Droplets className="h-3.5 w-3.5 text-blue-500" />
                 Plumbing
               </Label>
             </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1.5"
+              onClick={() => {
+                const cx = (floorPlan.roomWidth || 800) / 2;
+                const cy = (floorPlan.roomHeight || 600) / 2;
+                addRoomLight(cx, cy);
+                toast.success('Light added to ceiling');
+              }}
+            >
+              <Lightbulb className="h-3.5 w-3.5" />
+              Add Light
+            </Button>
             
             <div className="h-4 w-px bg-border/50" />
             
