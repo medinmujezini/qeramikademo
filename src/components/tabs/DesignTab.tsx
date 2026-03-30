@@ -1686,6 +1686,23 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               <RotateCcw className="h-3.5 w-3.5" />
               Reset View
             </Button>
+
+            <div className="h-4 w-px bg-border/50" />
+
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 gap-1.5"
+              onClick={handleExportForUnreal}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              Export GLB
+            </Button>
           </>
         )}
 
