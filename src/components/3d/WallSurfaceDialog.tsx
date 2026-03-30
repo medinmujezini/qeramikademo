@@ -222,7 +222,7 @@ export const WallSurfaceDialog: React.FC<WallSurfaceDialogProps> = ({
                           : 'border-border hover:border-primary/50'
                       )}
                       style={{ backgroundColor: paint.color }}
-                      title={paint.name}
+                      
                     >
                       {selectedPaintColor === paint.color && (
                         <Check className="absolute inset-0 m-auto h-5 w-5 text-primary drop-shadow-md" />
