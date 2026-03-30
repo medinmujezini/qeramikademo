@@ -86,7 +86,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             <li key={index} className="flex items-start gap-3">
               <div className={`
                 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
-                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent'}
+                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}
               `}>
                 <Check className="w-3 h-3" />
               </div>
