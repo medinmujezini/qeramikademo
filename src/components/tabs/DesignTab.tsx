@@ -441,6 +441,34 @@ const TiledWall3DWithMaterial: React.FC<
   );
 };
 
+/** Default floor with laminate texture */
+const DefaultFloorTexture: React.FC<{
+  floorWidth: number;
+  floorDepth: number;
+}> = ({ floorWidth, floorDepth }) => {
+  const texture = useLoader(THREE.TextureLoader, '/textures/default-floor.jpg');
+
+  const tex = useMemo(() => {
+    const t = texture.clone();
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.colorSpace = THREE.SRGBColorSpace;
+    // Assume texture covers ~100cm, tile across room
+    const repeatX = (floorWidth * 100) / 100;
+    const repeatY = (floorDepth * 100) / 100;
+    t.repeat.set(repeatX, repeatY);
+    return t;
+  }, [texture, floorWidth, floorDepth]);
+
+  return (
+    <meshStandardMaterial
+      map={tex}
+      roughness={0.45}
+      metalness={0.0}
+    />
+  );
+};
+
 /** Floor mesh with PBR texture support */
 const FloorWithTextureInner: React.FC<{
   urls: Record<string, string>;
