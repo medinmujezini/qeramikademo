@@ -154,109 +154,31 @@ export const FurnitureMiniToolbar: React.FC<FurnitureMiniToolbarProps> = ({
       style={{ pointerEvents: 'auto' }}
       zIndexRange={[100, 0]}
     >
-      <TooltipProvider delayDuration={300}>
         <div 
           className="animate-fade-in flex items-center gap-1 px-2 py-1.5 rounded-full bg-background/95 backdrop-blur-sm border shadow-lg"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Color button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleColorClick}
-              >
-                <div 
-                  className="w-5 h-5 rounded-full border-2 border-background shadow-sm"
-                  style={{ backgroundColor: item.color }}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Color</TooltipContent>
-          </Tooltip>
-          
-          {/* Rotate button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleRotate}
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Rotate (R)</TooltipContent>
-          </Tooltip>
-          
-          {/* More button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleMoreClick}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Details</TooltipContent>
-          </Tooltip>
-          
-          {/* 3D View button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleProductView}
-              >
-                <Box className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">3D View</TooltipContent>
-          </Tooltip>
-          
-          {/* Separator */}
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleColorClick}>
+            <div className="w-5 h-5 rounded-full border-2 border-background shadow-sm" style={{ backgroundColor: item.color }} />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleRotate}>
+            <RotateCw className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleMoreClick}>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleProductView}>
+            <Box className="h-4 w-4" />
+          </Button>
           <div className="w-px h-5 bg-border mx-0.5" />
-          
-          {/* Delete button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleDelete}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Delete</TooltipContent>
-          </Tooltip>
-          
-          {/* Close button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Close (Esc)</TooltipContent>
-          </Tooltip>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDelete}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
         
-        {/* Color picker popup */}
         {showColorPicker && (
           <FurnitureColorPopup
             currentColor={item.color}
@@ -264,7 +186,6 @@ export const FurnitureMiniToolbar: React.FC<FurnitureMiniToolbarProps> = ({
             onClose={() => setShowColorPicker(false)}
           />
         )}
-      </TooltipProvider>
       
       {/* Details dialog */}
       <FurnitureDetailsDialog

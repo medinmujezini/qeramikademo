@@ -130,7 +130,6 @@ const App = () => (
             </MEPProvider>
           </FloorPlanProvider>
         </MaterialProvider>
-      </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

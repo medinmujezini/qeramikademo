@@ -409,37 +409,30 @@ export const PropertiesPanel: React.FC = () => {
                           );
                           const isActive = Math.abs(currentAngle - preset.angle) < 2;
                           return (
-                            <TooltipProvider key={preset.angle}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant={isActive ? "default" : "outline"}
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={() => {
-                                      const wallLength = parseFloat(length as string) || 100;
-                                      const direction = wall.slopeDirection || 'descending';
-                                      const baseHeight = wall.startHeight ?? wall.height;
-                                      const newEndHeight = calculateHeightFromAngle(
-                                        baseHeight,
-                                        wallLength,
-                                        preset.angle,
-                                        direction
-                                      );
-                                      updateWall(wall.id, {
-                                        endHeight: Math.max(50, Math.round(newEndHeight)),
-                                        slopeAngle: preset.angle
-                                      });
-                                    }}
-                                  >
-                                    {preset.label}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">
-                                  <p className="text-xs">{preset.description}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <Button
+                              key={preset.angle}
+                              variant={isActive ? "default" : "outline"}
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              title={preset.description}
+                              onClick={() => {
+                                const wallLength = parseFloat(length as string) || 100;
+                                const direction = wall.slopeDirection || 'descending';
+                                const baseHeight = wall.startHeight ?? wall.height;
+                                const newEndHeight = calculateHeightFromAngle(
+                                  baseHeight,
+                                  wallLength,
+                                  preset.angle,
+                                  direction
+                                );
+                                updateWall(wall.id, {
+                                  endHeight: Math.max(50, Math.round(newEndHeight)),
+                                  slopeAngle: preset.angle
+                                });
+                              }}
+                            >
+                              {preset.label}
+                            </Button>
                           );
                         })}
                       </div>
