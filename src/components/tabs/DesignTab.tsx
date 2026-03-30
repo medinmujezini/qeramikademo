@@ -24,6 +24,8 @@ import { QualitySettingsPanel, QualitySettings, DEFAULT_QUALITY_SETTINGS } from 
 import { WallSurfaceDialog } from '@/components/3d/WallSurfaceDialog';
 import { FloorSurfaceDialog } from '@/components/3d/FloorSurfaceDialog';
 import { TiledWall3D } from '@/components/3d/TiledWall3D';
+import { Ceiling3D } from '@/components/3d/Ceiling3D';
+import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
