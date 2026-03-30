@@ -1704,12 +1704,32 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         {viewMode === 'design' && (
           <>
             <div className="flex items-center gap-2">
+              <Switch id="show-ceiling" checked={showCeiling} onCheckedChange={setShowCeiling} className="scale-90" />
+              <Label htmlFor="show-ceiling" className="text-sm">Ceiling</Label>
+            </div>
+
+            <div className="flex items-center gap-2">
               <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-90" />
               <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-sm">
                 <Droplets className="h-3.5 w-3.5 text-blue-500" />
                 Plumbing
               </Label>
             </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1.5"
+              onClick={() => {
+                const cx = (floorPlan.roomWidth || 800) / 2;
+                const cy = (floorPlan.roomHeight || 600) / 2;
+                addRoomLight(cx, cy);
+                toast.success('Light added to ceiling');
+              }}
+            >
+              <Lightbulb className="h-3.5 w-3.5" />
+              Add Light
+            </Button>
             
             <div className="h-4 w-px bg-border/50" />
             
