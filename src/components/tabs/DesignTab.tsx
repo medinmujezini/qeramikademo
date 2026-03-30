@@ -679,7 +679,9 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             />
           </Suspense>
         ) : (
-          <meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />
+          <Suspense fallback={<meshStandardMaterial color="#d4cdc5" roughness={0.5} />}>
+            <DefaultFloorTexture floorWidth={floorWidth} floorDepth={floorDepth} />
+          </Suspense>
         )}
       </mesh>
 
