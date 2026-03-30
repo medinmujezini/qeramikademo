@@ -45,12 +45,25 @@ export function sendToUnreal(event: string, data: Record<string, unknown> = {}):
 }
 
 /**
- * Send the startWalkthrough command to Unreal Engine.
- * Includes the bundle path and manifest data.
+ * Convert an ArrayBuffer to a base64 string (chunked to avoid stack overflow).
  */
-export function startUnrealWalkthrough(manifest: Record<string, unknown>, bundlePath?: string): boolean {
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const CHUNK = 0x8000;
+  const parts: string[] = [];
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    parts.push(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
+  }
+  return btoa(parts.join(''));
+}
+
+/**
+ * Send the startWalkthrough command to Unreal Engine.
+ * Includes the GLB scene as base64 and the manifest data.
+ */
+export function startUnrealWalkthrough(glbBase64: string, manifest: Record<string, unknown>): boolean {
   return sendToUnreal('startWalkthrough', {
-    bundlePath: bundlePath ?? '/Content/RoomBundles/room.glb',
+    glbBase64,
     manifest,
   });
 }
