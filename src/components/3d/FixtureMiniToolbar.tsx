@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { Html } from '@react-three/drei';
 import { RotateCw, Trash2, X, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import type { UnifiedFixture } from '@/types/fixture';
 import type { FurnitureItem } from '@/data/furnitureLibrary';
 import type { FloorPlan } from '@/types/floorPlan';
@@ -165,81 +165,28 @@ export const FixtureMiniToolbar: React.FC<FixtureMiniToolbarProps> = ({
       style={{ pointerEvents: 'auto' }}
       zIndexRange={[100, 0]}
     >
-      <TooltipProvider delayDuration={300}>
         <div 
           className="animate-fade-in flex items-center gap-1 px-2 py-1.5 rounded-full bg-background/95 backdrop-blur-sm border shadow-lg"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Fixture type indicator */}
           <div className="px-2 py-0.5 text-xs font-medium text-muted-foreground border-r mr-1">
             {fixture.name}
           </div>
-          
-          {/* Rotate button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleRotate}
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Rotate (R)</TooltipContent>
-          </Tooltip>
-          
-          {/* Info button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleInfoClick}
-              >
-                <Info className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Details</TooltipContent>
-          </Tooltip>
-          
-          {/* Separator */}
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleRotate}>
+            <RotateCw className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleInfoClick}>
+            <Info className="h-4 w-4" />
+          </Button>
           <div className="w-px h-5 bg-border mx-0.5" />
-          
-          {/* Delete button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleDelete}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Delete</TooltipContent>
-          </Tooltip>
-          
-          {/* Close button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">Close (Esc)</TooltipContent>
-          </Tooltip>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDelete}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={handleClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
         
-        {/* Info panel */}
         {showInfo && (
           <div className="mt-2 p-3 rounded-lg bg-background/95 backdrop-blur-sm border shadow-lg text-xs space-y-1.5 min-w-[180px]">
             <div className="font-semibold text-sm border-b pb-1.5 mb-2">{fixture.name}</div>
@@ -267,7 +214,6 @@ export const FixtureMiniToolbar: React.FC<FixtureMiniToolbarProps> = ({
             </div>
           </div>
         )}
-      </TooltipProvider>
     </Html>
   );
 };

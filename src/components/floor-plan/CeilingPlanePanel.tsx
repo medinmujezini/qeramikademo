@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { TrendingDown, Compass, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { getDirectionLabel, getDirectionFromCompass, formatCeilingPlaneInfo } from '@/utils/ceilingUtils';
 
 const COMPASS_DIRECTIONS = [
@@ -166,31 +166,13 @@ export const CeilingPlanePanel: React.FC = () => {
             
             return (
               <div className="flex gap-2 pt-2 border-t">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Badge variant="secondary" className="text-xs">
-                        {roomModeWalls.length} walls following
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">Walls computed from ceiling plane</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Badge variant="secondary" className="text-xs">
+                  {roomModeWalls.length} walls following
+                </Badge>
                 {overrideWalls.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Badge variant="outline" className="text-xs">
-                          {overrideWalls.length} overridden
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">Walls with manual height overrides</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Badge variant="outline" className="text-xs">
+                    {overrideWalls.length} overridden
+                  </Badge>
                 )}
               </div>
             );

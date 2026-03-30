@@ -36,7 +36,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY } from '@/types/floorPlan';
@@ -1838,88 +1838,46 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           <>
             <div className="h-4 w-px bg-border/50" />
 
-            <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => {
-                      const M = presetMaxSpan;
-                      const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
-                      applyPreset([presetCenterX + M * 0.85, M * 0.85 * 0.75, presetCenterZ + M * 0.85], C);
-                    }}
-                  >
-                    <Box className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Corner View</TooltipContent>
-              </Tooltip>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                const M = presetMaxSpan;
+                const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                applyPreset([presetCenterX + M * 0.85, M * 0.85 * 0.75, presetCenterZ + M * 0.85], C);
+              }}>
+                <Box className="h-3.5 w-3.5" />
+              </Button>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => {
-                      const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
-                      const fovRad = (50 * Math.PI) / 180;
-                      const containerW = canvasContainerRef.current?.clientWidth ?? 16;
-                      const containerH = canvasContainerRef.current?.clientHeight ?? 9;
-                      const aspect = containerW / Math.max(containerH, 1);
-                      const heightForDepth = (roomBounds.depth / 2) / Math.tan(fovRad / 2);
-                      const heightForWidth = (roomBounds.width / 2) / (Math.tan(fovRad / 2) * aspect);
-                      const topDownHeight = Math.max(heightForDepth, heightForWidth) * 1.2;
-                      applyPreset([presetCenterX, topDownHeight, presetCenterZ], C);
-                    }}
-                  >
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Top Down</TooltipContent>
-              </Tooltip>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                const fovRad = (50 * Math.PI) / 180;
+                const containerW = canvasContainerRef.current?.clientWidth ?? 16;
+                const containerH = canvasContainerRef.current?.clientHeight ?? 9;
+                const aspect = containerW / Math.max(containerH, 1);
+                const heightForDepth = (roomBounds.depth / 2) / Math.tan(fovRad / 2);
+                const heightForWidth = (roomBounds.width / 2) / (Math.tan(fovRad / 2) * aspect);
+                const topDownHeight = Math.max(heightForDepth, heightForWidth) * 1.2;
+                applyPreset([presetCenterX, topDownHeight, presetCenterZ], C);
+              }}>
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </Button>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => {
-                      const eyeTarget: [number, number, number] = [presetCenterX, 1.6, presetCenterZ];
-                      if (roomBounds.width >= roomBounds.depth) {
-                        applyPreset([presetCenterX, 1.6, presetCenterZ + roomBounds.depth * 0.35], eyeTarget, true);
-                      } else {
-                        applyPreset([presetCenterX + roomBounds.width * 0.35, 1.6, presetCenterZ], eyeTarget, true);
-                      }
-                    }}
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Eye Level</TooltipContent>
-              </Tooltip>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                const eyeTarget: [number, number, number] = [presetCenterX, 1.6, presetCenterZ];
+                if (roomBounds.width >= roomBounds.depth) {
+                  applyPreset([presetCenterX, 1.6, presetCenterZ + roomBounds.depth * 0.35], eyeTarget, true);
+                } else {
+                  applyPreset([presetCenterX + roomBounds.width * 0.35, 1.6, presetCenterZ], eyeTarget, true);
+                }
+              }}>
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => {
-                      const M = presetMaxSpan;
-                      const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
-                      applyPreset([presetCenterX + M, M, presetCenterZ + M], C);
-                    }}
-                  >
-                    <Mountain className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={10} collisionPadding={12}>Birdseye</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                const M = presetMaxSpan;
+                const C: [number, number, number] = [presetCenterX, 0, presetCenterZ];
+                applyPreset([presetCenterX + M, M, presetCenterZ + M], C);
+              }}>
+                <Mountain className="h-3.5 w-3.5" />
+              </Button>
 
             <div className="h-4 w-px bg-border/50" />
 
