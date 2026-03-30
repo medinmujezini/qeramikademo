@@ -72,13 +72,16 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
     if (file.startsWith('blob:')) {
       try {
         const response = await fetch(file);
+        if (!response.ok) throw new Error(`Failed to fetch blob: ${response.statusText}`);
         const blob = await response.blob();
-        const fileName = `${materialName}_${textureType}_${Date.now()}.${blob.type.split('/')[1] || 'png'}`;
+        const ext = blob.type.split('/')[1]?.replace('jpeg', 'jpg') || 'png';
+        const safeName = materialName.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const fileName = `${safeName}_${textureType}_${Date.now()}.${ext}`;
         const filePath = `pbr-materials/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('materials')
-          .upload(filePath, blob);
+          .upload(filePath, blob, { contentType: blob.type });
 
         if (uploadError) throw uploadError;
 
@@ -88,7 +91,8 @@ export const MaterialProvider = ({ children }: { children: ReactNode }) => {
 
         return publicUrl;
       } catch (error) {
-        console.error('Failed to upload texture:', error);
+        console.error(`Failed to upload ${textureType} texture:`, error);
+        toast.error(`Failed to upload ${textureType} texture`);
         return null;
       }
     }
