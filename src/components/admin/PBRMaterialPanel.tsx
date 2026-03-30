@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Image, FileImage, Loader2, Check, X, Eye, Layers, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,44 +15,33 @@ import { useMaterialContext, PBRMaterial } from '@/contexts/MaterialContext';
 interface TextureUploadProps {
   label: string;
   description?: string;
-  currentUrl?: string;
-  onUpload: (url: string) => void;
+  previewUrl?: string;
+  onFileSelected: (file: File) => void;
   onRemove: () => void;
 }
 
-const TextureUpload = ({ label, description, currentUrl, onUpload, onRemove }: TextureUploadProps) => {
-  const [isUploading, setIsUploading] = useState(false);
+const TextureUpload = ({ label, description, previewUrl, onFileSelected, onRemove }: TextureUploadProps) => {
   const [dragOver, setDragOver] = useState(false);
 
-  const handleUpload = useCallback(async (file: File) => {
+  const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
-
-    setIsUploading(true);
-    try {
-      const localUrl = URL.createObjectURL(file);
-      onUpload(localUrl);
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to load texture');
-    } finally {
-      setIsUploading(false);
-    }
-  }, [onUpload]);
+    onFileSelected(file);
+  }, [onFileSelected]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file) handleUpload(file);
-  }, [handleUpload]);
+    if (file) handleFile(file);
+  }, [handleFile]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleUpload(file);
-  }, [handleUpload]);
+    if (file) handleFile(file);
+  }, [handleFile]);
 
   return (
     <div className="space-y-2">
@@ -62,10 +51,10 @@ const TextureUpload = ({ label, description, currentUrl, onUpload, onRemove }: T
           <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
         )}
       </div>
-      {currentUrl ? (
+      {previewUrl ? (
         <div className="relative group">
           <img
-            src={currentUrl}
+            src={previewUrl}
             alt={label}
             className="w-full h-20 object-cover rounded-md border border-border"
           />
@@ -87,58 +76,100 @@ const TextureUpload = ({ label, description, currentUrl, onUpload, onRemove }: T
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
         >
-          {isUploading ? (
-            <Loader2 className="h-5 w-5 mx-auto animate-spin text-muted-foreground" />
-          ) : (
-            <label className="cursor-pointer block">
-              <FileImage className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-              <span className="text-xs text-muted-foreground">Drop or click</span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-            </label>
-          )}
+          <label className="cursor-pointer block">
+            <FileImage className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+            <span className="text-xs text-muted-foreground">Drop or click</span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+          </label>
         </div>
       )}
     </div>
   );
 };
 
+// Store raw File objects alongside preview blob URLs
+interface PendingTextures {
+  albedo?: { file: File; preview: string };
+  normal?: { file: File; preview: string };
+  roughness?: { file: File; preview: string };
+  metallic?: { file: File; preview: string };
+  ao?: { file: File; preview: string };
+  arm?: { file: File; preview: string };
+  height?: { file: File; preview: string };
+}
+
+type TextureSlot = keyof PendingTextures;
+
 const PBRMaterialPanel = () => {
   const navigate = useNavigate();
   const { materials, loading, addMaterial, removeMaterial, previewMaterialId, setPreviewMaterialId, refreshMaterials } = useMaterialContext();
-  const [newMaterial, setNewMaterial] = useState<Partial<PBRMaterial>>({ name: '' });
+  const [materialName, setMaterialName] = useState('');
+  const [pendingTextures, setPendingTextures] = useState<PendingTextures>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [workflowTab, setWorkflowTab] = useState<'separate' | 'arm'>('separate');
   const [saving, setSaving] = useState(false);
 
+  const handleFileSelected = useCallback((slot: TextureSlot, file: File) => {
+    const preview = URL.createObjectURL(file);
+    setPendingTextures(prev => ({ ...prev, [slot]: { file, preview } }));
+  }, []);
+
+  const handleRemoveTexture = useCallback((slot: TextureSlot) => {
+    setPendingTextures(prev => {
+      const entry = prev[slot];
+      if (entry) URL.revokeObjectURL(entry.preview);
+      const next = { ...prev };
+      delete next[slot];
+      return next;
+    });
+  }, []);
+
+  const resetForm = useCallback(() => {
+    // Revoke all preview URLs
+    Object.values(pendingTextures).forEach(entry => {
+      if (entry) URL.revokeObjectURL(entry.preview);
+    });
+    setMaterialName('');
+    setPendingTextures({});
+  }, [pendingTextures]);
+
   const handleCreateMaterial = useCallback(async () => {
-    if (!newMaterial.name?.trim()) {
+    if (!materialName.trim()) {
       toast.error('Please enter a material name');
       return;
     }
 
     setSaving(true);
     try {
+      // Convert File objects to blob URLs that MaterialContext can fetch
+      const toBlobUrl = (slot: TextureSlot): string | undefined => {
+        const entry = pendingTextures[slot];
+        if (!entry) return undefined;
+        // Create a fresh blob URL from the File (File extends Blob)
+        return URL.createObjectURL(entry.file);
+      };
+
       await addMaterial({
-        name: newMaterial.name.trim(),
-        albedo: newMaterial.albedo,
-        normal: newMaterial.normal,
-        roughness: newMaterial.roughness,
-        metallic: newMaterial.metallic,
-        ao: newMaterial.ao,
-        arm: newMaterial.arm,
-        height: newMaterial.height,
+        name: materialName.trim(),
+        albedo: toBlobUrl('albedo'),
+        normal: toBlobUrl('normal'),
+        roughness: toBlobUrl('roughness'),
+        metallic: toBlobUrl('metallic'),
+        ao: toBlobUrl('ao'),
+        arm: toBlobUrl('arm'),
+        height: toBlobUrl('height'),
       });
-      setNewMaterial({ name: '' });
+      resetForm();
       setDialogOpen(false);
     } finally {
       setSaving(false);
     }
-  }, [newMaterial, addMaterial]);
+  }, [materialName, pendingTextures, addMaterial, resetForm]);
 
   const handleDeleteMaterial = useCallback(async (id: string) => {
     await removeMaterial(id);
@@ -149,10 +180,6 @@ const PBRMaterialPanel = () => {
     toast.success('Material set for preview');
     navigate('/raytracing');
   }, [setPreviewMaterialId, navigate]);
-
-  const updateNewMaterial = useCallback((key: keyof PBRMaterial, value: string | undefined) => {
-    setNewMaterial(prev => ({ ...prev, [key]: value }));
-  }, []);
 
   const getTextureCount = (material: PBRMaterial) => {
     return [
@@ -178,7 +205,10 @@ const PBRMaterialPanel = () => {
             <Button variant="outline" size="sm" onClick={refreshMaterials} disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) resetForm();
+            }}>
               <DialogTrigger asChild>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-1" />
@@ -193,8 +223,8 @@ const PBRMaterialPanel = () => {
                   <div className="space-y-2">
                     <Label>Material Name</Label>
                     <Input
-                      value={newMaterial.name || ''}
-                      onChange={(e) => updateNewMaterial('name', e.target.value)}
+                      value={materialName}
+                      onChange={(e) => setMaterialName(e.target.value)}
                       placeholder="e.g., Marble, Wood, Concrete"
                     />
                   </div>
@@ -203,16 +233,16 @@ const PBRMaterialPanel = () => {
                     <TextureUpload
                       label="Albedo (Base Color)"
                       description="RGB color texture"
-                      currentUrl={newMaterial.albedo}
-                      onUpload={(url) => updateNewMaterial('albedo', url)}
-                      onRemove={() => updateNewMaterial('albedo', undefined)}
+                      previewUrl={pendingTextures.albedo?.preview}
+                      onFileSelected={(f) => handleFileSelected('albedo', f)}
+                      onRemove={() => handleRemoveTexture('albedo')}
                     />
                     <TextureUpload
                       label="Normal Map"
                       description="Surface detail normals"
-                      currentUrl={newMaterial.normal}
-                      onUpload={(url) => updateNewMaterial('normal', url)}
-                      onRemove={() => updateNewMaterial('normal', undefined)}
+                      previewUrl={pendingTextures.normal?.preview}
+                      onFileSelected={(f) => handleFileSelected('normal', f)}
+                      onRemove={() => handleRemoveTexture('normal')}
                     />
                   </div>
 
@@ -231,23 +261,23 @@ const PBRMaterialPanel = () => {
                           <TextureUpload
                             label="Roughness"
                             description="Grayscale"
-                            currentUrl={newMaterial.roughness}
-                            onUpload={(url) => updateNewMaterial('roughness', url)}
-                            onRemove={() => updateNewMaterial('roughness', undefined)}
+                            previewUrl={pendingTextures.roughness?.preview}
+                            onFileSelected={(f) => handleFileSelected('roughness', f)}
+                            onRemove={() => handleRemoveTexture('roughness')}
                           />
                           <TextureUpload
                             label="Metallic"
                             description="Grayscale"
-                            currentUrl={newMaterial.metallic}
-                            onUpload={(url) => updateNewMaterial('metallic', url)}
-                            onRemove={() => updateNewMaterial('metallic', undefined)}
+                            previewUrl={pendingTextures.metallic?.preview}
+                            onFileSelected={(f) => handleFileSelected('metallic', f)}
+                            onRemove={() => handleRemoveTexture('metallic')}
                           />
                           <TextureUpload
                             label="AO"
                             description="Ambient Occlusion"
-                            currentUrl={newMaterial.ao}
-                            onUpload={(url) => updateNewMaterial('ao', url)}
-                            onRemove={() => updateNewMaterial('ao', undefined)}
+                            previewUrl={pendingTextures.ao?.preview}
+                            onFileSelected={(f) => handleFileSelected('ao', f)}
+                            onRemove={() => handleRemoveTexture('ao')}
                           />
                         </div>
                       </TabsContent>
@@ -255,9 +285,9 @@ const PBRMaterialPanel = () => {
                         <TextureUpload
                           label="ARM Texture"
                           description="R=AO, G=Roughness, B=Metallic (packed)"
-                          currentUrl={newMaterial.arm}
-                          onUpload={(url) => updateNewMaterial('arm', url)}
-                          onRemove={() => updateNewMaterial('arm', undefined)}
+                          previewUrl={pendingTextures.arm?.preview}
+                          onFileSelected={(f) => handleFileSelected('arm', f)}
+                          onRemove={() => handleRemoveTexture('arm')}
                         />
                         <p className="text-xs text-muted-foreground mt-2">
                           ARM packs AO, Roughness, and Metallic into a single RGB texture for efficiency.
@@ -269,9 +299,9 @@ const PBRMaterialPanel = () => {
                   <TextureUpload
                     label="Height / Displacement"
                     description="For parallax or displacement mapping"
-                    currentUrl={newMaterial.height}
-                    onUpload={(url) => updateNewMaterial('height', url)}
-                    onRemove={() => updateNewMaterial('height', undefined)}
+                    previewUrl={pendingTextures.height?.preview}
+                    onFileSelected={(f) => handleFileSelected('height', f)}
+                    onRemove={() => handleRemoveTexture('height')}
                   />
 
                   <div className="flex justify-end gap-2 pt-4">
