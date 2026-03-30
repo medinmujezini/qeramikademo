@@ -1621,6 +1621,28 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               }}
             />
           )}
+          {/* Room light markers in design mode */}
+          {viewMode === 'design' && (floorPlan.roomLights ?? []).map(light => (
+            <RoomLightMarker
+              key={light.id}
+              light={light}
+              ceilingHeight={(floorPlan.walls[0]?.height ?? 280) * 0.01}
+              isSelected={selectedLightId === light.id}
+              onSelect={() => setSelectedLightId(light.id)}
+              onMove={(cx, cy) => updateRoomLight(light.id, { cx, cy })}
+              onRotate={(rot) => updateRoomLight(light.id, { rotation: rot })}
+              onDelete={() => {
+                deleteRoomLight(light.id);
+                if (selectedLightId === light.id) setSelectedLightId(null);
+              }}
+              floorBounds={{
+                minX: roomBounds.minX,
+                maxX: roomBounds.maxX,
+                minZ: roomBounds.minZ,
+                maxZ: roomBounds.maxZ,
+              }}
+            />
+          ))}
           <CameraAnimator
             targetPos={animTargetPos}
             targetTarget={animTargetTarget}
