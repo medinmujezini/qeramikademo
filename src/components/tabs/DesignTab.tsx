@@ -7,6 +7,8 @@
  */
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { SpawnPointMarker, type SpawnPoint } from '@/components/3d/SpawnPointMarker';
+import { WalkthroughOverlay } from '@/components/3d/WalkthroughOverlay';
 import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, PointerLockControls } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
