@@ -12,7 +12,7 @@ import { Trash2, RotateCw, ArrowUp, ArrowDown, AlertTriangle, Link2, Link2Off, L
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import type { WallMaterial, DoorType, WindowType, ColumnShape } from '@/types/floorPlan';
 import { 
   SLOPE_PRESETS, 
