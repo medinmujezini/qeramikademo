@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { TrendingDown, Compass, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { getDirectionLabel, getDirectionFromCompass, formatCeilingPlaneInfo } from '@/utils/ceilingUtils';
 
 const COMPASS_DIRECTIONS = [
