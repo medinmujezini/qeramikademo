@@ -6,7 +6,7 @@
  */
 
 import type { FloorPlan, Point } from '@/types/floorPlan';
-import { UNIT_SCALE } from '@/constants/units';
+import { CM_TO_METERS } from '@/constants/units';
 
 export interface RoomManifest {
   projectId: string;
