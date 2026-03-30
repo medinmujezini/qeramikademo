@@ -36,7 +36,7 @@ function enhanceExportMaterials(scene: THREE.Object3D): void {
 
     // Wall detection: extruded geometry or named wall
     const isWall = name.includes('wall') ||
-      obj.geometry instanceof THREE.ExtrudeBufferGeometry ||
+      obj.geometry instanceof THREE.ExtrudeGeometry ||
       obj.geometry?.type === 'ExtrudeGeometry';
 
     // Door detection
