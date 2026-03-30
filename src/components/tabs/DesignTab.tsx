@@ -1172,7 +1172,61 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     }
   }, []);
 
-  const handleDownloadRender = useCallback(() => {
+  // Export for Unreal Engine
+  const handleExportForUnreal = useCallback(async () => {
+    const scene = sceneRef.current;
+    if (!scene) {
+      toast.error('Scene not ready');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const manifest = generateRoomManifest(floorPlan);
+
+      // If inside Unreal WebUI, send command directly
+      if (isInsideUnreal()) {
+        const glbBlob = await exportSceneToGLBBlob(scene);
+        // For UE WebUI, we'd write to filesystem — for now send the command
+        startUnrealWalkthrough(manifest as unknown as Record<string, unknown>);
+        toast.success('Walkthrough started in Unreal Engine');
+        return;
+      }
+
+      // Standalone: download GLB + manifest as separate files
+      const glbBlob = await exportSceneToGLBBlob(scene);
+      const manifestBlob = manifestToBlob(manifest);
+
+      // Download GLB
+      const glbUrl = URL.createObjectURL(glbBlob);
+      const glbLink = document.createElement('a');
+      glbLink.href = glbUrl;
+      glbLink.download = 'room.glb';
+      glbLink.click();
+      URL.revokeObjectURL(glbUrl);
+
+      // Download manifest
+      const manifestUrl = URL.createObjectURL(manifestBlob);
+      const manifestLink = document.createElement('a');
+      manifestLink.href = manifestUrl;
+      manifestLink.download = 'room.json';
+      manifestLink.click();
+      URL.revokeObjectURL(manifestUrl);
+
+      toast.success('Room exported for Unreal Engine', {
+        description: 'room.glb + room.json downloaded',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export scene', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [floorPlan]);
+
+
     const imageUrl = enhancedRender || originalRender;
     if (!imageUrl) return;
 
