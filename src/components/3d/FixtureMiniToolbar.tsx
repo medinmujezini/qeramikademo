@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { Html } from '@react-three/drei';
 import { RotateCw, Trash2, X, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import type { UnifiedFixture } from '@/types/fixture';
 import type { FurnitureItem } from '@/data/furnitureLibrary';
 import type { FloorPlan } from '@/types/floorPlan';
