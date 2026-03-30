@@ -100,6 +100,7 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
       sort_order: initialData?.sort_order || 0,
       price: initialData?.price ?? undefined,
       currency: initialData?.currency || 'USD',
+      description: initialData?.description || '',
     },
   });
 
