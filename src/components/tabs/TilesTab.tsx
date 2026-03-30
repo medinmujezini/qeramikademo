@@ -13,7 +13,7 @@ import { TilesCanvas } from '@/components/tiles/TilesCanvas';
 import { WallElevationViewer } from '@/components/tiles/WallElevationViewer';
 import { TileLibraryPanel } from '@/components/tiles/TileLibraryPanel';
 import { GroutColorPicker } from '@/components/tiles/GroutColorPicker';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { 
   calculateWallDimensions, 
   calculateTileLayout, 
