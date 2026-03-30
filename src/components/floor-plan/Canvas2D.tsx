@@ -1036,7 +1036,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       
       if (snapIndicator.isCloseLoop) {
         // Draw "close loop" indicator
-        ctx.fillStyle = 'hsl(142 76% 36%)';
+        ctx.fillStyle = 'hsl(185 76% 36%)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Close', snapScreen.x, snapScreen.y - 25);
