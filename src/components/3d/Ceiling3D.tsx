@@ -49,7 +49,7 @@ export const Ceiling3D: React.FC<Ceiling3DProps> = ({ floorPlan, visible }) => {
         <meshStandardMaterial
           color="#e8e8e8"
           roughness={0.9}
-          side={THREE.BackSide}
+          side={THREE.FrontSide}
         />
       </mesh>
 
