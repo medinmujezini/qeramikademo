@@ -856,6 +856,9 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         <meshStandardMaterial color="#92400e" />
       </mesh>
 
+      {/* Ceiling */}
+      <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
+
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
     </>
