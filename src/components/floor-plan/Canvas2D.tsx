@@ -344,8 +344,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       };
       
       // Neon color definitions - thinner and less opaque
-      const neonEdge = isSelected ? 'hsla(142, 100%, 65%, 0.7)' : 'hsla(142, 76%, 50%, 0.7)';
-      const glassFill = 'hsla(142, 40%, 20%, 0.4)';
+      const neonEdge = isSelected ? 'hsla(185, 100%, 65%, 0.7)' : 'hsla(185, 76%, 50%, 0.7)';
+      const glassFill = 'hsla(185, 40%, 20%, 0.4)';
       
       // Calculate wall angle
       const angle = Math.atan2(end.y - start.y, end.x - start.x);
@@ -1028,7 +1028,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     // Draw snap indicator when hovering near existing point while drawing wall
     if (snapIndicator && activeTool === 'wall') {
       const snapScreen = worldToScreen(snapIndicator.x, snapIndicator.y);
-      ctx.strokeStyle = snapIndicator.isCloseLoop ? 'hsl(142 76% 36%)' : 'hsl(var(--primary))';
+      ctx.strokeStyle = snapIndicator.isCloseLoop ? 'hsl(185 76% 36%)' : 'hsl(var(--primary))';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(snapScreen.x, snapScreen.y, 18, 0, Math.PI * 2);
@@ -1036,7 +1036,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       
       if (snapIndicator.isCloseLoop) {
         // Draw "close loop" indicator
-        ctx.fillStyle = 'hsl(142 76% 36%)';
+        ctx.fillStyle = 'hsl(185 76% 36%)';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Close', snapScreen.x, snapScreen.y - 25);

@@ -180,7 +180,7 @@ export const BlueprintBox: React.FC<BlueprintBoxProps> = ({
     }
   };
   
-  const edgeColor = hasCollision ? '#ef4444' : isSelected ? '#00ff88' : '#00d4ff';
+  const edgeColor = hasCollision ? '#ef4444' : isSelected ? '#67e8f9' : '#00d4ff';
   
   return (
     <group

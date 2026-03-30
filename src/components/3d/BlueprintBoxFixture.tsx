@@ -199,7 +199,7 @@ export const BlueprintBoxFixture: React.FC<BlueprintBoxFixtureProps> = ({
   };
   
   // Edge color based on state
-  const edgeColor = hasCollision ? '#ef4444' : isSelected ? '#00ff88' : accentColor;
+  const edgeColor = hasCollision ? '#ef4444' : isSelected ? '#67e8f9' : accentColor;
   
   // Convert rotation from degrees to radians
   const rotationRad = -fixture.rotation * (Math.PI / 180);
