@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { LucideIcon, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GlassCard, GlassCardContent } from '@/components/ui/glass-card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface RoleCardProps {
   icon: LucideIcon;
@@ -26,69 +26,38 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   variant = 'primary',
 }) => {
   return (
-    <GlassCard 
-      className={`
-        group relative overflow-hidden transition-all duration-500 glass-shine-sweep
-        hover:scale-[1.02] hover:shadow-2xl
-        ${variant === 'primary' 
-          ? 'hover:shadow-primary/20 border-primary/20' 
-          : 'hover:shadow-primary/10 border-border'
-        }
-      `}
-      variant="premium"
-      showOrbs
-    >
-      {/* Shine sweep layer */}
-      <div className="shine-layer" />
-      
-      {/* Gradient overlay on hover */}
-      <div className={`
-        absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500
-        ${variant === 'primary'
-          ? 'bg-gradient-to-br from-primary/5 to-transparent'
-          : 'bg-gradient-to-br from-muted/30 to-transparent'
-        }
-      `} />
-      
-      <GlassCardContent className="relative z-10 p-8">
+    <Card className={`
+      transition-all duration-200
+      hover:shadow-lg hover:border-primary/30
+      ${variant === 'primary' ? 'border-primary/20' : ''}
+    `}>
+      <CardContent className="p-6">
         {/* Icon */}
-        <div className={`
-          w-16 h-16 rounded-2xl flex items-center justify-center mb-6
-          ${variant === 'primary'
-            ? 'bg-primary/10 text-primary'
-            : 'bg-primary/10 text-primary/70'
-          }
-        `}>
-          <Icon className="w-8 h-8" />
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+          <Icon className="w-6 h-6 text-primary" />
         </div>
 
         {/* Title & Subtitle */}
-        <div className="mb-4">
-          <p className={`
-            text-sm font-medium uppercase tracking-wider mb-1
-            ${variant === 'primary' ? 'text-primary' : 'text-muted-foreground'}
-          `}>
+        <div className="mb-3">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
             {subtitle}
           </p>
-          <h3 className="text-2xl font-bold text-foreground">
+          <h3 className="text-xl font-bold text-foreground">
             {title}
           </h3>
         </div>
 
         {/* Description */}
-        <p className="text-muted-foreground mb-6 leading-relaxed">
+        <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
           {description}
         </p>
 
         {/* Features */}
-        <ul className="space-y-3 mb-8">
+        <ul className="space-y-2 mb-6">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <div className={`
-                w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
-                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-primary/15 text-primary/70'}
-              `}>
-                <Check className="w-3 h-3" />
+            <li key={index} className="flex items-center gap-2.5">
+              <div className="w-4 h-4 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <Check className="w-2.5 h-2.5 text-primary" />
               </div>
               <span className="text-sm text-muted-foreground">{feature}</span>
             </li>
@@ -96,18 +65,10 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         </ul>
 
         {/* CTA Button */}
-        <Button 
-          asChild 
-          className={`
-            w-full font-semibold
-            ${variant === 'primary' ? 'btn-glow' : ''}
-          `}
-          variant={variant === 'primary' ? 'default' : 'default'}
-          size="lg"
-        >
+        <Button asChild className="w-full" variant="default" size="lg">
           <Link to={to}>{ctaText}</Link>
         </Button>
-      </GlassCardContent>
-    </GlassCard>
+      </CardContent>
+    </Card>
   );
 };
