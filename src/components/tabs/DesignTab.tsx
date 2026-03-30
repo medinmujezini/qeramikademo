@@ -237,6 +237,7 @@ const WalkthroughMovement: React.FC<{
 interface DesignSceneProps {
   showTiles: boolean;
   showPlumbing: boolean;
+  showCeiling: boolean;
   giEnabled: boolean;
   giQuality: GIQualityTier;
   qualitySettings: QualitySettings;
