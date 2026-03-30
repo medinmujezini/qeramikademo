@@ -817,7 +817,7 @@
   .glass-toolbar {
     position: relative;
     isolation: isolate;
-    border-radius: 100px;
+    border-radius: 8px;
     overflow: hidden;
     padding: 0.5rem 1rem;
     
