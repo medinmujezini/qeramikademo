@@ -191,11 +191,14 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
                 )}
               </div>
 
-              {selectedFinish && (
+              {(selectedFinish || selectedMaterialId !== 'none') && (
                 <div className="mt-4 flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div>
-                    <p className="font-medium">{selectedFinish.name}</p>
-                    <p className="text-sm text-muted-foreground capitalize">{selectedFinish.type}</p>
+                    <p className="font-medium">{selectedFinish?.name || selectedMaterial?.name || 'PBR Material'}</p>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {selectedFinish?.type || 'hardwood'}
+                      {selectedMaterialId !== 'none' && ' + PBR textures'}
+                    </p>
                   </div>
                   <Button size="sm" onClick={handleApplyFinish}>
                     Apply to Floor
