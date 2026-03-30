@@ -66,7 +66,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         <div className="mb-4">
           <p className={`
             text-sm font-medium uppercase tracking-wider mb-1
-            ${variant === 'primary' ? 'text-primary' : 'text-accent'}
+            ${variant === 'primary' ? 'text-primary' : 'text-muted-foreground'}
           `}>
             {subtitle}
           </p>
