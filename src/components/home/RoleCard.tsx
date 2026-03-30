@@ -56,7 +56,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
           w-16 h-16 rounded-2xl flex items-center justify-center mb-6
           ${variant === 'primary'
             ? 'bg-primary/10 text-primary'
-            : 'bg-accent/10 text-accent'
+            : 'bg-muted text-muted-foreground'
           }
         `}>
           <Icon className="w-8 h-8" />
