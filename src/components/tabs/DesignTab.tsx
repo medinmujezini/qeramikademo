@@ -44,7 +44,7 @@ import { isFixturePositionValid } from '@/utils/fixtureCollision';
 import { createWallShapeWithOpenings } from '@/utils/wallOpeningGeometry';
 import { exportSceneToGLBBlob } from '@/utils/glbExporter';
 import { generateRoomManifest, manifestToBlob } from '@/utils/roomManifest';
-import { isInsideUnreal, startUnrealWalkthrough } from '@/utils/unrealBridge';
+import { isInsideUnreal, startUnrealWalkthrough, onExitWalkthrough, arrayBufferToBase64 } from '@/utils/unrealBridge';
 import { toast } from 'sonner';
 import type { FurnitureTemplate } from '@/data/furnitureLibrary';
 import type { FixtureTemplate } from '@/data/fixtureLibrary';
@@ -915,7 +915,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
+  const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
   const animTargetPos = useRef(new THREE.Vector3());
@@ -1006,10 +1006,37 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     return () => document.removeEventListener('pointerlockchange', onChange);
   }, []);
 
-  // Enter/exit walkthrough
-  const enterWalkthrough = useCallback(() => {
+  // Enter/exit walkthrough — auto-exports GLB for Unreal
+  const enterWalkthrough = useCallback(async () => {
     if (cameraRef.current) savedOrbitPos.current.copy(cameraRef.current.position);
     if (orbitControlsRef.current) savedOrbitTarget.current.copy(orbitControlsRef.current.target);
+
+    // Show loading overlay while generating GLB
+    setIsPreparingWalkthrough(true);
+
+    try {
+      const scene = sceneRef.current;
+      if (scene) {
+        const glbBlob = await exportSceneToGLBBlob(scene);
+        const manifest = generateRoomManifest(floorPlan);
+
+        if (isInsideUnreal()) {
+          const buffer = await glbBlob.arrayBuffer();
+          const glbBase64 = arrayBufferToBase64(buffer);
+          startUnrealWalkthrough(glbBase64, manifest as unknown as Record<string, unknown>);
+          toast.success('Walkthrough started in Unreal Engine');
+        }
+      }
+    } catch (error) {
+      console.error('Walkthrough export error:', error);
+      toast.error('Failed to prepare walkthrough', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+      setIsPreparingWalkthrough(false);
+      return;
+    }
+
+    // Transition to walkthrough view
     const SCALE = 0.01;
     let centerX = roomW / 2;
     let centerZ = roomH / 2;
@@ -1021,8 +1048,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     }
     if (cameraRef.current) cameraRef.current.position.set(centerX, 1.6, centerZ);
     isAnimatingCamera.current = false;
+    setIsPreparingWalkthrough(false);
     setViewMode('walkthrough');
-  }, [floorPlan.points, roomW, roomH, isAnimatingCamera]);
+  }, [floorPlan, roomW, roomH, isAnimatingCamera]);
 
   const exitWalkthrough = useCallback(() => {
     document.exitPointerLock();
@@ -1172,59 +1200,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     }
   }, []);
 
-  // Export for Unreal Engine
-  const handleExportForUnreal = useCallback(async () => {
-    const scene = sceneRef.current;
-    if (!scene) {
-      toast.error('Scene not ready');
-      return;
-    }
-
-    setIsExporting(true);
-    try {
-      const manifest = generateRoomManifest(floorPlan);
-
-      // If inside Unreal WebUI, send command directly
-      if (isInsideUnreal()) {
-        const glbBlob = await exportSceneToGLBBlob(scene);
-        // For UE WebUI, we'd write to filesystem — for now send the command
-        startUnrealWalkthrough(manifest as unknown as Record<string, unknown>);
-        toast.success('Walkthrough started in Unreal Engine');
-        return;
-      }
-
-      // Standalone: download GLB + manifest as separate files
-      const glbBlob = await exportSceneToGLBBlob(scene);
-      const manifestBlob = manifestToBlob(manifest);
-
-      // Download GLB
-      const glbUrl = URL.createObjectURL(glbBlob);
-      const glbLink = document.createElement('a');
-      glbLink.href = glbUrl;
-      glbLink.download = 'room.glb';
-      glbLink.click();
-      URL.revokeObjectURL(glbUrl);
-
-      // Download manifest
-      const manifestUrl = URL.createObjectURL(manifestBlob);
-      const manifestLink = document.createElement('a');
-      manifestLink.href = manifestUrl;
-      manifestLink.download = 'room.json';
-      manifestLink.click();
-      URL.revokeObjectURL(manifestUrl);
-
-      toast.success('Room exported for Unreal Engine', {
-        description: 'room.glb + room.json downloaded',
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export scene', {
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  }, [floorPlan]);
+  // Listen for Unreal exit walkthrough callback
+  useEffect(() => {
+    if (!isInsideUnreal()) return;
+    return onExitWalkthrough(() => {
+      exitWalkthrough();
+    });
+  }, [exitWalkthrough]);
 
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
@@ -1687,22 +1669,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               Reset View
             </Button>
 
-            <div className="h-4 w-px bg-border/50" />
-
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 gap-1.5"
-              onClick={handleExportForUnreal}
-              disabled={isExporting}
-            >
-              {isExporting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Upload className="h-3.5 w-3.5" />
-              )}
-              Export GLB
-            </Button>
           </>
         )}
 
@@ -1711,9 +1677,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           size="sm" 
           className="h-7 gap-1.5"
           onClick={viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
+          disabled={isPreparingWalkthrough}
         >
-          <PersonStanding className="h-3.5 w-3.5" />
-          {viewMode === 'walkthrough' ? 'Exit Walk' : 'Walkthrough'}
+          {isPreparingWalkthrough ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <PersonStanding className="h-3.5 w-3.5" />
+          )}
+          {isPreparingWalkthrough ? 'Preparing...' : viewMode === 'walkthrough' ? 'Exit Walk' : 'Walkthrough'}
         </Button>
 
         {viewMode === 'design' && (
