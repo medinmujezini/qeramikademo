@@ -8,6 +8,16 @@
 import type { FloorPlan, Point } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
 
+export interface ManifestLight {
+  id: string;
+  position: { x: number; y: number; z: number };
+  rotation: number;
+  dimensions: { width: number; height: number };
+  intensity: number;
+  color: string;
+  type: 'rect';
+}
+
 export interface RoomManifest {
   projectId: string;
   revision: number;
@@ -16,6 +26,7 @@ export interface RoomManifest {
   spawnRotation: number;
   roomDimensions: { width: number; depth: number; height: number };
   collisionMode: 'mesh' | 'box';
+  lights: ManifestLight[];
   exportedAt: string;
 }
 

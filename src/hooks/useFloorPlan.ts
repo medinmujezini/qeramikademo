@@ -1255,5 +1255,9 @@ export const useFloorPlan = () => {
     // Camera views
     addCameraView,
     removeCameraView,
+    // Room lights
+    addRoomLight,
+    updateRoomLight,
+    deleteRoomLight,
   };
 };
