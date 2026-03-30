@@ -9,41 +9,41 @@
 
 @layer base {
   :root {
-    /* Base Colors - Light Theme as Default */
-    --background: 210 40% 98%;          /* Soft white */
-    --foreground: 222 47% 11%;          /* Deep navy text */
+    /* Dark Theme as Default */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
     
-    --card: 0 0% 100%;                  /* Pure white cards */
-    --card-foreground: 222 47% 11%;
+    --card: 223 47% 14%;
+    --card-foreground: 210 40% 98%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 223 47% 14%;
+    --popover-foreground: 210 40% 98%;
     
     /* Blue Theme Primary */
-    --primary: 217 91% 60%;             /* Vibrant blue */
-    --primary-foreground: 0 0% 100%;    /* White text on blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
     
     /* Blue glow variants */
     --neon-glow: 217 91% 65%;
     --neon-glow-intense: 217 100% 70%;
     
-    --secondary: 214 32% 91%;           /* Light gray-blue */
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
     
-    --muted: 210 40% 96%;               /* Light muted */
-    --muted-foreground: 215 16% 47%;    /* Medium gray */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
     
-    --accent: 210 40% 94%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 217 33% 20%;
+    --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 84% 60%;           /* Red */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 214 32% 91%;              /* Subtle border */
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;                /* Blue ring */
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 217 91% 60%;
     
-    --radius: 0.75rem;                  /* 12px - modern rounded */
+    --radius: 0.75rem;
     
     /* Extended Palette */
     --teal: 180 70% 45%;
@@ -51,17 +51,17 @@
     --warning: 38 92% 50%;
     
     /* Sidebar */
-    --sidebar-background: 210 40% 98%;
-    --sidebar-foreground: 222 47% 11%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 94%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
+    --sidebar-accent: 217 33% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 20%;
     --sidebar-ring: 217 91% 60%;
   }
 
-  /* Dark mode variant */
+  /* Dark mode variant (same as root since dark is default) */
   .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
@@ -94,7 +94,7 @@
     --sidebar-ring: 217 91% 60%;
   }
 
-  /* Light mode explicit */
+  /* Light mode explicit (opt-in only) */
   .light {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
