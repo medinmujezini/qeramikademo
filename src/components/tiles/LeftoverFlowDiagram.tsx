@@ -293,8 +293,6 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                   
                   return (
                     <g key={node.id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
                           <g 
                             className="cursor-pointer"
                             onMouseEnter={() => setHoveredNode(node.id)}
