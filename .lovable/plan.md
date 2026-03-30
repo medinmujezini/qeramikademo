@@ -1,66 +1,32 @@
 
 
-## Updated Plan: Unreal Engine Walkthrough Integration
+# Fix Admin Panel
 
-### Change from previous plan
-Remove all interactive object editing, selection, and semantic ID mapping from the walkthrough. The UE walkthrough is **view-only** — users design in Lovable, then walk through a static scene in Unreal. No furniture moving, no material swapping, no click-to-select during walkthrough.
+## Problems Identified
 
-### Simplified Architecture
+1. **`glass-sidebar` CSS class is missing** — AdminLayout references it on the sidebar `<aside>` but it's never defined in `index.css`, so the sidebar has no glass/background styling and is likely transparent or invisible.
 
-```text
-Lovable (design) → Export GLB + manifest → UE loads scene → First-person walkthrough (view only)
-```
+2. **`glass-header` has pill shape** — The top bar uses `glass-header` which has `border-radius: 100px`, making it a rounded pill instead of a full-width bar. Wrong for the admin header.
 
-### Lovable Side (3 files)
+3. **Dark theme text contrast** — Several admin pages (Dashboard, management pages) use `Card` components that may have low-contrast text in dark mode. The cards, labels, and stat values need to use semantic tokens (`text-foreground`, `text-muted-foreground`).
 
-**1. `src/utils/glbExporter.ts`** — Scene exporter
-- Use Three.js `GLTFExporter` to serialize the current R3F scene (walls, floor, furniture, fixtures, tiles) into a single `.glb`
-- Embed PBR textures (albedo, normal, roughness) into the binary
-- No semantic IDs or interactive object metadata needed
+## Changes
 
-**2. `src/utils/roomManifest.ts`** — Minimal manifest
-```json
-{
-  "projectId": "uuid",
-  "revision": 1,
-  "sceneScale": 0.01,
-  "spawnPoint": { "x": 150, "y": 160, "z": 200 },
-  "spawnRotation": 0,
-  "roomDimensions": { "width": 400, "depth": 300, "height": 280 },
-  "collisionMode": "mesh"
-}
-```
-- `spawnPoint` defaults to room center at eye height (160cm)
-- No `interactiveObjects` array — removed since walkthrough is view-only
+### 1. Add `glass-sidebar` class to `src/index.css`
+Define a proper glass sidebar style with dark semi-transparent background, blur, subtle border highlight — similar to the existing glass classes but without border-radius, and full height.
 
-**3. `src/utils/unrealBridge.ts`** — WebUI bridge
-- Detect UE environment (`window.ue5` exists)
-- `sendToUnreal("startWalkthrough", { glbBase64, manifest })` — sends GLB inline as base64
-- Listen for `exitWalkthrough` callback to restore Lovable UI
-- No position sync or object selection callbacks needed
+### 2. Fix admin header in `src/components/admin/AdminLayout.tsx`
+Replace `glass-header` (pill-shaped) with a standard class: `bg-card/80 backdrop-blur-lg border-b border-border/50`. Remove the 100px radius issue entirely.
 
-**4. `src/components/tabs/DesignTab.tsx`** — Automatic export on walkthrough
-- **No manual export button** — GLB is generated automatically when user clicks "Walkthrough"
-- Shows loading overlay ("Preparing walkthrough…") while generating
-- If inside UE WebUI: converts GLB to base64, sends via `ue5("startWalkthrough", {...})`
-- If standalone: proceeds with local WASD walkthrough
-- Listens for UE `exitWalkthrough` callback to restore design mode
+### 3. Ensure text contrast in AdminLayout
+- Sidebar nav text: already uses `text-muted-foreground` / `text-primary` — looks fine.
+- Header breadcrumb and user email: already uses `text-foreground` / `text-muted-foreground` — fine.
+- Main content area: the child pages use `Card` which inherits `bg-card text-card-foreground` — should be fine with the corrected CSS vars.
 
-### Unreal Side (guidance only, not built by Lovable)
+### 4. Verify card backgrounds
+The `Card` component uses `bg-card` which maps to `223 47% 14%` in dark mode. This should render correctly. The `bg-muted/50` summary boxes should also work since `--muted` is defined.
 
-UE has exactly 4 jobs:
-1. Receive `startWalkthrough` via WebUI OnBroadcast
-2. Decode base64 GLB and load via glTFRuntime
-3. Spawn imported meshes with mesh collision
-4. Spawn/possess first-person pawn at manifest spawn point
+## Files Modified
+- `src/index.css` — add `.glass-sidebar` definition
+- `src/components/admin/AdminLayout.tsx` — replace `glass-header` with a non-pill header class
 
-No object selection, no material editing, no UI overlays during walkthrough. ESC exits back to Lovable UI.
-
-### What was removed
-- `interactiveObjects` from manifest
-- Semantic mesh naming/IDs in GLB export
-- Object click-to-select in UE
-- Material swap callbacks
-- Position sync from UE back to web UI
-- Any bidirectional state during walkthrough
-- Manual "Export GLB" button (replaced by automatic export on walkthrough)
