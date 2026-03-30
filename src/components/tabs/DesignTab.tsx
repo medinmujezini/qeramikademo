@@ -1027,7 +1027,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       const scene = sceneRef.current;
       if (scene) {
         const glbBlob = await exportSceneToGLBBlob(scene);
-        const manifest = generateRoomManifest(floorPlan);
+        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint);
 
         if (isInsideUnreal()) {
           const buffer = await glbBlob.arrayBuffer();
@@ -1045,25 +1045,27 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       return;
     }
 
-    // Transition to walkthrough view
+    // Transition to walkthrough view — use spawn point position
     const SCALE = 0.01;
-    let centerX = roomW / 2;
-    let centerZ = roomH / 2;
-    if (floorPlan.points.length > 0) {
-      const xs = floorPlan.points.map(p => p.x * SCALE);
-      const ys = floorPlan.points.map(p => p.y * SCALE);
-      centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
-      centerZ = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const spawnX = spawnPoint.position.x * SCALE;
+    const spawnZ = spawnPoint.position.y * SCALE;
+    const spawnRad = -(spawnPoint.rotation * Math.PI) / 180;
+
+    if (cameraRef.current) {
+      cameraRef.current.position.set(spawnX, 1.6, spawnZ);
+      cameraRef.current.rotation.order = 'YXZ';
+      cameraRef.current.rotation.y = spawnRad;
     }
-    if (cameraRef.current) cameraRef.current.position.set(centerX, 1.6, centerZ);
     isAnimatingCamera.current = false;
     setIsPreparingWalkthrough(false);
+    setShowSpawnMarker(false);
     setViewMode('walkthrough');
-  }, [floorPlan, roomW, roomH, isAnimatingCamera]);
+  }, [floorPlan, spawnPoint, isAnimatingCamera]);
 
   const exitWalkthrough = useCallback(() => {
     document.exitPointerLock();
     setViewMode('design');
+    setShowSpawnMarker(true);
     if (cameraRef.current) cameraRef.current.position.copy(savedOrbitPos.current);
     if (orbitControlsRef.current) {
       orbitControlsRef.current.target.copy(savedOrbitTarget.current);
