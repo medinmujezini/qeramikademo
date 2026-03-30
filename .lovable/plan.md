@@ -1,32 +1,64 @@
 
 
-# Fix Admin Panel
+# Full UI/UX Enhancement Plan
 
-## Problems Identified
+## Current Issues
 
-1. **`glass-sidebar` CSS class is missing** — AdminLayout references it on the sidebar `<aside>` but it's never defined in `index.css`, so the sidebar has no glass/background styling and is likely transparent or invisible.
+1. **Headers** use glassmorphism pill styling (`glass glass-pill glass-shine-sweep` on Home, `header-tech` on platforms) — overly decorative, not traditional
+2. **Animated tabs** use `glass glass-shine-sweep` with rounded-full pill shape and animated indicator — flashy, not professional
+3. **Background orbs** (`gradient-orbs`, `orb-1` through `orb-4`) appear on every page — distracting animated blobs
+4. **Home page** has excessive glass effects (shine sweeps, gradient overlays, caustics on RoleCards)
+5. **RoleCard** uses `GlassCard variant="premium" showOrbs` with shine layers — over-designed
+6. **Cornell/Raytracing demo links** clutter headers — these are dev demos, not user features
+7. **"Worker Platform" / "Design Studio" branding** is confusing — just show the app name consistently
 
-2. **`glass-header` has pill shape** — The top bar uses `glass-header` which has `border-radius: 100px`, making it a rounded pill instead of a full-width bar. Wrong for the admin header.
+## Plan
 
-3. **Dark theme text contrast** — Several admin pages (Dashboard, management pages) use `Card` components that may have low-contrast text in dark mode. The cards, labels, and stat values need to use semantic tokens (`text-foreground`, `text-muted-foreground`).
+### 1. Simplify Headers (Home, WorkerPlatform, EndUserPlatform)
 
-## Changes
+**Home page header**: Replace glass pill with a clean flat bar using `bg-card border-b border-border`. Remove Cornell/Raytracing links from main nav (keep only in footer or remove entirely). Keep Admin link.
 
-### 1. Add `glass-sidebar` class to `src/index.css`
-Define a proper glass sidebar style with dark semi-transparent background, blur, subtle border highlight — similar to the existing glass classes but without border-radius, and full height.
+**WorkerPlatform header**: Already uses `header-tech` (clean). Remove Cornell/Raytracing links. Clean up the right side to just show Projects dropdown.
 
-### 2. Fix admin header in `src/components/admin/AdminLayout.tsx`
-Replace `glass-header` (pill-shaped) with a standard class: `bg-card/80 backdrop-blur-lg border-b border-border/50`. Remove the 100px radius issue entirely.
+**EndUserPlatform header**: Same cleanup — flat `header-tech` bar, remove decorative elements.
 
-### 3. Ensure text contrast in AdminLayout
-- Sidebar nav text: already uses `text-muted-foreground` / `text-primary` — looks fine.
-- Header breadcrumb and user email: already uses `text-foreground` / `text-muted-foreground` — fine.
-- Main content area: the child pages use `Card` which inherits `bg-card text-card-foreground` — should be fine with the corrected CSS vars.
+### 2. Replace Animated Tabs with Standard Tabs
 
-### 4. Verify card backgrounds
-The `Card` component uses `bg-card` which maps to `223 47% 14%` in dark mode. This should render correctly. The `bg-muted/50` summary boxes should also work since `--muted` is defined.
+Replace `AnimatedTabsList`/`AnimatedTabsTrigger` usage in both platforms with standard `TabsList`/`TabsTrigger` from the existing `tabs.tsx` component. These already have a clean, traditional underline/highlight style. Remove the `animated-tabs.tsx` file or leave it unused.
 
-## Files Modified
-- `src/index.css` — add `.glass-sidebar` definition
-- `src/components/admin/AdminLayout.tsx` — replace `glass-header` with a non-pill header class
+### 3. Remove Background Orbs
+
+Remove the `gradient-orbs` div from `Home.tsx`, `WorkerPlatform.tsx`, and `EndUserPlatform.tsx`. The radial gradient background on Home can stay (it's subtle), but the animated floating orbs go.
+
+### 4. Simplify Home Page
+
+- Replace glass pill header with flat `bg-card border-b` bar
+- Replace `RoleCard` glass effects: use standard `Card` component instead of `GlassCard variant="premium"` with shine/orbs
+- Remove gradient overlay divs and shine layers from RoleCard
+- Keep the hero text and two-card layout — just make cards clean
+
+### 5. Clean Up RoleCard
+
+Rewrite to use `Card` from shadcn instead of `GlassCard`. Remove `glass-shine-sweep`, `shine-layer`, gradient overlays. Simple border hover effect.
+
+### 6. Remove Demo Links from Headers
+
+Cornell and Raytracing links removed from Home header and WorkerPlatform header. These are development tools. If user wants them, they can navigate directly. Keep `/admin` accessible.
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/Home.tsx` | Flat header, remove orbs, simplify layout |
+| `src/pages/WorkerPlatform.tsx` | Remove orbs, replace AnimatedTabs with standard Tabs, remove demo links |
+| `src/pages/EndUserPlatform.tsx` | Same as WorkerPlatform |
+| `src/components/home/RoleCard.tsx` | Use `Card` instead of `GlassCard`, remove effects |
+| `src/components/home/BackToHome.tsx` | No changes needed |
+
+## What Stays
+
+- `header-tech` CSS class (it's already clean/flat)
+- Admin panel layout (already fixed previously)
+- Glass floating panels inside canvas tabs (Design/Tiles/Plumbing) — those are appropriate for overlay UI on 3D canvas
+- All functional features (floor plan, tiles, design, plumbing, estimate, projects, export)
 
