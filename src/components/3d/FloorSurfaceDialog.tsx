@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Grid3X3, Check, Square } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+
 import { TileLibraryPanel } from '@/components/tiles/TileLibraryPanel';
 import { GroutColorPicker } from '@/components/tiles/GroutColorPicker';
 import { useMaterialContext } from '@/contexts/MaterialContext';
