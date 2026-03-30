@@ -446,23 +446,33 @@ const DefaultFloorTexture: React.FC<{
   floorWidth: number;
   floorDepth: number;
 }> = ({ floorWidth, floorDepth }) => {
-  const texture = useLoader(THREE.TextureLoader, '/textures/default-floor.jpg');
+  const [albedo, normal] = useLoader(THREE.TextureLoader, [
+    '/textures/default-floor.jpg',
+    '/textures/default-floor-normal.jpg',
+  ]);
 
-  const tex = useMemo(() => {
-    const t = texture.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
-    t.colorSpace = THREE.SRGBColorSpace;
-    // Assume texture covers ~100cm, tile across room
+  const [albedoTex, normalTex] = useMemo(() => {
     const repeatX = (floorWidth * 100) / 100;
     const repeatY = (floorDepth * 100) / 100;
-    t.repeat.set(repeatX, repeatY);
-    return t;
-  }, [texture, floorWidth, floorDepth]);
+
+    const a = albedo.clone();
+    a.wrapS = THREE.RepeatWrapping;
+    a.wrapT = THREE.RepeatWrapping;
+    a.colorSpace = THREE.SRGBColorSpace;
+    a.repeat.set(repeatX, repeatY);
+
+    const n = normal.clone();
+    n.wrapS = THREE.RepeatWrapping;
+    n.wrapT = THREE.RepeatWrapping;
+    n.repeat.set(repeatX, repeatY);
+
+    return [a, n];
+  }, [albedo, normal, floorWidth, floorDepth]);
 
   return (
     <meshStandardMaterial
-      map={tex}
+      map={albedoTex}
+      normalMap={normalTex}
       roughness={0.45}
       metalness={0.0}
     />
