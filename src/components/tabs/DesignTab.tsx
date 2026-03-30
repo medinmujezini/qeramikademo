@@ -439,6 +439,47 @@ const TiledWall3DWithMaterial: React.FC<
 };
 
 /** Floor mesh with PBR texture support */
+const FloorWithTextureInner: React.FC<{
+  urls: Record<string, string>;
+  urlKeys: string[];
+  textureScaleCm: number;
+  floorWidth: number;
+  floorDepth: number;
+  fallbackColor: string;
+}> = ({ urls, urlKeys, textureScaleCm, floorWidth, floorDepth, fallbackColor }) => {
+  const textures = useLoader(
+    THREE.TextureLoader,
+    urlKeys.map(k => urls[k])
+  );
+
+  const textureProps = useMemo(() => {
+    const props: Record<string, THREE.Texture> = {};
+    const scaleCm = textureScaleCm || 30;
+    const repeatX = (floorWidth * 100) / scaleCm;
+    const repeatY = (floorDepth * 100) / scaleCm;
+
+    urlKeys.forEach((key, i) => {
+      const tex = textures[i].clone();
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(repeatX, repeatY);
+      if (key === 'map') tex.colorSpace = THREE.SRGBColorSpace;
+      props[key] = tex;
+    });
+    return props;
+  }, [textures, urlKeys, textureScaleCm, floorWidth, floorDepth]);
+
+  const hasAlbedo = 'map' in textureProps;
+
+  return (
+    <meshStandardMaterial
+      {...textureProps}
+      {...(!hasAlbedo ? { color: fallbackColor } : {})}
+      roughness={1.0}
+    />
+  );
+};
+
 const FloorWithTexture: React.FC<{
   materialId: string;
   textureScaleCm: number;
@@ -461,39 +502,20 @@ const FloorWithTexture: React.FC<{
   }, [mat]);
 
   const urlKeys = Object.keys(urls);
-  // Load all textures – useLoader requires stable array
-  const textures = useLoader(
-    THREE.TextureLoader,
-    urlKeys.length > 0 ? urlKeys.map(k => urls[k]) : ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAA0lEQVQI12P4z8BQDwAEgAF/QualxwAAAABJRU5ErkJggg==']
-  );
 
-  // Configure textures
-  const textureProps = useMemo(() => {
-    if (urlKeys.length === 0) return {};
-    const props: Record<string, THREE.Texture> = {};
-    const scaleCm = textureScaleCm || 30;
-    const repeatX = (floorWidth * 100) / scaleCm;
-    const repeatY = (floorDepth * 100) / scaleCm;
-
-    urlKeys.forEach((key, i) => {
-      const tex = textures[i].clone();
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(repeatX, repeatY);
-      if (key === 'map') tex.colorSpace = THREE.SRGBColorSpace;
-      props[key] = tex;
-    });
-    return props;
-  }, [textures, urlKeys, textureScaleCm, floorWidth, floorDepth]);
-
-  const hasAnyTexture = urlKeys.length > 0 && Object.keys(textureProps).length > 0;
-  const hasAlbedo = 'map' in textureProps;
+  // No textures available — just use fallback color
+  if (urlKeys.length === 0) {
+    return <meshStandardMaterial color={fallbackColor} roughness={0.8} />;
+  }
 
   return (
-    <meshStandardMaterial
-      {...textureProps}
-      {...(!hasAlbedo ? { color: fallbackColor } : {})}
-      roughness={hasAnyTexture ? 1.0 : 0.8}
+    <FloorWithTextureInner
+      urls={urls}
+      urlKeys={urlKeys}
+      textureScaleCm={textureScaleCm}
+      floorWidth={floorWidth}
+      floorDepth={floorDepth}
+      fallbackColor={fallbackColor}
     />
   );
 };
