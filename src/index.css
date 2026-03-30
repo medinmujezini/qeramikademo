@@ -325,7 +325,7 @@
 
   /* Size Variants */
   .glass-pill {
-    border-radius: 100px;
+    border-radius: 8px;
   }
 
   .glass-card {
@@ -422,7 +422,7 @@
 
   .glass-header {
     position: relative;
-    border-radius: 100px;
+    border-radius: 8px;
     background: linear-gradient(
       180deg, 
       rgba(255, 255, 255, 0.08), 
@@ -817,7 +817,7 @@
   .glass-toolbar {
     position: relative;
     isolation: isolate;
-    border-radius: 100px;
+    border-radius: 8px;
     overflow: hidden;
     padding: 0.5rem 1rem;
     
