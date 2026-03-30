@@ -218,7 +218,6 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
         
         <CollapsibleContent>
           <CardContent className="p-2">
-            <TooltipProvider delayDuration={100}>
               <svg 
                 viewBox="0 0 320 180" 
                 className="w-full h-auto"
