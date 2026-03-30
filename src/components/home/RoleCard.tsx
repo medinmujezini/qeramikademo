@@ -32,7 +32,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         hover:scale-[1.02] hover:shadow-2xl
         ${variant === 'primary' 
           ? 'hover:shadow-primary/20 border-primary/20' 
-          : 'hover:shadow-accent/20 border-accent/20'
+          : 'hover:shadow-primary/10 border-border'
         }
       `}
       variant="premium"
