@@ -32,7 +32,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         hover:scale-[1.02] hover:shadow-2xl
         ${variant === 'primary' 
           ? 'hover:shadow-primary/20 border-primary/20' 
-          : 'hover:shadow-accent/20 border-accent/20'
+          : 'hover:shadow-primary/10 border-border'
         }
       `}
       variant="premium"
@@ -46,7 +46,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500
         ${variant === 'primary'
           ? 'bg-gradient-to-br from-primary/5 to-transparent'
-          : 'bg-gradient-to-br from-accent/5 to-transparent'
+          : 'bg-gradient-to-br from-muted/30 to-transparent'
         }
       `} />
       
@@ -56,7 +56,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
           w-16 h-16 rounded-2xl flex items-center justify-center mb-6
           ${variant === 'primary'
             ? 'bg-primary/10 text-primary'
-            : 'bg-accent/10 text-accent'
+            : 'bg-muted text-muted-foreground'
           }
         `}>
           <Icon className="w-8 h-8" />
@@ -66,7 +66,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         <div className="mb-4">
           <p className={`
             text-sm font-medium uppercase tracking-wider mb-1
-            ${variant === 'primary' ? 'text-primary' : 'text-accent'}
+            ${variant === 'primary' ? 'text-primary' : 'text-muted-foreground'}
           `}>
             {subtitle}
           </p>
@@ -86,7 +86,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
             <li key={index} className="flex items-start gap-3">
               <div className={`
                 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
-                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent'}
+                ${variant === 'primary' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}
               `}>
                 <Check className="w-3 h-3" />
               </div>
