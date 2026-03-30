@@ -1573,6 +1573,21 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               floorPlan={floorPlan}
             />
           </Suspense>
+          {/* Spawn point marker */}
+          {viewMode === 'design' && (
+            <SpawnPointMarker
+              spawn={spawnPoint}
+              onMove={(pos) => setSpawnPoint(prev => ({ ...prev, position: pos }))}
+              onRotate={(rot) => setSpawnPoint(prev => ({ ...prev, rotation: rot }))}
+              visible={showSpawnMarker}
+              floorBounds={{
+                minX: roomBounds.minX,
+                maxX: roomBounds.maxX,
+                minZ: roomBounds.minZ,
+                maxZ: roomBounds.maxZ,
+              }}
+            />
+          )}
           <CameraAnimator
             targetPos={animTargetPos}
             targetTarget={animTargetTarget}
