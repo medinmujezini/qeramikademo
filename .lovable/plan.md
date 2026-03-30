@@ -1,52 +1,66 @@
 
 
-# Automatic GLB Export on Walkthrough — Plan
+## Updated Plan: Unreal Engine Walkthrough Integration
 
-## What Changes
+### Change from previous plan
+Remove all interactive object editing, selection, and semantic ID mapping from the walkthrough. The UE walkthrough is **view-only** — users design in Lovable, then walk through a static scene in Unreal. No furniture moving, no material swapping, no click-to-select during walkthrough.
 
-Remove the manual "Export GLB" button. When the user presses the Walkthrough button, the app automatically exports the scene as GLB, sends it to Unreal via WebUI, shows a loading overlay while generating, then transitions into walkthrough mode.
-
-## Flow
+### Simplified Architecture
 
 ```text
-User clicks "Walkthrough" → Loading overlay appears → GLB generated from scene →
-  If inside UE: send GLB as base64 + manifest via ue5("startWalkthrough", {...})
-  If standalone: download GLB + manifest, then enter local walkthrough
-→ UI fades out → Walkthrough active
+Lovable (design) → Export GLB + manifest → UE loads scene → First-person walkthrough (view only)
 ```
 
-## Changes
+### Lovable Side (3 files)
 
-### 1. `src/utils/unrealBridge.ts` — Send GLB data inline
+**1. `src/utils/glbExporter.ts`** — Scene exporter
+- Use Three.js `GLTFExporter` to serialize the current R3F scene (walls, floor, furniture, fixtures, tiles) into a single `.glb`
+- Embed PBR textures (albedo, normal, roughness) into the binary
+- No semantic IDs or interactive object metadata needed
 
-- Update `startUnrealWalkthrough` to accept a base64-encoded GLB string alongside the manifest
-- Send as `ue5("startWalkthrough", { glbBase64, manifest })` so UE receives the scene data directly without needing filesystem access
-- Add a helper `arrayBufferToBase64` for the conversion
+**2. `src/utils/roomManifest.ts`** — Minimal manifest
+```json
+{
+  "projectId": "uuid",
+  "revision": 1,
+  "sceneScale": 0.01,
+  "spawnPoint": { "x": 150, "y": 160, "z": 200 },
+  "spawnRotation": 0,
+  "roomDimensions": { "width": 400, "depth": 300, "height": 280 },
+  "collisionMode": "mesh"
+}
+```
+- `spawnPoint` defaults to room center at eye height (160cm)
+- No `interactiveObjects` array — removed since walkthrough is view-only
 
-### 2. `src/components/tabs/DesignTab.tsx` — Merge export into walkthrough flow
+**3. `src/utils/unrealBridge.ts`** — WebUI bridge
+- Detect UE environment (`window.ue5` exists)
+- `sendToUnreal("startWalkthrough", { glbBase64, manifest })` — sends GLB inline as base64
+- Listen for `exitWalkthrough` callback to restore Lovable UI
+- No position sync or object selection callbacks needed
 
-- **Remove** the "Export GLB" button (lines ~1690-1706) entirely
-- **Modify `enterWalkthrough`** to become async:
-  1. Set a new `isPreparingWalkthrough` state to `true`
-  2. Show a fullscreen loading overlay (fade in with backdrop blur, spinner + "Preparing walkthrough...")
-  3. Call `exportSceneToGLBBlob(scene)` and `generateRoomManifest(floorPlan)`
-  4. If `isInsideUnreal()`: convert GLB blob to base64, call `startUnrealWalkthrough({ glbBase64, manifest })`
-  5. If standalone: proceed with local walkthrough (set camera position, set viewMode to 'walkthrough')
-  6. Set `isPreparingWalkthrough` to `false`
-  7. On error: show toast, stay in design mode
-- **Remove `handleExportForUnreal`** function (now merged into `enterWalkthrough`)
-- **Remove `isExporting` state** (replaced by `isPreparingWalkthrough`)
-- **Add loading overlay UI**: when `isPreparingWalkthrough` is true, show a fullscreen overlay with spinner and "Preparing walkthrough..." text, same z-index as the walkthrough overlays
+**4. `src/components/tabs/DesignTab.tsx`** — Automatic export on walkthrough
+- **No manual export button** — GLB is generated automatically when user clicks "Walkthrough"
+- Shows loading overlay ("Preparing walkthrough…") while generating
+- If inside UE WebUI: converts GLB to base64, sends via `ue5("startWalkthrough", {...})`
+- If standalone: proceeds with local WASD walkthrough
+- Listens for UE `exitWalkthrough` callback to restore design mode
 
-### 3. `src/utils/unrealBridge.ts` — Listen for UE exit
+### Unreal Side (guidance only, not built by Lovable)
 
-- The existing `onExitWalkthrough` callback already handles UE signaling exit
-- Wire it up in `DesignTab` via a `useEffect` that calls `exitWalkthrough` when UE broadcasts `exitWalkthrough`
+UE has exactly 4 jobs:
+1. Receive `startWalkthrough` via WebUI OnBroadcast
+2. Decode base64 GLB and load via glTFRuntime
+3. Spawn imported meshes with mesh collision
+4. Spawn/possess first-person pawn at manifest spawn point
 
-## Technical Details
+No object selection, no material editing, no UI overlays during walkthrough. ESC exits back to Lovable UI.
 
-- GLB base64 encoding: `btoa(String.fromCharCode(...new Uint8Array(buffer)))` or chunked approach for large scenes
-- The `ue5()` call has no practical payload size limit per WebUI plugin docs — it serializes to a JSON string internally
-- For standalone mode (not inside UE), the walkthrough button still works as before (local WASD walkthrough) but now always regenerates the GLB in case the user later wants to use it in UE
-- The `isExporting` state and the separate export button are fully removed — single entry point via walkthrough button
-
+### What was removed
+- `interactiveObjects` from manifest
+- Semantic mesh naming/IDs in GLB export
+- Object click-to-select in UE
+- Material swap callbacks
+- Position sync from UE back to web UI
+- Any bidirectional state during walkthrough
+- Manual "Export GLB" button (replaced by automatic export on walkthrough)
