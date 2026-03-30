@@ -46,6 +46,7 @@ const formSchema = z.object({
   sort_order: z.number(),
   price: z.number().min(0, 'Price must be 0 or greater').optional(),
   currency: z.string().optional(),
+  description: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -65,6 +66,7 @@ interface FurnitureFormProps {
     sort_order: number;
     price?: number | null;
     currency?: string | null;
+    description?: string | null;
   } | null;
   onSuccess: () => void;
   onCancel: () => void;
@@ -98,13 +100,14 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
       sort_order: initialData?.sort_order || 0,
       price: initialData?.price ?? undefined,
       currency: initialData?.currency || 'USD',
+      description: initialData?.description || '',
     },
   });
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const payload = {
+  const payload = {
         name: data.name,
         type: data.type,
         category: data.category,
@@ -112,8 +115,6 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
           width: data.width,
           depth: data.depth,
           height: data.height,
-          price: data.price ?? null,
-          currency: data.currency || 'USD',
         },
         default_color: data.default_color,
         icon: data.icon,
@@ -121,6 +122,9 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
         thumbnail_url: data.thumbnail_url || null,
         is_active: data.is_active,
         sort_order: data.sort_order,
+        price: data.price ?? null,
+        currency: data.currency || 'USD',
+        description: (data as any).description || null,
       };
 
       if (initialData) {
@@ -349,6 +353,25 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
             )}
           />
         </div>
+
+        {/* Description */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description (optional)</FormLabel>
+              <FormControl>
+                <textarea
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  placeholder="Describe this furniture piece..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Price */}
         <div className="grid grid-cols-2 gap-4">

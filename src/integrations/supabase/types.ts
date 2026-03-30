@@ -248,13 +248,16 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          currency: string | null
           default_color: string
+          description: string | null
           dimensions_json: Json
           icon: string
           id: string
           is_active: boolean
           model_url: string | null
           name: string
+          price: number | null
           sort_order: number
           thumbnail_url: string | null
           type: string
@@ -263,13 +266,16 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          currency?: string | null
           default_color?: string
+          description?: string | null
           dimensions_json?: Json
           icon?: string
           id?: string
           is_active?: boolean
           model_url?: string | null
           name: string
+          price?: number | null
           sort_order?: number
           thumbnail_url?: string | null
           type: string
@@ -278,13 +284,16 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          currency?: string | null
           default_color?: string
+          description?: string | null
           dimensions_json?: Json
           icon?: string
           id?: string
           is_active?: boolean
           model_url?: string | null
           name?: string
+          price?: number | null
           sort_order?: number
           thumbnail_url?: string | null
           type?: string
