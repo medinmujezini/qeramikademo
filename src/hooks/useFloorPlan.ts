@@ -1148,6 +1148,43 @@ export const useFloorPlan = () => {
     });
   }, [saveToHistory]);
 
+  // Room lights
+  const addRoomLight = useCallback((cx: number, cy: number): string => {
+    const id = uuidv4();
+    const light: RoomLight = {
+      id,
+      cx,
+      cy,
+      width: 60,
+      depth: 30,
+      rotation: 0,
+      intensity: 3,
+      color: '#ffffff',
+      enabled: true,
+    };
+    setFloorPlan(prev => {
+      const updated = { ...prev, roomLights: [...(prev.roomLights ?? []), light] };
+      saveToHistory(updated);
+      return updated;
+    });
+    return id;
+  }, [saveToHistory]);
+
+  const updateRoomLight = useCallback((id: string, updates: Partial<RoomLight>) => {
+    setFloorPlan(prev => ({
+      ...prev,
+      roomLights: (prev.roomLights ?? []).map(l => l.id === id ? { ...l, ...updates } : l),
+    }));
+  }, []);
+
+  const deleteRoomLight = useCallback((id: string) => {
+    setFloorPlan(prev => {
+      const updated = { ...prev, roomLights: (prev.roomLights ?? []).filter(l => l.id !== id) };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
   return {
     floorPlan,
     setFloorPlan,
