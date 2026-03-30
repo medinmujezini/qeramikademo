@@ -75,6 +75,26 @@ export function generateRoomManifest(
   const spawnY = spawnOverride ? spawnOverride.position.y : (minY + maxY) / 2;
   const spawnRot = spawnOverride ? spawnOverride.rotation : 0;
 
+  // Build lights array from room lights
+  const lights: ManifestLight[] = (floorPlan.roomLights ?? [])
+    .filter(l => l.enabled)
+    .map(l => ({
+      id: l.id,
+      position: {
+        x: l.cx * unitScale,
+        y: heightCm * unitScale, // ceiling height
+        z: l.cy * unitScale,
+      },
+      rotation: l.rotation,
+      dimensions: {
+        width: l.width * unitScale,
+        height: l.depth * unitScale,
+      },
+      intensity: l.intensity,
+      color: l.color,
+      type: 'rect' as const,
+    }));
+
   return {
     projectId,
     revision,
@@ -91,6 +111,7 @@ export function generateRoomManifest(
       height: heightCm,
     },
     collisionMode: 'mesh',
+    lights,
     exportedAt: new Date().toISOString(),
   };
 }
