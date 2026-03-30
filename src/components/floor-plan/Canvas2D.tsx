@@ -1028,7 +1028,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     // Draw snap indicator when hovering near existing point while drawing wall
     if (snapIndicator && activeTool === 'wall') {
       const snapScreen = worldToScreen(snapIndicator.x, snapIndicator.y);
-      ctx.strokeStyle = snapIndicator.isCloseLoop ? 'hsl(142 76% 36%)' : 'hsl(var(--primary))';
+      ctx.strokeStyle = snapIndicator.isCloseLoop ? 'hsl(185 76% 36%)' : 'hsl(var(--primary))';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(snapScreen.x, snapScreen.y, 18, 0, Math.PI * 2);
