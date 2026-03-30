@@ -104,7 +104,7 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const payload = {
+  const payload = {
         name: data.name,
         type: data.type,
         category: data.category,
@@ -112,8 +112,6 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
           width: data.width,
           depth: data.depth,
           height: data.height,
-          price: data.price ?? null,
-          currency: data.currency || 'USD',
         },
         default_color: data.default_color,
         icon: data.icon,
@@ -121,6 +119,9 @@ const FurnitureForm = ({ initialData, onSuccess, onCancel }: FurnitureFormProps)
         thumbnail_url: data.thumbnail_url || null,
         is_active: data.is_active,
         sort_order: data.sort_order,
+        price: data.price ?? null,
+        currency: data.currency || 'USD',
+        description: (data as any).description || null,
       };
 
       if (initialData) {
