@@ -43,16 +43,9 @@ function enhanceExportMaterials(scene: THREE.Object3D): void {
     const isDoor = name.includes('door') || colorHex === '#8b5a2b';
 
     if (isFloor) {
-      // Better floor defaults — slightly reflective, lower roughness
-      if (mat.roughness > 0.75 && !mat.map) {
-        mat.roughness = 0.45;
-        mat.metalness = 0.0;
-        // If the floor is the default grey, give it a warmer concrete look
-        if (colorHex === '#f3f4f6' || colorHex === '#e5e7eb') {
-          mat.color.set('#d4cdc5');
-          mat.roughness = 0.55;
-        }
-      }
+      // Floor — very low roughness for shiny appearance in Unreal
+      mat.roughness = 0.1;
+      mat.metalness = 0.0;
     } else if (isWall) {
       // Walls — slight sheen, not fully matte
       if (mat.roughness > 0.85 && !mat.map) {
