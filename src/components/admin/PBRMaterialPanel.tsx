@@ -107,7 +107,7 @@ type TextureSlot = keyof PendingTextures;
 
 const PBRMaterialPanel = () => {
   const navigate = useNavigate();
-  const { materials, loading, addMaterial, removeMaterial, previewMaterialId, setPreviewMaterialId, refreshMaterials } = useMaterialContext();
+  const { materials, loading, addMaterialFromFiles, removeMaterial, previewMaterialId, setPreviewMaterialId, refreshMaterials } = useMaterialContext();
   const [materialName, setMaterialName] = useState('');
   const [pendingTextures, setPendingTextures] = useState<PendingTextures>({});
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -130,7 +130,6 @@ const PBRMaterialPanel = () => {
   }, []);
 
   const resetForm = useCallback(() => {
-    // Revoke all preview URLs
     Object.values(pendingTextures).forEach(entry => {
       if (entry) URL.revokeObjectURL(entry.preview);
     });
@@ -146,30 +145,22 @@ const PBRMaterialPanel = () => {
 
     setSaving(true);
     try {
-      // Convert File objects to blob URLs that MaterialContext can fetch
-      const toBlobUrl = (slot: TextureSlot): string | undefined => {
-        const entry = pendingTextures[slot];
-        if (!entry) return undefined;
-        // Create a fresh blob URL from the File (File extends Blob)
-        return URL.createObjectURL(entry.file);
-      };
-
-      await addMaterial({
+      await addMaterialFromFiles({
         name: materialName.trim(),
-        albedo: toBlobUrl('albedo'),
-        normal: toBlobUrl('normal'),
-        roughness: toBlobUrl('roughness'),
-        metallic: toBlobUrl('metallic'),
-        ao: toBlobUrl('ao'),
-        arm: toBlobUrl('arm'),
-        height: toBlobUrl('height'),
+        albedo: pendingTextures.albedo?.file,
+        normal: pendingTextures.normal?.file,
+        roughness: pendingTextures.roughness?.file,
+        metallic: pendingTextures.metallic?.file,
+        ao: pendingTextures.ao?.file,
+        arm: pendingTextures.arm?.file,
+        height: pendingTextures.height?.file,
       });
       resetForm();
       setDialogOpen(false);
     } finally {
       setSaving(false);
     }
-  }, [materialName, pendingTextures, addMaterial, resetForm]);
+  }, [materialName, pendingTextures, addMaterialFromFiles, resetForm]);
 
   const handleDeleteMaterial = useCallback(async (id: string) => {
     await removeMaterial(id);
