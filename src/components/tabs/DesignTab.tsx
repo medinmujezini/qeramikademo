@@ -1226,7 +1226,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     }
   }, [floorPlan]);
 
-
+  const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
     if (!imageUrl) return;
 
