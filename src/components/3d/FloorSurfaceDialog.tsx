@@ -169,16 +169,7 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
                 </div>
                 {selectedMaterialId !== 'none' && (
                   <div className="flex items-center gap-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Label className="text-xs whitespace-nowrap cursor-help">Scale (cm per repeat)</Label>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          <p className="max-w-[200px] text-xs">How many cm of floor one texture repeat covers — smaller = more repetitions</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Label className="text-xs whitespace-nowrap">Scale (cm per repeat)</Label>
                     <Input
                       type="number"
                       min={1}

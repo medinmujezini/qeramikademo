@@ -352,7 +352,6 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                   );
                 })}
               </svg>
-            </TooltipProvider>
 
             {/* Legend */}
             <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-muted-foreground">
