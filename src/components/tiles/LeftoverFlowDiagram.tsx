@@ -209,16 +209,7 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent side="left" className="max-w-[200px]">
-                      <p className="text-xs">Shows how leftover tile pieces move between walls during optimization</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <HelpCircle className="h-3 w-3 text-muted-foreground" />
                 {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </CardTitle>
