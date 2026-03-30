@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp, GitBranch, HelpCircle } from 'lucide-react';
 import { CutOptimizationResult } from '@/utils/tileCalculator';
@@ -209,16 +209,7 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent side="left" className="max-w-[200px]">
-                      <p className="text-xs">Shows how leftover tile pieces move between walls during optimization</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <HelpCircle className="h-3 w-3 text-muted-foreground" />
                 {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </CardTitle>
@@ -227,7 +218,6 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
         
         <CollapsibleContent>
           <CardContent className="p-2">
-            <TooltipProvider delayDuration={100}>
               <svg 
                 viewBox="0 0 320 180" 
                 className="w-full h-auto"
@@ -270,27 +260,17 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                   
                   return (
                     <g key={`conn-${idx}`}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <path
-                            d={path}
-                            fill="none"
-                            stroke={highlighted ? '#7c3aed' : '#a78bfa'}
-                            strokeWidth={Math.min(1 + conn.count * 0.8, 4)}
-                            strokeOpacity={highlighted ? 1 : 0.7}
-                            markerEnd={highlighted ? 'url(#arrowhead-highlighted)' : 'url(#arrowhead)'}
-                            className="cursor-pointer transition-all duration-200"
-                            onMouseEnter={() => setHoveredConnection(conn)}
-                            onMouseLeave={() => setHoveredConnection(null)}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-xs">
-                            <p className="font-medium">{conn.fromNode?.name} → {conn.toNode?.name}</p>
-                            <p className="text-muted-foreground">{conn.count} piece{conn.count > 1 ? 's' : ''} transferred</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+                      <path
+                        d={path}
+                        fill="none"
+                        stroke={highlighted ? '#7c3aed' : '#a78bfa'}
+                        strokeWidth={Math.min(1 + conn.count * 0.8, 4)}
+                        strokeOpacity={highlighted ? 1 : 0.7}
+                        markerEnd={highlighted ? 'url(#arrowhead-highlighted)' : 'url(#arrowhead)'}
+                        className="cursor-pointer transition-all duration-200"
+                        onMouseEnter={() => setHoveredConnection(conn)}
+                        onMouseLeave={() => setHoveredConnection(null)}
+                      />
                       
                       {/* Connection count label */}
                       {conn.count > 1 && conn.fromNode && conn.toNode && (
@@ -313,8 +293,6 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                   
                   return (
                     <g key={node.id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
                           <g 
                             className="cursor-pointer"
                             onMouseEnter={() => setHoveredNode(node.id)}
@@ -370,39 +348,10 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                               </g>
                             )}
                           </g>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                          <div className="text-xs space-y-1">
-                            <p className="font-medium">{node.name}</p>
-                            {node.sendsTo.length > 0 && (
-                              <p className="text-green-600">
-                                Sends to: {node.sendsTo.map(id => {
-                                  const n = flowData.nodes.find(n => n.id === id);
-                                  return n?.name;
-                                }).join(', ')}
-                              </p>
-                            )}
-                            {node.receivesFrom.length > 0 && (
-                              <p className="text-blue-600">
-                                Receives from: {node.receivesFrom.map(id => {
-                                  const n = flowData.nodes.find(n => n.id === id);
-                                  return n?.name;
-                                }).join(', ')}
-                              </p>
-                            )}
-                            {node.internalReuse > 0 && (
-                              <p className="text-muted-foreground">
-                                {node.internalReuse} internal reuse{node.internalReuse > 1 ? 's' : ''}
-                              </p>
-                            )}
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
                     </g>
                   );
                 })}
               </svg>
-            </TooltipProvider>
 
             {/* Legend */}
             <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-muted-foreground">
