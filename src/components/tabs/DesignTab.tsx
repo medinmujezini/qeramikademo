@@ -918,6 +918,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
+  const [showSpawnMarker, setShowSpawnMarker] = useState(true);
+  const [spawnPoint, setSpawnPoint] = useState<SpawnPoint>(() => {
+    // Default spawn at room center
+    const cx = (floorPlan.roomWidth || 800) / 2;
+    const cy = (floorPlan.roomHeight || 600) / 2;
+    return { position: { x: cx, y: cy }, rotation: 0 };
+  });
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
   const animTargetPos = useRef(new THREE.Vector3());
