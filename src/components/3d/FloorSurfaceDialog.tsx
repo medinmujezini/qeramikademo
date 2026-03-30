@@ -71,15 +71,17 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
   const areaInSqM = floorArea / 10000;
 
   const handleApplyFinish = () => {
-    if (selectedFinish) {
-      onApplyFinish(
-        selectedFinish.type,
-        selectedFinish.color,
-        selectedMaterialId !== 'none' ? selectedMaterialId : undefined,
-        selectedMaterialId !== 'none' ? textureScaleCm : undefined,
-      );
-      onOpenChange(false);
-    }
+    // Allow applying with just a PBR material (no preset needed)
+    const finishType = selectedFinish?.type || 'hardwood';
+    const finishColor = selectedFinish?.color || '#d4cdc5';
+    
+    onApplyFinish(
+      finishType,
+      finishColor,
+      selectedMaterialId !== 'none' ? selectedMaterialId : undefined,
+      selectedMaterialId !== 'none' ? textureScaleCm : undefined,
+    );
+    onOpenChange(false);
   };
 
   const handleApplyTiles = () => {
@@ -189,11 +191,14 @@ export const FloorSurfaceDialog: React.FC<FloorSurfaceDialogProps> = ({
                 )}
               </div>
 
-              {selectedFinish && (
+              {(selectedFinish || selectedMaterialId !== 'none') && (
                 <div className="mt-4 flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div>
-                    <p className="font-medium">{selectedFinish.name}</p>
-                    <p className="text-sm text-muted-foreground capitalize">{selectedFinish.type}</p>
+                    <p className="font-medium">{selectedFinish?.name || selectedMaterial?.name || 'PBR Material'}</p>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {selectedFinish?.type || 'hardwood'}
+                      {selectedMaterialId !== 'none' && ' + PBR textures'}
+                    </p>
                   </div>
                   <Button size="sm" onClick={handleApplyFinish}>
                     Apply to Floor
