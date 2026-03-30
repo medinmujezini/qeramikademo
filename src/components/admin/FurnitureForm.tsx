@@ -46,6 +46,7 @@ const formSchema = z.object({
   sort_order: z.number(),
   price: z.number().min(0, 'Price must be 0 or greater').optional(),
   currency: z.string().optional(),
+  description: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
