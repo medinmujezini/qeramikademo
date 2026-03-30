@@ -29,7 +29,8 @@ export interface RoomManifest {
 export function generateRoomManifest(
   floorPlan: FloorPlan,
   projectId: string = 'local',
-  revision: number = 1
+  revision: number = 1,
+  spawnOverride?: { position: { x: number; y: number }; rotation: number }
 ): RoomManifest {
   const unitScale = CM_TO_METERS;
 
@@ -58,20 +59,21 @@ export function generateRoomManifest(
   const firstWall = floorPlan.walls[0];
   const heightCm = firstWall?.startHeight ?? 280;
 
-  // Spawn at room center, eye height (160cm)
-  const centerX = (minX + maxX) / 2;
-  const centerY = (minY + maxY) / 2;
+  // Use spawn override if provided, otherwise center of room
+  const spawnX = spawnOverride ? spawnOverride.position.x : (minX + maxX) / 2;
+  const spawnY = spawnOverride ? spawnOverride.position.y : (minY + maxY) / 2;
+  const spawnRot = spawnOverride ? spawnOverride.rotation : 0;
 
   return {
     projectId,
     revision,
     sceneScale: unitScale,
     spawnPoint: {
-      x: centerX * unitScale,
+      x: spawnX * unitScale,
       y: 1.6, // eye height in meters
-      z: centerY * unitScale,
+      z: spawnY * unitScale,
     },
-    spawnRotation: 0,
+    spawnRotation: spawnRot,
     roomDimensions: {
       width: widthCm,
       depth: depthCm,

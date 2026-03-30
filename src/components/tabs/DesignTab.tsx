@@ -7,6 +7,8 @@
  */
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { SpawnPointMarker, type SpawnPoint } from '@/components/3d/SpawnPointMarker';
+import { WalkthroughOverlay } from '@/components/3d/WalkthroughOverlay';
 import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, PointerLockControls } from '@react-three/drei';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
@@ -916,6 +918,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
+  const [showSpawnMarker, setShowSpawnMarker] = useState(true);
+  const [spawnPoint, setSpawnPoint] = useState<SpawnPoint>(() => {
+    // Default spawn at room center
+    const cx = (floorPlan.roomWidth || 800) / 2;
+    const cy = (floorPlan.roomHeight || 600) / 2;
+    return { position: { x: cx, y: cy }, rotation: 0 };
+  });
   const orbitControlsRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
   const animTargetPos = useRef(new THREE.Vector3());
@@ -1018,7 +1027,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       const scene = sceneRef.current;
       if (scene) {
         const glbBlob = await exportSceneToGLBBlob(scene);
-        const manifest = generateRoomManifest(floorPlan);
+        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint);
 
         if (isInsideUnreal()) {
           const buffer = await glbBlob.arrayBuffer();
@@ -1036,25 +1045,27 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       return;
     }
 
-    // Transition to walkthrough view
+    // Transition to walkthrough view — use spawn point position
     const SCALE = 0.01;
-    let centerX = roomW / 2;
-    let centerZ = roomH / 2;
-    if (floorPlan.points.length > 0) {
-      const xs = floorPlan.points.map(p => p.x * SCALE);
-      const ys = floorPlan.points.map(p => p.y * SCALE);
-      centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
-      centerZ = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const spawnX = spawnPoint.position.x * SCALE;
+    const spawnZ = spawnPoint.position.y * SCALE;
+    const spawnRad = -(spawnPoint.rotation * Math.PI) / 180;
+
+    if (cameraRef.current) {
+      cameraRef.current.position.set(spawnX, 1.6, spawnZ);
+      cameraRef.current.rotation.order = 'YXZ';
+      cameraRef.current.rotation.y = spawnRad;
     }
-    if (cameraRef.current) cameraRef.current.position.set(centerX, 1.6, centerZ);
     isAnimatingCamera.current = false;
     setIsPreparingWalkthrough(false);
+    setShowSpawnMarker(false);
     setViewMode('walkthrough');
-  }, [floorPlan, roomW, roomH, isAnimatingCamera]);
+  }, [floorPlan, spawnPoint, isAnimatingCamera]);
 
   const exitWalkthrough = useCallback(() => {
     document.exitPointerLock();
     setViewMode('design');
+    setShowSpawnMarker(true);
     if (cameraRef.current) cameraRef.current.position.copy(savedOrbitPos.current);
     if (orbitControlsRef.current) {
       orbitControlsRef.current.target.copy(savedOrbitTarget.current);
@@ -1562,6 +1573,21 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               floorPlan={floorPlan}
             />
           </Suspense>
+          {/* Spawn point marker */}
+          {viewMode === 'design' && (
+            <SpawnPointMarker
+              spawn={spawnPoint}
+              onMove={(pos) => setSpawnPoint(prev => ({ ...prev, position: pos }))}
+              onRotate={(rot) => setSpawnPoint(prev => ({ ...prev, rotation: rot }))}
+              visible={showSpawnMarker}
+              floorBounds={{
+                minX: roomBounds.minX,
+                maxX: roomBounds.maxX,
+                minZ: roomBounds.minZ,
+                maxZ: roomBounds.maxZ,
+              }}
+            />
+          )}
           <CameraAnimator
             targetPos={animTargetPos}
             targetTarget={animTargetTarget}
@@ -1985,18 +2011,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             </div>
           </div>
 
-          {/* Exit button */}
-          <div className="absolute top-4 right-4 z-40">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="gap-1.5"
-              onClick={exitWalkthrough}
-            >
-              <X className="h-3.5 w-3.5" />
-              Exit (Esc)
-            </Button>
-          </div>
+          {/* Walkthrough overlay with exit, render, minimap */}
+          <WalkthroughOverlay
+            floorPlan={floorPlan}
+            spawn={spawnPoint}
+            onExit={exitWalkthrough}
+            onRender={handleRenderImage}
+            visible={true}
+          />
 
           {/* WASD hint */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
