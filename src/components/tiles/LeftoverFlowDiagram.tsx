@@ -348,34 +348,6 @@ export const LeftoverFlowDiagram: React.FC<LeftoverFlowDiagramProps> = ({
                               </g>
                             )}
                           </g>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                          <div className="text-xs space-y-1">
-                            <p className="font-medium">{node.name}</p>
-                            {node.sendsTo.length > 0 && (
-                              <p className="text-green-600">
-                                Sends to: {node.sendsTo.map(id => {
-                                  const n = flowData.nodes.find(n => n.id === id);
-                                  return n?.name;
-                                }).join(', ')}
-                              </p>
-                            )}
-                            {node.receivesFrom.length > 0 && (
-                              <p className="text-blue-600">
-                                Receives from: {node.receivesFrom.map(id => {
-                                  const n = flowData.nodes.find(n => n.id === id);
-                                  return n?.name;
-                                }).join(', ')}
-                              </p>
-                            )}
-                            {node.internalReuse > 0 && (
-                              <p className="text-muted-foreground">
-                                {node.internalReuse} internal reuse{node.internalReuse > 1 ? 's' : ''}
-                              </p>
-                            )}
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
                     </g>
                   );
                 })}
