@@ -1315,7 +1315,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   // Handle canvas click to close panel (via onPointerMissed)
   const handleCanvasPointerMissed = useCallback(() => {
     setIsPanelOpen(false);
-  }, []);
+    setSelectedStaircaseId(null);
+  }, [setSelectedStaircaseId]);
 
   // Render image functionality
   const handleRenderImage = useCallback(async () => {
