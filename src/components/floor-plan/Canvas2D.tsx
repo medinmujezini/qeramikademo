@@ -282,7 +282,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
     // Draw grid - thin white lines for high-tech look
     if (showGrid) {
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)'; // Light blue grid
+      ctx.strokeStyle = 'rgba(201, 169, 110, 0.12)'; // Gold grid
       ctx.lineWidth = 0.5;
       const gridStart = screenToWorld(0, 0);
       const gridEnd = screenToWorld(width, height);
