@@ -57,6 +57,7 @@ import { isFixturePositionValid } from '@/utils/fixtureCollision';
 import { createWallShapeWithOpenings } from '@/utils/wallOpeningGeometry';
 import { exportSceneToGLBBlob } from '@/utils/glbExporter';
 import { generateRoomManifest } from '@/utils/roomManifest';
+import { analyzeWallJunctions, getWallExtension } from '@/utils/wallJunctionGeometry';
 import { isInsideUnreal, startUnrealWalkthrough, onExitWalkthrough, arrayBufferToBase64 } from '@/utils/unrealBridge';
 import { toast } from 'sonner';
 import type { FurnitureTemplate } from '@/data/furnitureLibrary';
