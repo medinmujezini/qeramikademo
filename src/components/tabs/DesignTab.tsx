@@ -893,6 +893,28 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
+      {/* Staircases on the active floor */}
+      {staircases
+        .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
+        .map(stair => (
+          <Staircase3D key={stair.id} staircase={stair} yOffset={0} />
+        ))
+      }
+
+      {/* Floor slabs for upper floors */}
+      {building.floors
+        .filter(f => f.level > 0 && f.slab && (f.level === activeLevel || f.level === activeLevel + 1))
+        .map(floor => (
+          <FloorSlab3D
+            key={`slab-${floor.level}`}
+            slab={floor.slab!}
+            roomWidth={floorPlan.roomWidth || 800}
+            roomHeight={floorPlan.roomHeight || 600}
+            yPosition={floor.floorToFloorHeight * 0.01 * floor.level}
+          />
+        ))
+      }
+
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
     </>
