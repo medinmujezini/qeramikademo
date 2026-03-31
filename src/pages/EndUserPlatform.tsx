@@ -40,17 +40,17 @@ const EndUserPlatform = () => {
     <AuthProvider>
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
-        <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm px-6 h-14 flex items-center justify-between relative z-10" style={{ borderBottomColor: 'hsl(var(--primary) / 0.12)' }}>
+        <header className="border-b bg-card px-6 h-14 flex items-center justify-between relative z-10" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
           <div className="flex items-center gap-3">
             <BackToHome />
-            <div className="w-px h-5 bg-border/30" />
+            <div className="w-px h-5 bg-primary/15" />
             <div className="flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-primary/70" />
-              <span className="font-medium text-sm text-foreground tracking-wider">Design Studio</span>
+              <Sparkles className="h-4 w-4 text-primary/50" />
+              <span className="font-display text-xs uppercase tracking-[0.15em] text-primary">Design Studio</span>
             </div>
           </div>
           
-          <Button variant="outline" size="sm" className="gap-1.5">
+          <Button variant="luxury" size="sm" className="gap-1.5">
             <ShoppingCart className="h-4 w-4" />
             Cart
           </Button>
@@ -58,7 +58,7 @@ const EndUserPlatform = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col relative z-10">
           {/* Tab Navigation */}
-          <div className="border-b border-border bg-card/50 flex justify-center px-4">
+          <div className="border-b bg-card flex justify-center px-4" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
             <TabsList className="h-10">
               <TabsTrigger value="floor-plan" className="gap-1.5">
                 <PenTool className="h-3.5 w-3.5" />
@@ -108,7 +108,7 @@ const QuoteTab = () => {
     <div className="h-full flex items-center justify-center p-8">
       <Card className="max-w-2xl w-full">
         <CardHeader className="text-center">
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 rounded-none bg-primary/10 flex items-center justify-center mx-auto mb-3 border border-primary/20 relative overflow-hidden">
             <ShoppingCart className="w-7 h-7 text-primary" />
           </div>
           <CardTitle className="text-xl">Your Project Quote</CardTitle>
