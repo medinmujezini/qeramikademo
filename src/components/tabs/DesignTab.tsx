@@ -1585,7 +1585,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
-      <div className="h-10 border-b bg-card px-4 flex items-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.10)' }}>
+      <div className="h-10 border-b border-t bg-card px-4 flex items-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.10)', borderTopColor: 'hsl(var(--primary) / 0.08)' }}>
         <div className="flex items-center gap-3 h-full">
           <div className="flex items-center gap-1.5">
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
@@ -1648,8 +1648,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
               <div className="w-px h-4 bg-primary/15" />
 
-              <Badge variant="outline" className="text-[10px] h-5 gap-1">{furnitureCount} Furn</Badge>
-              <Badge variant="outline" className="text-[10px] h-5 gap-1">{fixtureCount} Fix</Badge>
+              <Badge variant="outline" className="text-[10px] h-5 gap-1 border-primary/20">{furnitureCount} Furn</Badge>
+              <Badge variant="outline" className="text-[10px] h-5 gap-1 border-primary/20">{fixtureCount} Fix</Badge>
 
               <div className="w-px h-4 bg-primary/15" />
 
@@ -1894,8 +1894,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         
         {/* Drop zone indicator */}
         {isDraggingFromLibrary && (
-          <div className="absolute inset-0 flex items-center justify-center bg-primary/5 pointer-events-none">
-            <div className="glass-toolbar text-xs uppercase tracking-widest font-medium text-primary/80">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-primary/5 to-transparent pointer-events-none">
+            <div className="glass-toolbar text-xs font-display uppercase tracking-widest font-medium text-primary/80" style={{ textShadow: '0 0 20px hsl(38 60% 68% / 0.2)' }}>
               Drop here to place
             </div>
           </div>
@@ -1966,7 +1966,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       {/* PREPARING WALKTHROUGH OVERLAY */}
       {isPreparingWalkthrough && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-opacity duration-300">
-          <div className="flex flex-col items-center gap-4 text-center">
+          <div className="pointer-events-none absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
+          <div className="flex flex-col items-center gap-4 text-center relative z-10">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
             <h3 className="text-xl font-display font-semibold text-foreground">Preparing walkthrough…</h3>
             <p className="text-sm text-muted-foreground">Generating 3D scene</p>
@@ -2020,7 +2021,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           />
 
           {/* WASD hint */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs text-muted-foreground">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs font-display text-muted-foreground">
             {isTouchDevice ? 'Left stick to move · Right stick to look' : 'WASD to move · Mouse to look'}
           </div>
         </>
@@ -2038,7 +2039,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <Dialog open={renderDialogOpen} onOpenChange={setRenderDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Cinematic Render</DialogTitle>
+            <DialogTitle className="font-display">Cinematic Render</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -2058,7 +2059,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             ) : (
               <div className="space-y-4">
                 {/* Show enhanced or original */}
-                <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                <div className="relative aspect-video bg-muted rounded-none overflow-hidden">
                   {(enhancedRender || originalRender) && (
                     <img 
                       src={enhancedRender || originalRender || ''} 
@@ -2067,12 +2068,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                     />
                   )}
                   {!enhancedRender && originalRender && (
-                    <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded text-xs">
+                    <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded-none text-xs">
                       Original (enhancement failed)
                     </div>
                   )}
                   {enhancedRender && (
-                    <div className="absolute top-2 left-2 bg-primary/80 text-primary-foreground px-2 py-1 rounded text-xs">
+                    <div className="absolute top-2 left-2 bg-primary/80 text-primary-foreground px-2 py-1 rounded-none text-xs">
                       AI Enhanced
                     </div>
                   )}

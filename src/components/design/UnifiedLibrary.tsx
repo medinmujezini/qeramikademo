@@ -94,14 +94,14 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
   
   return (
     <button
-      className="w-full p-3 text-left rounded-md border border-border/60 bg-card hover:bg-accent hover:border-primary/40 transition-colors group cursor-grab active:cursor-grabbing"
+      className="w-full p-3 text-left rounded-none border border-primary/10 bg-card hover:bg-accent hover:border-primary/30 hover:shadow-[0_0_15px_hsl(38_60%_68%/0.08)] transition-all group cursor-grab active:cursor-grabbing"
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
     >
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-12 h-12 rounded-none bg-muted border border-primary/10 flex items-center justify-center overflow-hidden shrink-0">
           {thumbnailUrl && !imageError ? (
             <img 
               src={thumbnailUrl} 
@@ -115,7 +115,7 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate" title={name}>{name}</p>
+          <p className="font-display font-medium text-sm truncate" title={name}>{name}</p>
           <p className="text-xs text-muted-foreground">
             {dimensions.width}×{dimensions.depth}×{dimensions.height} cm
           </p>
@@ -271,29 +271,30 @@ export const UnifiedLibrary: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-muted/30 w-full box-border overflow-hidden">
+    <div className="h-full flex flex-col bg-card/50 w-full box-border overflow-hidden">
       {/* Header + Search */}
       <div className="px-3 pt-3 pb-2 space-y-2 shrink-0">
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Item Library</h3>
+        <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Item Library</h3>
+        <div className="w-full h-px bg-primary/15 -mt-1" />
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 w-full"
+            className="pl-8 w-full rounded-none border-primary/15 bg-card focus:border-primary/40 focus:shadow-[0_0_15px_hsl(38_60%_68%/0.06)]"
           />
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'furniture' | 'fixtures')} className="flex-1 flex flex-col min-h-0 w-full">
-        <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)]">
-          <TabsTrigger value="furniture" className="flex-1 gap-1">
+        <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)] rounded-none">
+          <TabsTrigger value="furniture" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
             <Sofa className="h-3.5 w-3.5" />
             Furniture
           </TabsTrigger>
-          <TabsTrigger value="fixtures" className="flex-1 gap-1">
+          <TabsTrigger value="fixtures" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
             <Bath className="h-3.5 w-3.5" />
             Fixtures
           </TabsTrigger>
@@ -310,7 +311,7 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-2 border-primary/30 pl-2">
                         {FURNITURE_CATEGORY_ICONS[category]}
                         <span>{category}</span>
                         <span className="text-[10px] opacity-60">({items.length})</span>
@@ -354,7 +355,7 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-2 border-primary/30 pl-2">
                         {FIXTURE_CATEGORY_ICONS[category]}
                         <span>{category}</span>
                         <span className="text-[10px] opacity-60">({items.length})</span>
@@ -389,7 +390,7 @@ export const UnifiedLibrary: React.FC = () => {
       </Tabs>
 
       {/* Footer hint */}
-      <div className="px-3 py-2 border-t text-xs text-muted-foreground text-center shrink-0">
+      <div className="px-3 py-2 border-t border-primary/10 text-[10px] uppercase tracking-widest text-muted-foreground text-center shrink-0">
         Click or drag to add
       </div>
     </div>
