@@ -2052,9 +2052,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
       {/* Render Image Dialog */}
       <Dialog open={renderDialogOpen} onOpenChange={setRenderDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl dialog-luxury">
+          <div className="gold-accent-line w-full absolute top-0 left-0" />
           <DialogHeader>
-            <DialogTitle className="font-display">Cinematic Render</DialogTitle>
+            <DialogTitle className="font-display uppercase tracking-widest text-sm">Cinematic Render</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
