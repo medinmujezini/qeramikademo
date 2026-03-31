@@ -11,8 +11,8 @@
  * Floor plan data must be passed as props.
  */
 
-import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { ThreeEvent, useThree, useFrame } from '@react-three/fiber';
+import React, { useCallback, useState, useRef } from 'react';
+import { ThreeEvent, useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import { Furniture3D } from './Furniture3D';
@@ -56,7 +56,6 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
     setIsDragging,
   } = useFurnitureContext();
   
-  const { camera, gl } = useThree();
   const [draggedItem, setDraggedItem] = useState<FurnitureItem | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number } | null>(null);
@@ -117,26 +116,6 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
     }
   }, [enableSelection, setSelectedFurnitureId, isDragging]);
   
-  const getFloorPosition = useCallback((clientX: number, clientY: number) => {
-    const rect = gl.domElement.getBoundingClientRect();
-    const mouse = new THREE.Vector2(
-      ((clientX - rect.left) / rect.width) * 2 - 1,
-      -((clientY - rect.top) / rect.height) * 2 + 1
-    );
-    
-    raycaster.current.setFromCamera(mouse, camera);
-    const intersection = new THREE.Vector3();
-    const hit = raycaster.current.ray.intersectPlane(floorPlane.current, intersection);
-    
-    if (hit) {
-      return {
-        x: intersection.x / CM_TO_METERS,
-        y: intersection.z / CM_TO_METERS,
-      };
-    }
-    return null;
-  }, [camera, gl.domElement]);
-  
   const snapToGrid = useCallback((value: number, gridSize: number = 10) => {
     return Math.round(value / gridSize) * gridSize;
   }, []);
@@ -145,6 +124,7 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
     if (!enableDrag) return;
     
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
     setDraggedItem(item);
     setIsDragging(true);
     setGhostPosition({ ...item.position });
@@ -155,107 +135,86 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
     latestPositionRef.current = { ...item.position };
     isDragActiveRef.current = true;
     
-    const floorPos = getFloorPosition(e.nativeEvent.clientX, e.nativeEvent.clientY);
-    if (floorPos) {
-      setDragOffset({
-        x: item.position.x - floorPos.x,
-        y: item.position.y - floorPos.y,
-      });
-    }
-  }, [enableDrag, setIsDragging, getFloorPosition]);
+    // Calculate offset using intersection point
+    const floorX = e.point.x / CM_TO_METERS;
+    const floorY = e.point.z / CM_TO_METERS;
+    setDragOffset({
+      x: item.position.x - floorX,
+      y: item.position.y - floorY,
+    });
+  }, [enableDrag, setIsDragging]);
   
-  useEffect(() => {
-    if (!draggedItem || !isDragging) return;
+  const handleDragMove = useCallback((e: ThreeEvent<PointerEvent>) => {
+    if (!isDragActiveRef.current || !draggedItem) return;
+    e.stopPropagation();
     
-    const handlePointerMove = (e: PointerEvent) => {
-      if (!isDragActiveRef.current) return;
-      
-      const floorPos = getFloorPosition(e.clientX, e.clientY);
-      if (floorPos && draggedItem) {
-        const newX = snapToGrid(floorPos.x + dragOffset.x);
-        const newY = snapToGrid(floorPos.y + dragOffset.y);
-        const newPos = { x: newX, y: newY };
-        
-        // Update latest position ref
-        latestPositionRef.current = newPos;
-        
-        // Check collision and update last valid position if valid
-        const hasCollision = checkCollisionAtPosition(draggedItem.id, newPos, draggedItem);
-        
-        if (!hasCollision) {
-          lastValidPositionRef.current = newPos;
-          setCollisionState(prev => ({ ...prev, [draggedItem.id]: false }));
-        } else {
-          setCollisionState(prev => ({ ...prev, [draggedItem.id]: true }));
-        }
-        
-        // Always move furniture to show current drag position
-        moveFurniture(draggedItem.id, newPos);
-        onFurnitureMoved?.(draggedItem.id, newPos);
-      }
-    };
+    const floorX = e.point.x / CM_TO_METERS;
+    const floorZ = e.point.z / CM_TO_METERS;
+    const newX = snapToGrid(floorX + dragOffset.x);
+    const newY = snapToGrid(floorZ + dragOffset.y);
+    const newPos = { x: newX, y: newY };
     
-    const handlePointerUp = () => {
-      if (!draggedItem) return;
-      
-      // Immediately stop processing pointer moves
-      isDragActiveRef.current = false;
-      
-      // Get the current position from the latest furniture state
-      const currentItem = furniture.find(f => f.id === draggedItem.id);
-      if (!currentItem) {
-        // Item was deleted during drag, just clean up
-        cleanupDrag();
-        return;
-      }
-      
-      // Final collision check at the current position
-      const finalPosition = latestPositionRef.current || currentItem.position;
-      const hasCollision = checkCollisionAtPosition(draggedItem.id, finalPosition, currentItem);
-      
-      if (hasCollision) {
-        // Use last valid position, or fall back to start position
-        const revertPosition = lastValidPositionRef.current || startPositionRef.current;
-        
-        if (revertPosition) {
-          // Move back to valid position
-          moveFurniture(draggedItem.id, revertPosition);
-          setCollisionState(prev => ({ ...prev, [draggedItem.id]: false }));
-          
-          // Trigger rejection animation and toast
-          setRejectionState({
-            itemId: draggedItem.id,
-            startTime: performance.now(),
-            duration: 400,
-          });
-          
-          toast.error('Cannot place here', {
-            duration: 1500,
-            position: 'bottom-center',
-          });
-        }
-      }
-      
+    latestPositionRef.current = newPos;
+    
+    const hasCollision = checkCollisionAtPosition(draggedItem.id, newPos, draggedItem);
+    
+    if (!hasCollision) {
+      lastValidPositionRef.current = newPos;
+      setCollisionState(prev => ({ ...prev, [draggedItem.id]: false }));
+    } else {
+      setCollisionState(prev => ({ ...prev, [draggedItem.id]: true }));
+    }
+    
+    moveFurniture(draggedItem.id, newPos);
+    onFurnitureMoved?.(draggedItem.id, newPos);
+  }, [draggedItem, dragOffset, snapToGrid, checkCollisionAtPosition, moveFurniture, onFurnitureMoved]);
+  
+  const handleDragEnd = useCallback((e: ThreeEvent<PointerEvent>) => {
+    if (!draggedItem) return;
+    e.stopPropagation();
+    
+    isDragActiveRef.current = false;
+    
+    const currentItem = furniture.find(f => f.id === draggedItem.id);
+    if (!currentItem) {
       cleanupDrag();
-    };
+      return;
+    }
     
-    const cleanupDrag = () => {
-      setDraggedItem(null);
-      setIsDragging(false);
-      setGhostPosition(null);
-      startPositionRef.current = null;
-      lastValidPositionRef.current = null;
-      latestPositionRef.current = null;
-    };
+    const finalPosition = latestPositionRef.current || currentItem.position;
+    const hasCollision = checkCollisionAtPosition(draggedItem.id, finalPosition, currentItem);
     
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    if (hasCollision) {
+      const revertPosition = lastValidPositionRef.current || startPositionRef.current;
+      
+      if (revertPosition) {
+        moveFurniture(draggedItem.id, revertPosition);
+        setCollisionState(prev => ({ ...prev, [draggedItem.id]: false }));
+        
+        setRejectionState({
+          itemId: draggedItem.id,
+          startTime: performance.now(),
+          duration: 400,
+        });
+        
+        toast.error('Cannot place here', {
+          duration: 1500,
+          position: 'bottom-center',
+        });
+      }
+    }
     
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [draggedItem, isDragging, dragOffset, getFloorPosition, snapToGrid, setIsDragging, moveFurniture, furniture, checkCollisionAtPosition, onFurnitureMoved]);
+    cleanupDrag();
+  }, [draggedItem, furniture, checkCollisionAtPosition, moveFurniture]);
+  
+  const cleanupDrag = useCallback(() => {
+    setDraggedItem(null);
+    setIsDragging(false);
+    setGhostPosition(null);
+    startPositionRef.current = null;
+    lastValidPositionRef.current = null;
+    latestPositionRef.current = null;
+  }, [setIsDragging]);
   
   return (
     <group name="furniture-scene">
@@ -269,6 +228,19 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
         <planeGeometry args={[100, 100]} />
         <meshBasicMaterial visible={false} />
       </mesh>
+      
+      {/* Large invisible drag plane — captures pointer during furniture drag */}
+      {isDragging && draggedItem && (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.001, 0]}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+        >
+          <planeGeometry args={[100, 100]} />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      )}
       
       {/* Grid overlay when dragging - positioned based on floor plan */}
       {isDragging && (() => {
