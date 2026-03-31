@@ -45,6 +45,10 @@ export interface Door {
   width: number;
   height: number;
   type: DoorType;
+  /** Optional custom 3D model URL (.glb) */
+  modelUrl?: string;
+  /** Optional frame model URL (.glb) */
+  frameModelUrl?: string;
 }
 
 export type DoorType = 'hinged-left' | 'hinged-right' | 'sliding' | 'pocket' | 'double';
@@ -57,6 +61,10 @@ export interface Window {
   height: number;
   sillHeight: number;
   type: WindowType;
+  /** Optional custom 3D model URL (.glb) */
+  modelUrl?: string;
+  /** Optional frame model URL (.glb) */
+  frameModelUrl?: string;
 }
 
 export type WindowType = 'casement' | 'sliding' | 'fixed' | 'double-hung';
