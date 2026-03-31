@@ -21,6 +21,8 @@ interface SpawnPointMarkerProps {
   onRotate: (rotation: number) => void;
   visible: boolean;
   floorBounds: { minX: number; maxX: number; minZ: number; maxZ: number };
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }
 
 const SCALE = 0.01;
@@ -35,6 +37,8 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   onRotate,
   visible,
   floorBounds,
+  onDragStart,
+  onDragEnd,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -68,9 +72,8 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsDragging(true);
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    onDragStart?.();
 
-    // Calculate offset from marker center to click point on floor plane
     const floorPoint = e.point;
     dragOffset.current = {
       x: posX - floorPoint.x,
@@ -98,6 +101,7 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsDragging(false);
+    onDragEnd?.();
   };
 
   const handleRotate45 = (e: React.MouseEvent) => {
@@ -173,7 +177,7 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
           if (!isDragging) document.body.style.cursor = 'default';
         }}
       >
-        <planeGeometry args={[0.8, 0.8]} />
+        <planeGeometry args={[isDragging ? 100 : 0.8, isDragging ? 100 : 0.8]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
