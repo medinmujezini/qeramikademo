@@ -588,6 +588,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   findTile,
   floorPlan,
 }) => {
+  const { staircases, building, activeLevel } = useFloorPlanContext();
   const { 
     fixtures, 
     selectedFixtureId, 
