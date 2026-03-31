@@ -249,7 +249,8 @@
     /* Subtle depth shadow */
     box-shadow: 
       0 4px 24px -4px rgba(0, 0, 0, 0.15),
-      0 8px 48px -8px rgba(0, 0, 0, 0.1);
+      0 8px 48px -8px rgba(0, 0, 0, 0.1),
+      0 0 30px hsl(38 60% 68% / 0.06);
     
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
