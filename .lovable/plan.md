@@ -1,30 +1,40 @@
 
 
-# Fix: SpawnPointMarker Dragging Moves Camera
+# Fix White Popup Backgrounds — Dark Luxury Theme
 
-## Problem
-When dragging the spawn point character in design mode, OrbitControls also receives the pointer events, causing the camera to orbit simultaneously.
+## Changes
 
-## Root Cause
-1. **SpawnPointMarker's drag plane is tiny** (0.8×0.8 units) — pointer quickly leaves it during drag
-2. **`setPointerCapture`** is called on `e.target as HTMLElement` which doesn't work in R3F's Three.js event system
-3. **`e.stopPropagation()`** alone doesn't prevent OrbitControls from receiving events — OrbitControls listens on the canvas DOM element directly, not through R3F's event system
+Apply identical dark luxury styling to all three components:
 
-## Fix
+### Shared pattern (replacing current white glass)
 
-### 1. `src/components/3d/SpawnPointMarker.tsx`
-- Increase the invisible drag plane from `0.8×0.8` to `100×100` so the pointer stays captured during drag
-- Only show the large plane while dragging (render conditionally or toggle visibility)
+- **Background**: `bg-card/95 backdrop-blur-xl` (replaces `bg-[hsl(0_0%_100%/0.85-0.9)]`)
+- **Shadows**: `[box-shadow:0_8px_32px_0_hsl(0_0%_0%/0.4),0_0_20px_0_hsl(38_60%_68%/0.06),inset_0_1px_0_0_hsl(38_60%_68%/0.1),inset_0_0_0_1px_hsl(38_60%_68%/0.08)]`
+- **Shine**: `via-white` → `via-primary/15`
+- **Corners**: `rounded-2xl` → `rounded-none`
 
-### 2. `src/components/tabs/DesignTab.tsx`
-- Track a `isDraggingSpawn` state
-- Pass it to SpawnPointMarker via a callback (`onDragStart`/`onDragEnd`)
-- Add `isDraggingSpawn` to the OrbitControls `enabled` condition: `enabled={!isDragging && !isDraggingFixture && !isDraggingSpawn}`
+### Per-file specifics
 
-## Files Modified
-
-| File | Change |
+| File | What changes |
 |---|---|
-| `src/components/3d/SpawnPointMarker.tsx` | Large drag plane while dragging, expose `onDragStart`/`onDragEnd` callbacks |
-| `src/components/tabs/DesignTab.tsx` | Track `isDraggingSpawn`, disable OrbitControls during spawn drag |
+| `src/components/ui/dialog.tsx` | DialogContent: bg, shadow, corners, remove glass tint div, gold shine |
+| `src/components/ui/popover.tsx` | PopoverContent: bg, shadow, corners, gold shine |
+| `src/components/ui/dropdown-menu.tsx` | DropdownMenuContent + DropdownMenuSubContent: bg, shadow, corners, gold shine |
+
+### `src/components/ui/dialog.tsx`
+- Line ~42: Replace `bg-[hsl(0_0%_100%/0.85)]` with `bg-card/95`
+- Line ~43: `rounded-2xl` → `rounded-none`
+- Line ~45-46: Replace white/blue box-shadow with gold-tinted dark shadow
+- Line ~53: Remove the glass tint div (`bg-[hsl(217_91%_60%/0.02)]`)
+- Line ~51: Change shine `via-white` → `via-primary/15`
+
+### `src/components/ui/popover.tsx`
+- Line ~20: Replace `bg-[hsl(0_0%_100%/0.9)]` with `bg-card/95`
+- Line ~20: `rounded-2xl` → `rounded-none`
+- Line ~22: Replace white/blue box-shadow with gold-tinted dark shadow
+- Line ~30: Change shine `via-white` → `via-primary/15`
+
+### `src/components/ui/dropdown-menu.tsx`
+- DropdownMenuSubContent (~line 49): Same bg, shadow, corners, shine changes
+- DropdownMenuContent (~line 75): Same bg, shadow, corners, shine changes
 
