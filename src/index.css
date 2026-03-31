@@ -133,11 +133,22 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    line-height: 1.7;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+  }
+
+  /* Fade-in animation for page content */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out both;
   }
 }
 
@@ -262,7 +273,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    border: 1px solid hsl(217 91% 60% / 0.3);
+    border: 1px solid hsl(var(--primary) / 0.3);
     mask-image: linear-gradient(135deg, rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
     -webkit-mask-image: linear-gradient(135deg, rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
     pointer-events: none;
@@ -275,7 +286,7 @@
     box-shadow: 
       0 8px 32px -4px rgba(0, 0, 0, 0.15),
       0 16px 64px -8px rgba(0, 0, 0, 0.1),
-      0 0 60px -10px hsl(217 91% 60% / 0.25);
+      0 0 60px -10px hsl(var(--primary) / 0.25);
   }
 
   .glass:hover::before {
@@ -283,7 +294,7 @@
   }
 
   .glass:hover::after {
-    border-color: hsl(217 91% 60% / 0.7);
+    border-color: hsl(var(--primary) / 0.7);
   }
 
   /* ========================================
@@ -349,22 +360,22 @@
      COLOR VARIANTS
      ======================================== */
 
-  /* Primary blue tinted glass */
+  /* Primary gold tinted glass */
   .glass-primary {
     background: linear-gradient(
       180deg,
-      rgba(59, 130, 246, 0.1),
-      rgba(59, 130, 246, 0.03)
+      hsl(var(--primary) / 0.1),
+      hsl(var(--primary) / 0.03)
     );
   }
 
   .glass-primary:hover {
     box-shadow: 
-      0 0 40px -6px rgba(59, 130, 246, 0.4),
+      0 0 40px -6px hsl(var(--primary) / 0.4),
       0 8px 32px -8px rgba(0, 0, 0, 0.4),
-      inset 1px 2px 20px -4px rgba(59, 130, 246, 0.2),
-      inset -2px -2px 14px -4px rgba(59, 130, 246, 0.1),
-      inset 0 0 0 1.5px rgba(59, 130, 246, 0.15);
+      inset 1px 2px 20px -4px hsl(var(--primary) / 0.2),
+      inset -2px -2px 14px -4px hsl(var(--primary) / 0.1),
+      inset 0 0 0 1.5px hsl(var(--primary) / 0.15);
   }
 
   /* Success green glass */
@@ -445,7 +456,7 @@
 
   .glass-header:hover {
     box-shadow: 
-      0 0 40px -6px hsl(217 91% 60% / 0.3),
+      0 0 40px -6px hsl(var(--primary) / 0.3),
       0 8px 24px -8px rgba(0, 0, 0, 0.3),
       inset 1px 2px 20px -4px rgba(255, 255, 255, 0.35),
       inset -2px -2px 14px -4px rgba(255, 255, 255, 0.2),
@@ -471,7 +482,7 @@
 
   .dark .glass:hover {
     box-shadow: 
-      0 0 40px -6px hsl(217 91% 60% / 0.25),
+      0 0 40px -6px hsl(var(--primary) / 0.25),
       0 8px 32px -8px rgba(0, 0, 0, 0.6),
       inset 1px 2px 20px -4px rgba(255, 255, 255, 0.2),
       inset -2px -2px 14px -4px rgba(255, 255, 255, 0.12),
@@ -540,7 +551,7 @@
     height: 16px;
     background: radial-gradient(
       ellipse at center,
-      hsl(217 91% 60% / 0.15) 0%,
+      hsl(var(--primary) / 0.15) 0%,
       transparent 70%
     );
     filter: blur(8px);
@@ -558,7 +569,7 @@
   }
 
   .glass-tint-primary {
-    background: hsl(217 91% 60% / 0.03);
+    background: hsl(var(--primary) / 0.03);
   }
 
   .glass-tint-success {
@@ -589,7 +600,7 @@
     height: 500px;
     top: -150px;
     left: -100px;
-    background: radial-gradient(circle, hsl(217 91% 60% / 0.45) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.25) 0%, transparent 70%);
     animation: gradient-shift-1 12s ease-in-out infinite;
   }
 
@@ -598,7 +609,7 @@
     height: 450px;
     top: 20%;
     right: -120px;
-    background: radial-gradient(circle, hsl(190 90% 50% / 0.38) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
     animation: gradient-shift-2 15s ease-in-out infinite;
   }
 
@@ -607,7 +618,7 @@
     height: 400px;
     bottom: -100px;
     left: 35%;
-    background: radial-gradient(circle, hsl(260 80% 60% / 0.32) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(30 40% 50% / 0.12) 0%, transparent 70%);
     animation: gradient-shift-3 10s ease-in-out infinite;
   }
 
@@ -616,7 +627,7 @@
     height: 350px;
     top: 45%;
     left: 15%;
-    background: radial-gradient(circle, hsl(170 70% 50% / 0.28) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.1) 0%, transparent 70%);
     animation: gradient-shift-2 18s ease-in-out infinite reverse;
   }
 }
