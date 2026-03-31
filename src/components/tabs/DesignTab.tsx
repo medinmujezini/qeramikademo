@@ -395,7 +395,7 @@ const Wall3D = ({
     const halfThick = wallThickness / 2;
 
     const shape = createWallShapeWithOpenings({
-      wallLength: length,
+      wallLength: effectiveLength,
       startHeight,
       endHeight,
       doors,
@@ -412,7 +412,7 @@ const Wall3D = ({
     geo.translate(0, 0, -halfThick);
     
     return geo;
-  }, [length, startHeight, endHeight, wallThickness, doors, windows, scale]);
+  }, [effectiveLength, startHeight, endHeight, wallThickness, doors, windows, scale]);
 
   const yPosition = 0;
 
