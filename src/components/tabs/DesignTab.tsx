@@ -634,6 +634,11 @@ const DesignScene: React.FC<DesignSceneProps> = ({
     };
   }, [floorPlan.points, scale]);
 
+  // Compute wall junctions for seamless corner geometry
+  const junctions = useMemo(() => {
+    return analyzeWallJunctions(floorPlan.walls, floorPlan.points);
+  }, [floorPlan.walls, floorPlan.points]);
+
   const floorWidth = bounds.maxX - bounds.minX;
   const floorDepth = bounds.maxY - bounds.minY;
   const floorCenterX = (bounds.minX + bounds.maxX) / 2;
