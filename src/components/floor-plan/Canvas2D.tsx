@@ -282,7 +282,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
     // Draw grid - thin white lines for high-tech look
     if (showGrid) {
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)'; // Light blue grid
+      ctx.strokeStyle = 'rgba(201, 169, 110, 0.12)'; // Gold grid
       ctx.lineWidth = 0.5;
       const gridStart = screenToWorld(0, 0);
       const gridEnd = screenToWorld(width, height);
@@ -344,8 +344,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       };
       
       // Neon color definitions - thinner and less opaque
-      const neonEdge = isSelected ? 'hsla(185, 100%, 65%, 0.7)' : 'hsla(185, 76%, 50%, 0.7)';
-      const glassFill = 'hsla(185, 40%, 20%, 0.4)';
+      const neonEdge = isSelected ? 'hsla(38, 80%, 68%, 0.8)' : 'hsla(38, 60%, 58%, 0.7)';
+      const glassFill = 'hsla(38, 30%, 20%, 0.4)';
       
       // Calculate wall angle
       const angle = Math.atan2(end.y - start.y, end.x - start.x);
