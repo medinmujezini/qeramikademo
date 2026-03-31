@@ -460,11 +460,11 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       const halfSize = squareSize / 2;
       
       // Subtle outer glow
-      ctx.shadowColor = 'hsl(142, 76%, 45%)';
+      ctx.shadowColor = 'hsl(38, 60%, 58%)';
       ctx.shadowBlur = 12;
       
       // Main square
-      ctx.fillStyle = 'hsl(142, 76%, 45%)';
+      ctx.fillStyle = 'hsl(38, 60%, 58%)';
       ctx.fillRect(screen.x - halfSize, screen.y - halfSize, squareSize, squareSize);
       
       // Inner bright core
