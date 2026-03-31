@@ -1637,6 +1637,38 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 Light
               </Button>
 
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
+                const cx = (floorPlan.roomWidth || 800) / 2;
+                const cy = (floorPlan.roomHeight || 600) / 2;
+                addStaircase('straight', cx - 50, cy - 140);
+                toast.success('Staircase added');
+              }}>
+                <ArrowUpDown className="h-3 w-3" />
+                Stairs
+              </Button>
+
+              <div className="w-px h-4 bg-primary/15" />
+
+              {/* Floor selector */}
+              <div className="flex items-center gap-1">
+                <Layers className="h-3 w-3 text-muted-foreground" />
+                <Select value={String(activeLevel)} onValueChange={(v) => setActiveLevel(Number(v))}>
+                  <SelectTrigger className="h-7 w-[100px] text-xs border-primary/15">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {building.floors.map(floor => (
+                      <SelectItem key={floor.level} value={String(floor.level)} className="text-xs">
+                        {floor.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { addFloor(); toast.success('Floor added'); }}>
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+
               <div className="w-px h-4 bg-primary/15" />
 
               <Badge variant="outline" className="text-[10px] h-5 gap-1 border-primary/20">{furnitureCount} Furn</Badge>
