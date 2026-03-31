@@ -1,34 +1,55 @@
 
 
-# Fix Furniture Drag — Use R3F Drag Plane Like Spawn Marker
+# Add Carpets & Ceiling Lights to Furniture Library
 
-## Problem
+## Overview
 
-Furniture dragging uses `window.addEventListener('pointermove'/'pointerup')` which means OrbitControls (listening on the canvas DOM element) receives the same pointer events and orbits the camera simultaneously. The spawn point marker doesn't have this issue because it uses a large R3F mesh plane that captures all pointer events within the Three.js event system, where `stopPropagation()` actually prevents OrbitControls from seeing them.
+Add two new furniture categories: **Decor** (carpets/rugs) and **Lighting** (ceiling lights). Carpets are flat floor items that collide with other furniture. Ceiling lights are furniture items rendered at ceiling height with an actual light source.
 
-## Solution
+## Changes
 
-Apply the same pattern used by SpawnPointMarker: render a large invisible R3F drag plane when dragging, and handle `onPointerMove`/`onPointerUp` on that plane instead of on `window`.
+### 1. `src/data/furnitureLibrary.ts` — New types, templates
 
-### `src/components/3d/FurnitureScene.tsx`
+- Add `'decor' | 'lighting'` to `FurnitureCategory`
+- Add new `FurnitureType` values: `'rug-small'`, `'rug-medium'`, `'rug-large'`, `'rug-runner'`, `'ceiling-light-round'`, `'ceiling-light-square'`, `'chandelier'`, `'pendant-light'`
+- Add templates with realistic dimensions (rugs: height ~1cm so they sit flat; lights: small bounding box e.g. 40×40×20cm)
+- Add all to `FURNITURE_TEMPLATES` array and update `getFurnitureByCategory`
 
-1. **Remove `window.addEventListener` approach** — delete the `useEffect` that registers `pointermove`/`pointerup` on `window` (lines 167-258)
+### 2. `src/components/design/UnifiedLibrary.tsx` — Category icons
 
-2. **Add a large invisible drag plane mesh** (100×100 units) that only renders when `isDragging` is true, positioned at y=0.001 (floor level)
+- Add entries to `FURNITURE_CATEGORY_ICONS`: `decor` → `Sparkles` icon, `lighting` → `Lightbulb` icon
+- Add `'rug'` and `'lamp'`/`'lightbulb'` to the `DynamicIcon` icon map
 
-3. **Move pointer handlers to R3F events on the drag plane**:
-   - `onPointerMove` — same logic as current `handlePointerMove` but using `e.point` from R3F intersection (x/z → floor position), call `e.stopPropagation()`
-   - `onPointerUp` — same logic as current `handlePointerUp`, call `e.stopPropagation()`
+### 3. `src/components/3d/Furniture3D.tsx` — Ceiling light rendering
 
-4. **Update `handleDragStart`** — also call `e.nativeEvent.stopImmediatePropagation()` to prevent OrbitControls from processing the initial pointerdown
+- Detect lighting category items (`item.category === 'lighting'`)
+- Override Y position: instead of ground level (`groundOffset`), place at `ceilingHeight - itemHeight` (ceiling height from a new optional prop or constant 280cm default)
+- Attach a Three.js `pointLight` or `spotLight` as a child of lighting furniture items, with configurable intensity based on item color
 
-### Key changes:
-- Floor position calculation becomes simpler: directly use `e.point.x / CM_TO_METERS` and `e.point.z / CM_TO_METERS` from the plane intersection instead of raycasting
-- The existing `FurnitureDragPlane` grid component is purely visual — the new invisible drag plane is a separate interaction mesh
+### 4. `src/components/3d/BlueprintBox.tsx` — Carpet/light placeholders
+
+- For carpet items (height < 5cm): render as a flat plane instead of a box
+- For lighting items: position at ceiling height
+
+### 5. `src/components/3d/FurnitureScene.tsx` — Pass ceiling height
+
+- Pass `ceilingHeight` prop (from `floorPlan.walls[0]?.height ?? 280`) to `Furniture3D` for lighting items
+- Carpets already use standard collision — no changes needed since they're regular furniture with tiny height
+
+## Technical Details
+
+- Carpets collide normally via existing `furnitureCollision.ts` — their width/depth bounding box handles this
+- Ceiling lights use the existing furniture drag system but are rendered at ceiling Y position
+- Light emission uses `pointLight` attached to the furniture group, intensity ~2-5
+- No database migration needed — hardcoded templates (DB templates optional via admin)
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/3d/FurnitureScene.tsx` | Replace window event listeners with R3F drag plane mesh, same pattern as SpawnPointMarker |
+| `src/data/furnitureLibrary.ts` | New category types + 8 templates (4 rugs, 4 lights) |
+| `src/components/design/UnifiedLibrary.tsx` | Category icons for decor & lighting |
+| `src/components/3d/Furniture3D.tsx` | Ceiling-height positioning + point light for lighting items |
+| `src/components/3d/BlueprintBox.tsx` | Flat plane for carpets, ceiling position for lights |
+| `src/components/3d/FurnitureScene.tsx` | Pass ceilingHeight to Furniture3D |
 
