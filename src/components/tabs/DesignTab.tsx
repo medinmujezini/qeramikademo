@@ -415,6 +415,22 @@ const Wall3D = ({
     return geo;
   }, [effectiveLength, startHeight, endHeight, wallThickness, doors, windows, scale]);
 
+  const wallColor = getWallColor();
+  const wallMaterial = useMemo(() => {
+    const mat = createTriplanarMaterial({
+      color: wallColor,
+      map: texture,
+      roughness: texture ? 0.7 : 0.9,
+      textureScale: 2.0,
+    });
+    return mat;
+  }, [wallColor, texture]);
+
+  // Dispose material on cleanup
+  useEffect(() => {
+    return () => { wallMaterial.dispose(); };
+  }, [wallMaterial]);
+
   const yPosition = 0;
 
   return (
