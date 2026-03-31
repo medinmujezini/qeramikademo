@@ -135,7 +135,8 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
           {/* Selected item info */}
-          <Card>
+          <Card className="luxury-hover-glow">
+            <div className="h-[2px] bg-primary/40" />
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Armchair className="h-4 w-4" />
