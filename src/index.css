@@ -788,41 +788,50 @@
 /* Clean floating panel variant */
   .glass-floating {
     position: relative;
-    border-radius: 6px;
+    border-radius: 0;
     overflow: hidden;
     background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-top: 1px solid hsl(var(--primary) / 0.25);
-    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+    border: 1px solid hsl(var(--primary) / 0.12);
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.08);
   }
 
 /* Smaller control variant */
   .glass-control {
     position: relative;
-    border-radius: 4px;
+    border-radius: 0;
     overflow: hidden;
     background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-top: 1px solid hsl(var(--primary) / 0.2);
-    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
+    border: 1px solid hsl(var(--primary) / 0.12);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.06);
   }
 
 /* Clean toolbar */
   .glass-toolbar {
     position: relative;
-    border-radius: 4px;
+    border-radius: 0;
     overflow: hidden;
     padding: 0.5rem 1rem;
     background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-top: 1px solid hsl(var(--primary) / 0.25);
-    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
+    border: 1px solid hsl(var(--primary) / 0.12);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.06);
+  }
+
+/* Panel header gold border */
+  .panel-header {
+    border-bottom-color: hsl(var(--primary) / 0.15);
+  }
+
+/* Glass sidebar — solid card bg with gold border */
+  .glass-sidebar {
+    background: hsl(var(--card));
+    border-right: 1px solid hsl(var(--primary) / 0.12);
   }
 
 /* Clean tabs */
   .glass-tabs {
     background: hsl(var(--muted));
-    border: 1px solid hsl(var(--border));
+    border: 1px solid hsl(var(--primary) / 0.12);
+    border-radius: 0;
     box-shadow: none;
   }
 

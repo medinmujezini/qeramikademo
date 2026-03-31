@@ -62,31 +62,24 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background flex relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="gradient-orbs">
-        <div className="orb orb-1" />
-        <div className="orb orb-2" />
-        <div className="orb orb-3" />
-        <div className="orb orb-4" />
-      </div>
-      {/* Glass Sidebar */}
-      <aside className="w-64 glass-sidebar border-r border-border/50 flex flex-col relative z-10">
+      {/* Sidebar */}
+      <aside className="w-64 bg-card border-r border-primary/12 flex flex-col relative z-10">
         {/* Logo/Header */}
-        <div className="p-4 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/25">
-              <Settings className="w-4 h-4 text-primary-foreground" />
+        <div className="p-6 border-b border-primary/10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center border border-primary/20">
+              <Settings className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h1 className="font-semibold text-sm">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground">Floor Plan Designer</p>
+              <h1 className="font-display text-sm uppercase tracking-[0.15em] text-primary">Admin Panel</h1>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Floor Plan Designer</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
         <ScrollArea className="flex-1 py-4">
-          <nav className="px-2 space-y-1">
+          <nav className="px-3 space-y-0.5">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path, item.exact);
@@ -95,10 +88,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-none text-xs font-light uppercase tracking-[0.1em] transition-all duration-200",
                     active
-                      ? "bg-primary/15 text-primary shadow-sm"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-muted-foreground hover:bg-primary/5 hover:text-primary border-l-2 border-transparent"
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -109,9 +102,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </nav>
         </ScrollArea>
 
+        {/* Gradient orb in sidebar bottom */}
+        <div className="pointer-events-none absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
+
         {/* Footer */}
-        <div className="p-4 border-t border-border/50 space-y-2">
-          <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
+        <div className="p-4 border-t border-primary/10 space-y-2 relative z-10">
+          <Button asChild variant="luxury" size="sm" className="w-full justify-start gap-2">
             <Link to="/">
               <ArrowLeft className="w-4 h-4" />
               Back to App
@@ -121,7 +117,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+              className="w-full justify-start gap-2 text-muted-foreground hover:text-primary"
               onClick={handleSignOut}
             >
               <LogOut className="w-4 h-4" />
@@ -132,30 +128,33 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen">
-        {/* Glass Top Bar */}
-        <header className="h-14 bg-card/80 backdrop-blur-lg border-b border-border/50 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Admin</span>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <span className="font-medium text-foreground">
+      <main className="flex-1 flex flex-col min-h-screen relative">
+        {/* Gold gradient orb in bottom-left of main content */}
+        <div className="pointer-events-none absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
+
+        {/* Top Bar */}
+        <header className="h-14 bg-card border-b border-primary/10 px-6 flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.12em]">
+            <span className="text-muted-foreground font-light">Admin</span>
+            <ChevronRight className="w-3 h-3 text-primary/30" />
+            <span className="font-display text-primary">
               {navItems.find(item => isActive(item.path, item.exact))?.label || 'Dashboard'}
             </span>
           </div>
           {user && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                <span className="text-xs font-medium text-primary">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center border border-primary/20">
+                <span className="text-[10px] font-display uppercase text-primary">
                   {user.email?.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <span className="text-xs text-muted-foreground tracking-wider">{user.email}</span>
             </div>
           )}
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-6 overflow-auto relative z-10">
           {children}
         </div>
       </main>

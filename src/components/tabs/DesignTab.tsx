@@ -1585,7 +1585,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
-      <div className="h-10 border-b bg-card/30 px-4 flex items-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.08)' }}>
+      <div className="h-10 border-b bg-card px-4 flex items-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.10)' }}>
         <div className="flex items-center gap-3 h-full">
           <div className="flex items-center gap-1.5">
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
@@ -1910,11 +1910,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div 
           className="absolute top-4 left-6 z-20 w-72 max-h-[calc(100%-48px)]"
         >
-          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
+          <div className="glass-floating overflow-hidden flex flex-col h-full relative">
+            <div className="pointer-events-none absolute -bottom-16 -left-16 w-[200px] h-[200px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
             <div className="panel-header shrink-0">
               <span className="panel-header-title">Library</span>
             </div>
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 relative z-10">
               <UnifiedLibrary />
             </ScrollArea>
           </div>
@@ -1924,7 +1925,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       {/* RIGHT PANEL - Properties */}
       {viewMode === 'design' && isPanelOpen && (
         <div className="absolute top-4 right-6 z-20 w-64 max-h-[calc(100%-48px)]">
-          <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
+          <div className="glass-floating overflow-hidden flex flex-col h-full relative">
+            <div className="pointer-events-none absolute -bottom-12 -right-12 w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
             <div className="panel-header shrink-0">
               <span className="panel-header-title">Properties</span>
               <Button 
@@ -1936,7 +1938,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <PanelRightClose className="h-3 w-3" />
               </Button>
             </div>
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 relative z-10">
               <DesignPropertiesPanel
                 selectedFurniture={selectedFurniture}
                 onRotate={handleRotateSelected}
