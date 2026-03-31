@@ -40,11 +40,11 @@ export const FloorSlab3D: React.FC<FloorSlab3DProps> = ({
 
   const slabColor = slab.topMaterial === 'finished' ? '#d4cdc5' : '#b0aba3';
   const slabMaterial = useMemo(() => {
-    return createTriplanarMaterial({
+    return new THREE.MeshStandardMaterial({
       color: slabColor,
       roughness: 0.85,
       metalness: 0,
-      textureScale: 2.0,
+      side: THREE.DoubleSide,
     });
   }, [slabColor]);
 
