@@ -39,6 +39,8 @@ interface TiledWall3DProps {
   windows?: WindowType[];
   textureUrls?: TileTextureUrls;
   textureScaleCm?: number;
+  startExtension?: number;
+  endExtension?: number;
 }
 
 interface TilePosition {
