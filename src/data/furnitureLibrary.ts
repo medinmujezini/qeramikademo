@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 // TYPES
 // =============================================================================
 
-export type FurnitureCategory = 'living' | 'bedroom' | 'dining' | 'office' | 'storage';
+export type FurnitureCategory = 'living' | 'bedroom' | 'dining' | 'office' | 'storage' | 'decor' | 'lighting';
 
 export type FurnitureType =
   // Living
@@ -38,7 +38,17 @@ export type FurnitureType =
   | 'filing-cabinet'
   // Storage
   | 'storage-cabinet'
-  | 'shoe-rack';
+  | 'shoe-rack'
+  // Decor
+  | 'rug-small'
+  | 'rug-medium'
+  | 'rug-large'
+  | 'rug-runner'
+  // Lighting
+  | 'ceiling-light-round'
+  | 'ceiling-light-square'
+  | 'chandelier'
+  | 'pendant-light';
 
 export interface FurnitureModel3D {
   url: string;           // Path to GLB file
