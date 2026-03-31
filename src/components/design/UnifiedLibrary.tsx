@@ -391,6 +391,7 @@ export const UnifiedLibrary: React.FC = () => {
 
       {/* Footer hint */}
       <div className="px-3 py-2 border-t border-primary/10 text-[10px] uppercase tracking-widest text-muted-foreground text-center shrink-0">
+        <div className="w-12 h-px bg-primary/25 mx-auto mb-1" />
         Click or drag to add
       </div>
     </div>
