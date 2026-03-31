@@ -926,6 +926,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 }) => {
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
+  const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
   const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
@@ -1822,7 +1823,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               minPolarAngle={0}
               maxPolarAngle={maxPolarAngle}
               target={defaultTarget}
-              enabled={!isDragging && !isDraggingFixture}
+              enabled={!isDragging && !isDraggingFixture && !isDraggingSpawn}
               onStart={() => {
                 isAnimatingCamera.current = false;
               }}
@@ -1871,6 +1872,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 minZ: roomBounds.minZ,
                 maxZ: roomBounds.maxZ,
               }}
+              onDragStart={() => setIsDraggingSpawn(true)}
+              onDragEnd={() => setIsDraggingSpawn(false)}
             />
           )}
           {/* Room light markers in design mode */}
