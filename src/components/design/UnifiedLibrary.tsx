@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Search, Sofa, Bath, Bed, UtensilsCrossed, 
   Briefcase, Package, Droplets, Zap, GripVertical,
-  Loader2
+  Loader2, Sparkles, Lightbulb
 } from 'lucide-react';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import { useMEPContext } from '@/contexts/MEPContext';
@@ -32,6 +32,8 @@ const FURNITURE_CATEGORY_ICONS: Record<FurnitureCategory, React.ReactNode> = {
   dining: <UtensilsCrossed className="h-4 w-4" />,
   office: <Briefcase className="h-4 w-4" />,
   storage: <Package className="h-4 w-4" />,
+  decor: <Sparkles className="h-4 w-4" />,
+  lighting: <Lightbulb className="h-4 w-4" />,
 };
 
 // Category icons for fixtures
