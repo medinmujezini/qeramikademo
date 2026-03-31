@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Black & Gold Design System
-   Deep black backgrounds with rich gold accents.
+/* Black & Cream-Gold Luxury Design System
+   Deep black backgrounds with warm cream-gold accents.
    All colors MUST be HSL.
 */
 
@@ -11,37 +11,37 @@
   :root {
     /* Dark Theme as Default */
     --background: 0 0% 4%;
-    --foreground: 0 0% 95%;
+    --foreground: 40 20% 92%;
     
     --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 40 20% 92%;
     
     --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover-foreground: 40 20% 92%;
     
-    /* Gold Primary */
-    --primary: 43 96% 56%;
+    /* Cream-Gold Primary */
+    --primary: 38 60% 68%;
     --primary-foreground: 0 0% 5%;
     
     /* Gold glow variants */
-    --neon-glow: 43 96% 60%;
-    --neon-glow-intense: 43 100% 65%;
+    --neon-glow: 38 55% 72%;
+    --neon-glow-intense: 38 65% 78%;
     
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 30 5% 12%;
+    --secondary-foreground: 40 20% 92%;
     
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 30 5% 12%;
+    --muted-foreground: 30 10% 50%;
     
-    --accent: 43 50% 18%;
-    --accent-foreground: 43 80% 70%;
+    --accent: 38 30% 18%;
+    --accent-foreground: 38 50% 75%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 43 96% 56%;
+    --border: 30 5% 16%;
+    --input: 30 5% 16%;
+    --ring: 38 60% 68%;
     
     --radius: 0.75rem;
     
@@ -52,46 +52,46 @@
     
     /* Sidebar */
     --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 43 96% 56%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 38 60% 68%;
     --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 43 50% 18%;
-    --sidebar-accent-foreground: 43 80% 70%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 43 96% 56%;
+    --sidebar-accent: 38 30% 18%;
+    --sidebar-accent-foreground: 38 50% 75%;
+    --sidebar-border: 30 5% 16%;
+    --sidebar-ring: 38 60% 68%;
   }
 
-  /* Dark mode variant (same as root since dark is default) */
+  /* Dark mode variant */
   .dark {
     --background: 0 0% 4%;
-    --foreground: 0 0% 95%;
+    --foreground: 40 20% 92%;
     --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 40 20% 92%;
     --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 43 96% 56%;
+    --popover-foreground: 40 20% 92%;
+    --primary: 38 60% 68%;
     --primary-foreground: 0 0% 5%;
-    --neon-glow: 43 96% 60%;
-    --neon-glow-intense: 43 100% 65%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 43 50% 18%;
-    --accent-foreground: 43 80% 70%;
+    --neon-glow: 38 55% 72%;
+    --neon-glow-intense: 38 65% 78%;
+    --secondary: 30 5% 12%;
+    --secondary-foreground: 40 20% 92%;
+    --muted: 30 5% 12%;
+    --muted-foreground: 30 10% 50%;
+    --accent: 38 30% 18%;
+    --accent-foreground: 38 50% 75%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 43 96% 56%;
+    --border: 30 5% 16%;
+    --input: 30 5% 16%;
+    --ring: 38 60% 68%;
     --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 43 96% 56%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 38 60% 68%;
     --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 43 50% 18%;
-    --sidebar-accent-foreground: 43 80% 70%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 43 96% 56%;
+    --sidebar-accent: 38 30% 18%;
+    --sidebar-accent-foreground: 38 50% 75%;
+    --sidebar-border: 30 5% 16%;
+    --sidebar-ring: 38 60% 68%;
   }
 
   /* Light mode explicit (opt-in only) */
