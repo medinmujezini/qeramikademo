@@ -1908,7 +1908,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       {/* LEFT PANEL - Library */}
       {viewMode === 'design' && (
         <div 
-          className="absolute top-28 left-6 z-20 w-72 max-h-[calc(100%-180px)]"
+          className="absolute top-4 left-6 z-20 w-72 max-h-[calc(100%-48px)]"
         >
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0">
