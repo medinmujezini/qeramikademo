@@ -1585,7 +1585,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
-      <div className="h-10 border-b border-t px-4 flex items-center justify-center shrink-0 overflow-x-auto relative" style={{ borderColor: 'hsl(var(--primary) / 0.10)', borderTopColor: 'hsl(var(--primary) / 0.08)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
+      <div className="h-10 border-b border-t px-4 flex flex-col items-center justify-center shrink-0 overflow-x-auto relative" style={{ borderColor: 'hsl(var(--primary) / 0.10)', borderTopColor: 'hsl(var(--primary) / 0.08)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
+        <div className="gold-accent-line w-full absolute bottom-0 left-0" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/[0.02] to-transparent" />
         <div className="flex items-center gap-3 h-full">
           <div className="flex items-center gap-1.5">
@@ -1943,7 +1944,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-5 w-5"
+                className="h-5 w-5 border border-primary/15"
                 onClick={() => setIsPanelOpen(false)}
               >
                 <PanelRightClose className="h-3 w-3" />
@@ -2035,7 +2036,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           />
 
           {/* WASD hint */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs font-display text-muted-foreground">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs font-display text-muted-foreground border border-primary/10">
             {isTouchDevice ? 'Left stick to move · Right stick to look' : 'WASD to move · Mouse to look'}
           </div>
         </>
@@ -2051,9 +2052,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
       {/* Render Image Dialog */}
       <Dialog open={renderDialogOpen} onOpenChange={setRenderDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl dialog-luxury">
+          <div className="gold-accent-line w-full absolute top-0 left-0" />
           <DialogHeader>
-            <DialogTitle className="font-display">Cinematic Render</DialogTitle>
+            <DialogTitle className="font-display uppercase tracking-widest text-sm">Cinematic Render</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">

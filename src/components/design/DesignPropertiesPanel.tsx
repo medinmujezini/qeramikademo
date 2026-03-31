@@ -40,7 +40,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
   if (!selectedFurniture) {
     return (
-      <div className="h-full flex flex-col border-l border-primary/10 bg-card/50">
+      <div className="h-full flex flex-col border-l border-primary/10 bg-card/50 shadow-[inset_0_0_40px_hsl(38_60%_68%/0.03)]">
         <div className="p-4 border-b border-primary/15">
               <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
               <div className="w-8 h-px bg-primary/25 mt-1" />
@@ -60,7 +60,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
             {/* Room summary */}
             <div className="space-y-3">
-              <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Scene Summary</h4>
+              <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-[3px] border-primary/35 pl-2">Scene Summary</h4>
               
               <Card className="luxury-hover-glow">
                 <CardContent className="p-3">
@@ -126,7 +126,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col border-l border-primary/10 bg-card/50">
+    <div className="h-full flex flex-col border-l border-primary/10 bg-card/50 shadow-[inset_0_0_40px_hsl(38_60%_68%/0.03)]">
       <div className="p-4 border-b border-primary/15">
         <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
         <div className="w-8 h-px bg-primary/25 mt-1" />
@@ -159,7 +159,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
               
               <div>
                 <span className="text-sm text-muted-foreground">Dimensions</span>
-                <p className="text-sm font-display font-medium">
+                <p className="text-sm font-display font-medium tracking-wide">
                   {selectedFurniture.dimensions.width} × {selectedFurniture.dimensions.depth} × {selectedFurniture.dimensions.height} cm
                 </p>
               </div>
@@ -183,7 +183,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Actions */}
           <div className="space-y-2">
-            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Actions</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-[3px] border-primary/35 pl-2">Actions</h4>
             
             <div className="grid grid-cols-2 gap-2">
               <Button variant="luxury" size="sm" onClick={onRotate}>
@@ -211,7 +211,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Tips */}
           <div className="space-y-2">
-            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Tips</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-[3px] border-primary/35 pl-2">Tips</h4>
             <div className="space-y-1 text-xs text-muted-foreground">
               <p><span className="text-primary/40">•</span> Drag to move in 3D view</p>
               <p><span className="text-primary/40">•</span> Red glow = collision detected</p>

@@ -42,6 +42,7 @@ const EndUserPlatform = () => {
         {/* Header */}
         <header className="border-b bg-card px-6 h-14 flex items-center justify-between relative z-10 overflow-hidden" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
           <div className="pointer-events-none absolute -top-16 -right-24 w-[350px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
+          <div className="pointer-events-none absolute -bottom-12 -left-20 w-[280px] h-[150px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
           <div className="flex items-center gap-3">
             <BackToHome />
             <div className="w-px h-5 bg-primary/15" />
@@ -59,7 +60,9 @@ const EndUserPlatform = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col relative z-10">
           {/* Tab Navigation */}
-          <div className="border-b bg-card flex justify-center px-4" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
+          <div className="border-b bg-card flex flex-col justify-center px-4 relative overflow-hidden" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
+            <div className="gold-accent-line w-full absolute top-0 left-0" />
+            <div className="pointer-events-none absolute -top-10 -right-16 w-[200px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.05)_0%,transparent_70%)]" />
             <TabsList className="h-10">
               <TabsTrigger value="floor-plan" className="gap-1.5">
                 <PenTool className="h-3.5 w-3.5" />
@@ -131,7 +134,7 @@ const QuoteTab = () => {
             </div>
           </div>
 
-          <Button className="w-full" size="lg">
+          <Button variant="luxury" className="w-full" size="lg">
             Request Detailed Quote
           </Button>
         </CardContent>
