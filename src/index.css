@@ -232,7 +232,7 @@
   .glass {
     position: relative;
     isolation: isolate;
-    border-radius: 16px;
+    border-radius: 0;
     overflow: hidden;
     
     /* TRUE GLASS: Very low opacity so background shows through */
