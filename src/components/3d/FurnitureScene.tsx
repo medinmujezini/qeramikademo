@@ -237,6 +237,8 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
           position={[0, 0.001, 0]}
           onPointerMove={handleDragMove}
           onPointerUp={handleDragEnd}
+          userData={{ editorOnly: true }}
+          name="__drag_plane"
         >
           <planeGeometry args={[100, 100]} />
           <meshBasicMaterial transparent opacity={0} />
