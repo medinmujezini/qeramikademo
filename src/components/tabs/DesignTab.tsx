@@ -2072,7 +2072,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             ) : (
               <div className="space-y-4">
                 {/* Show enhanced or original */}
-                <div className="relative aspect-video bg-muted rounded-none overflow-hidden">
+                <div className="relative aspect-video bg-muted rounded-none overflow-hidden shadow-[inset_0_0_40px_hsl(38_60%_68%/0.06)]">
                   {(enhancedRender || originalRender) && (
                     <img 
                       src={enhancedRender || originalRender || ''} 
