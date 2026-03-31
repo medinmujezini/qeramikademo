@@ -61,10 +61,11 @@ const EndUserPlatform = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col relative z-10">
           {/* Tab Navigation */}
-          <div className="border-b bg-card flex flex-col justify-center px-4 relative overflow-hidden" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
+          <div className="border-b bg-card flex flex-col justify-center px-4 relative overflow-hidden shimmer-border-bottom" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)', minHeight: '3rem' }}>
             <div className="gold-accent-line w-full absolute top-0 left-0" />
             <div className="pointer-events-none absolute -top-10 -right-16 w-[200px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.05)_0%,transparent_70%)]" />
-            <TabsList className="h-10">
+            <div className="pointer-events-none absolute -bottom-8 -left-16 w-[180px] h-[100px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
+            <TabsList className="h-12">
               <TabsTrigger value="floor-plan" className="gap-1.5">
                 <PenTool className="h-3.5 w-3.5" />
                 Room Layout

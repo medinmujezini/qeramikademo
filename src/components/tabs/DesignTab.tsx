@@ -1594,7 +1594,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
             <Label htmlFor="gi-enabled" className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
               <Sparkles className="h-3 w-3 text-primary" />
-              <span className="uppercase tracking-wider">Enhanced</span>
+              <span className="uppercase tracking-wider gold-text-glow">Enhanced</span>
             </Label>
           </div>
 
