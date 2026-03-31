@@ -96,33 +96,33 @@
 
   /* Light mode explicit (opt-in only) */
   .light {
-    --background: 40 20% 96%;
-    --foreground: 0 0% 8%;
+    --background: 40 15% 96%;
+    --foreground: 30 10% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card-foreground: 30 10% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
-    --primary: 43 96% 46%;
+    --popover-foreground: 30 10% 10%;
+    --primary: 38 50% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 15% 90%;
-    --secondary-foreground: 0 0% 8%;
-    --muted: 40 10% 93%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 43 40% 90%;
-    --accent-foreground: 43 60% 30%;
+    --secondary: 35 12% 90%;
+    --secondary-foreground: 30 10% 10%;
+    --muted: 35 8% 93%;
+    --muted-foreground: 30 8% 40%;
+    --accent: 38 30% 88%;
+    --accent-foreground: 38 40% 30%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 40 15% 85%;
-    --input: 40 15% 85%;
-    --ring: 43 96% 46%;
-    --sidebar-background: 40 20% 96%;
-    --sidebar-foreground: 0 0% 8%;
-    --sidebar-primary: 43 96% 46%;
+    --border: 35 12% 85%;
+    --input: 35 12% 85%;
+    --ring: 38 50% 52%;
+    --sidebar-background: 40 15% 96%;
+    --sidebar-foreground: 30 10% 10%;
+    --sidebar-primary: 38 50% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 40% 90%;
-    --sidebar-accent-foreground: 43 60% 30%;
-    --sidebar-border: 40 15% 85%;
-    --sidebar-ring: 43 96% 46%;
+    --sidebar-accent: 38 30% 88%;
+    --sidebar-accent-foreground: 38 40% 30%;
+    --sidebar-border: 35 12% 85%;
+    --sidebar-ring: 38 50% 52%;
   }
 }
 
@@ -133,6 +133,11 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.01em;
   }
 }
 
