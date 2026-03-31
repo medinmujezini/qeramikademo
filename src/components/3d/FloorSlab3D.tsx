@@ -4,10 +4,11 @@
  * Step 8 of the geometry roadmap.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import type { FloorSlab } from '@/types/multiFloor';
 import { CM_TO_METERS } from '@/constants/units';
+import { createTriplanarMaterial } from '@/utils/triplanarMaterial';
 
 interface FloorSlab3DProps {
   slab: FloorSlab;
@@ -37,7 +38,20 @@ export const FloorSlab3D: React.FC<FloorSlab3DProps> = ({
   const cx = (centerX ?? roomWidth / 2) * scale;
   const cz = (centerY ?? roomHeight / 2) * scale;
 
-  // Build shape with cutouts for stairwell openings
+  const slabColor = slab.topMaterial === 'finished' ? '#d4cdc5' : '#b0aba3';
+  const slabMaterial = useMemo(() => {
+    return createTriplanarMaterial({
+      color: slabColor,
+      roughness: 0.85,
+      metalness: 0,
+      textureScale: 2.0,
+    });
+  }, [slabColor]);
+
+  useEffect(() => {
+    return () => { slabMaterial.dispose(); };
+  }, [slabMaterial]);
+
   const slabShape = useMemo(() => {
     const shape = new THREE.Shape();
     const hw = width / 2;
@@ -80,12 +94,7 @@ export const FloorSlab3D: React.FC<FloorSlab3DProps> = ({
         receiveShadow
       >
         <extrudeGeometry args={[slabShape, extrudeSettings]} />
-        <meshPhysicalMaterial
-          color={slab.topMaterial === 'finished' ? '#d4cdc5' : '#b0aba3'}
-          roughness={0.85}
-          metalness={0}
-          side={THREE.DoubleSide}
-        />
+        <primitive object={slabMaterial} attach="material" />
       </mesh>
     </group>
   );
