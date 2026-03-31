@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LucideIcon, Check } from 'lucide-react';
+import { LucideIcon, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -26,47 +26,43 @@ export const RoleCard: React.FC<RoleCardProps> = ({
   variant = 'primary',
 }) => {
   return (
-    <Card className={`
-      transition-all duration-200
-      hover:shadow-lg hover:border-primary/30
-      ${variant === 'primary' ? 'border-primary/20' : ''}
-    `}>
-      <CardContent className="p-6">
-        {/* Icon */}
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
-          <Icon className="w-6 h-6 text-primary" />
-        </div>
-
-        {/* Title & Subtitle */}
-        <div className="mb-3">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-            {subtitle}
-          </p>
-          <h3 className="text-xl font-bold text-foreground">
-            {title}
-          </h3>
+    <Card className="relative overflow-hidden border-border/50 hover:border-primary/30 transition-all duration-500 group">
+      {/* Thin gold accent line at top */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+      
+      <CardContent className="p-8 pt-10">
+        {/* Subtitle label */}
+        <p className="text-[10px] uppercase tracking-[0.25em] text-primary/70 mb-4">{subtitle}</p>
+        
+        {/* Icon + Title */}
+        <div className="flex items-center gap-4 mb-5">
+          <div className="w-10 h-10 rounded-md border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/80">
+            <Icon className="w-5 h-5" />
+          </div>
+          <h2 className="text-xl font-display font-semibold text-foreground tracking-tight">{title}</h2>
         </div>
 
         {/* Description */}
-        <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+        <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-light">
           {description}
         </p>
 
         {/* Features */}
-        <ul className="space-y-2 mb-6">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-center gap-2.5">
-              <div className="w-4 h-4 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
-                <Check className="w-2.5 h-2.5 text-primary" />
-              </div>
-              <span className="text-sm text-muted-foreground">{feature}</span>
+        <ul className="space-y-2.5 mb-8">
+          {features.map((feature) => (
+            <li key={feature} className="flex items-center gap-3 text-sm text-foreground/80">
+              <span className="w-4 h-px bg-primary/50" />
+              {feature}
             </li>
           ))}
         </ul>
 
-        {/* CTA Button */}
-        <Button asChild className="w-full" variant="default" size="lg">
-          <Link to={to}>{ctaText}</Link>
+        {/* CTA */}
+        <Button asChild variant="outline" size="lg" className="w-full border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 tracking-wider text-xs uppercase group-hover:border-primary/60 transition-all duration-500">
+          <Link to={to} className="flex items-center justify-center gap-2">
+            {ctaText}
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </Button>
       </CardContent>
     </Card>
