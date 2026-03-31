@@ -176,8 +176,10 @@ export const UnifiedLibrary: React.FC = () => {
       dining: [],
       office: [],
       storage: [],
+      decor: [],
+      lighting: [],
     };
-    
+
     Object.entries(furnitureByCategory).forEach(([cat, items]) => {
       filtered[cat as FurnitureCategory] = items.filter(item => 
         item.name.toLowerCase().includes(query) ||

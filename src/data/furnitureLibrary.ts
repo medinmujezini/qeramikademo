@@ -297,6 +297,80 @@ const SHOE_RACK: FurnitureTemplate = {
   icon: 'footprints',
 };
 
+// Decor
+const RUG_SMALL: FurnitureTemplate = {
+  type: 'rug-small',
+  category: 'decor',
+  name: 'Small Rug',
+  dimensions: { width: 120, depth: 80, height: 1 },
+  color: '#8B7355',
+  icon: 'rug',
+};
+
+const RUG_MEDIUM: FurnitureTemplate = {
+  type: 'rug-medium',
+  category: 'decor',
+  name: 'Medium Rug',
+  dimensions: { width: 200, depth: 140, height: 1 },
+  color: '#A0522D',
+  icon: 'rug',
+};
+
+const RUG_LARGE: FurnitureTemplate = {
+  type: 'rug-large',
+  category: 'decor',
+  name: 'Large Area Rug',
+  dimensions: { width: 300, depth: 200, height: 1 },
+  color: '#6B4226',
+  icon: 'rug',
+};
+
+const RUG_RUNNER: FurnitureTemplate = {
+  type: 'rug-runner',
+  category: 'decor',
+  name: 'Runner Rug',
+  dimensions: { width: 240, depth: 70, height: 1 },
+  color: '#8B6914',
+  icon: 'rug',
+};
+
+// Lighting
+const CEILING_LIGHT_ROUND: FurnitureTemplate = {
+  type: 'ceiling-light-round',
+  category: 'lighting',
+  name: 'Round Ceiling Light',
+  dimensions: { width: 40, depth: 40, height: 12 },
+  color: '#FFF8DC',
+  icon: 'lightbulb',
+};
+
+const CEILING_LIGHT_SQUARE: FurnitureTemplate = {
+  type: 'ceiling-light-square',
+  category: 'lighting',
+  name: 'Square Ceiling Light',
+  dimensions: { width: 50, depth: 50, height: 10 },
+  color: '#FFFACD',
+  icon: 'lightbulb',
+};
+
+const CHANDELIER: FurnitureTemplate = {
+  type: 'chandelier',
+  category: 'lighting',
+  name: 'Chandelier',
+  dimensions: { width: 60, depth: 60, height: 50 },
+  color: '#FFD700',
+  icon: 'lightbulb',
+};
+
+const PENDANT_LIGHT: FurnitureTemplate = {
+  type: 'pendant-light',
+  category: 'lighting',
+  name: 'Pendant Light',
+  dimensions: { width: 30, depth: 30, height: 25 },
+  color: '#F5DEB3',
+  icon: 'lightbulb',
+};
+
 // =============================================================================
 // EXPORTS
 // =============================================================================
@@ -328,6 +402,16 @@ export const FURNITURE_TEMPLATES: FurnitureTemplate[] = [
   // Storage
   STORAGE_CABINET,
   SHOE_RACK,
+  // Decor
+  RUG_SMALL,
+  RUG_MEDIUM,
+  RUG_LARGE,
+  RUG_RUNNER,
+  // Lighting
+  CEILING_LIGHT_ROUND,
+  CEILING_LIGHT_SQUARE,
+  CHANDELIER,
+  PENDANT_LIGHT,
 ];
 
 export function getFurnitureByCategory(): Record<FurnitureCategory, FurnitureTemplate[]> {
@@ -337,6 +421,8 @@ export function getFurnitureByCategory(): Record<FurnitureCategory, FurnitureTem
     dining: FURNITURE_TEMPLATES.filter(f => f.category === 'dining'),
     office: FURNITURE_TEMPLATES.filter(f => f.category === 'office'),
     storage: FURNITURE_TEMPLATES.filter(f => f.category === 'storage'),
+    decor: FURNITURE_TEMPLATES.filter(f => f.category === 'decor'),
+    lighting: FURNITURE_TEMPLATES.filter(f => f.category === 'lighting'),
   };
 }
 

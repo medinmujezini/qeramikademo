@@ -370,6 +370,7 @@ export const Furniture3D: React.FC<Furniture3DProps> = ({
   onSelect,
   onDragStart,
   modelUrl,
+  ceilingHeight = 280,
 }) => {
   // BlueprintBox is shown while model loads (animated placeholder)
   const blueprintPlaceholder = (
@@ -379,7 +380,8 @@ export const Furniture3D: React.FC<Furniture3DProps> = ({
       isDragging={isDragging} 
       hasCollision={hasCollision} 
       onSelect={onSelect} 
-      onDragStart={onDragStart} 
+      onDragStart={onDragStart}
+      ceilingHeight={ceilingHeight}
     />
   );
 
