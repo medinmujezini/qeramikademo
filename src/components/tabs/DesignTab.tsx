@@ -25,6 +25,8 @@ import { WallSurfaceDialog } from '@/components/3d/WallSurfaceDialog';
 import { FloorSurfaceDialog } from '@/components/3d/FloorSurfaceDialog';
 import { TiledWall3D } from '@/components/3d/TiledWall3D';
 import { Ceiling3D } from '@/components/3d/Ceiling3D';
+import { Door3D } from '@/components/3d/Door3D';
+import { Window3D } from '@/components/3d/Window3D';
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
