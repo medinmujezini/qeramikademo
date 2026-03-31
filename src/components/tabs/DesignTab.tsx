@@ -1823,7 +1823,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               minPolarAngle={0}
               maxPolarAngle={maxPolarAngle}
               target={defaultTarget}
-              enabled={!isDragging && !isDraggingFixture}
+              enabled={!isDragging && !isDraggingFixture && !isDraggingSpawn}
               onStart={() => {
                 isAnimatingCamera.current = false;
               }}
