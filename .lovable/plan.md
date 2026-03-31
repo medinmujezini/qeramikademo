@@ -1,62 +1,45 @@
 
 
-# Luxury Button Redesign
+# Luxury Redesign: Admin Panel + Design Tab
 
-## Changes
+## Admin Layout (`src/components/admin/AdminLayout.tsx`)
 
-### `src/components/ui/button.tsx`
+Apply the same black & gold luxury aesthetic used on the Home page:
 
-**Base class:**
-- `rounded-sm` → `rounded-none` (sharp, architectural)
-- `text-sm font-medium` → `text-xs font-light uppercase tracking-[0.15em]` (refined luxury typography)
+- **Sidebar**: Solid `bg-card` background, `rounded-none` on logo icon, gold border-right (`border-primary/15`), nav items use `rounded-none` with gold active state, add gradient orb in sidebar bottom
+- **Logo area**: Use `font-display` (Outfit) for "Admin Panel", `uppercase tracking-[0.15em]`, gold icon container `rounded-none`
+- **Nav items**: `rounded-none` instead of `rounded-lg`, active = `bg-primary/10 text-primary border-l-2 border-primary`, inactive hover = `hover:bg-primary/5 hover:text-primary`
+- **Top bar**: Solid `bg-card` with gold bottom border, breadcrumb uses `font-display`, user avatar `rounded-none`
+- **Background**: Add large gold gradient orb in bottom-left of main content area
+- **Footer buttons**: Use `luxury` variant for "Back to App"
 
-**Variants:**
+## Design Tab Panels (`src/components/tabs/DesignTab.tsx`)
 
-| Variant | New styling |
-|---|---|
-| `default` | Gold bg, dark text, subtle inner glow, hover intensifies glow: `bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(38_60%_78%/0.3)] hover:shadow-[inset_0_1px_0_hsl(38_60%_78%/0.3),0_0_20px_hsl(38_60%_68%/0.2)]` |
-| `luxury` | Transparent, double gold border effect via box-shadow inset + border, shimmer hover: `bg-transparent border border-primary/25 text-primary hover:bg-primary/5 hover:border-primary/50 hover:shadow-[inset_0_0_20px_hsl(38_60%_68%/0.06),0_0_25px_hsl(38_60%_68%/0.12)]` |
-| `outline` | Thin gold border, gold text, hover fills subtly: `border border-primary/20 text-primary/80 hover:bg-primary/5 hover:border-primary/40 hover:text-primary` |
-| `glow` | Stronger gold aura: `shadow-[0_0_20px_hsl(38_60%_68%/0.25)] hover:shadow-[0_0_40px_hsl(38_60%_68%/0.4)]` |
-| `ghost` | Add gold tint on hover: `hover:bg-primary/5 hover:text-primary` |
-| `secondary` | Gold-tinted bg: `bg-primary/8 text-primary hover:bg-primary/12` |
-| `destructive` | Keep red, add subtle glow |
+- **Layer 3 toolbar** (line 1588): Solid `bg-card` background, gold bottom border (`border-primary/10`), remove transparency
+- **Library panel** (line 1913): `rounded-none`, add gold glow shadow, add gradient orb divs inside, `panel-header` with gold bottom border
+- **Properties panel** (line 1927): Same treatment — `rounded-none`, gold glow, gradient orbs
+- **Glass control button** (line 1955): `rounded-none`
+- **Drop zone overlay** (line 1897): Gold-tinted border instead of generic
+- **Walkthrough overlay** (line 1966): Add gradient orb behind loading spinner
 
-**Sizes:**
-- All sizes: `rounded-none` instead of `rounded-md`
-- `lg`: wider padding `px-8`, `tracking-[0.2em]`
-- `sm`: `tracking-widest`
+## Platform Header (`src/pages/EndUserPlatform.tsx`)
 
-### `src/index.css` — Shimmer animation
+- **Layer 1**: Solid `bg-card`, gold border, "Design Studio" in `font-display uppercase tracking-[0.15em]`
+- **Layer 2 tab bar**: Solid `bg-card`, gold bottom border
+- **Quote tab**: Card icon container `rounded-none`, add gradient orbs to card
 
-Add a CSS class for a gold shine sweep on hover:
-```css
-.btn-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-.btn-shimmer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, hsl(38 60% 68% / 0.1) 50%, transparent 100%);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-.btn-shimmer:hover::after {
-  transform: translateX(100%);
-}
-```
+## CSS Updates (`src/index.css`)
 
-### `src/components/home/RoleCard.tsx`
+- `.glass-floating`, `.glass-toolbar`, `.glass-control`: Force `border-radius: 0`, add gold glow shadow
+- `.panel-header`: Gold bottom border (`hsl(var(--primary) / 0.15)`)
+- `.glass-sidebar`: Solid `bg-card`, gold right border
 
-Update CTA button to use the new `luxury` variant with `btn-shimmer` class — remove manual border/hover overrides that now duplicate the variant.
-
-## Files
+## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/ui/button.tsx` | Square corners, uppercase tracking, luxury typography, gold glow variants |
-| `src/index.css` | Shimmer sweep animation class |
-| `src/components/home/RoleCard.tsx` | Use `luxury` variant + `btn-shimmer`, remove redundant overrides |
+| `src/components/admin/AdminLayout.tsx` | Black & gold sidebar, square corners, gold accents, gradient orbs, luxury typography |
+| `src/components/tabs/DesignTab.tsx` | Square panels, gold glow, gradient orbs, solid toolbar bg |
+| `src/pages/EndUserPlatform.tsx` | Solid headers, gold borders, luxury typography, quote card orbs |
+| `src/index.css` | Force `border-radius: 0` on glass utilities, gold glow shadows |
 
