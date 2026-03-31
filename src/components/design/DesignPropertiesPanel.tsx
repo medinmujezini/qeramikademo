@@ -40,9 +40,10 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
   if (!selectedFurniture) {
     return (
-      <div className="h-full flex flex-col border-l bg-muted/30">
-        <div className="p-4 border-b">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
+      <div className="h-full flex flex-col border-l border-primary/10 bg-card/50">
+        <div className="p-4 border-b border-primary/15">
+              <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
+              <div className="w-8 h-px bg-primary/25 mt-1" />
         </div>
         
         <ScrollArea className="flex-1">
@@ -59,7 +60,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
             {/* Room summary */}
             <div className="space-y-3">
-              <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60">Scene Summary</h4>
+              <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Scene Summary</h4>
               
               <Card>
                 <CardContent className="p-3">
@@ -125,9 +126,10 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col border-l bg-muted/30">
-      <div className="p-4 border-b">
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
+    <div className="h-full flex flex-col border-l border-primary/10 bg-card/50">
+      <div className="p-4 border-b border-primary/15">
+        <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
+        <div className="w-8 h-px bg-primary/25 mt-1" />
       </div>
       
       <ScrollArea className="flex-1">
@@ -171,7 +173,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Color</span>
                 <div 
-                  className="w-5 h-5 rounded border"
+                  className="w-5 h-5 rounded-none border border-primary/20"
                   style={{ backgroundColor: selectedFurniture.color }}
                 />
               </div>
@@ -180,14 +182,14 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Actions */}
           <div className="space-y-2">
-            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60">Actions</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Actions</h4>
             
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" onClick={onRotate}>
+              <Button variant="luxury" size="sm" onClick={onRotate}>
                 <RotateCw className="h-4 w-4 mr-1" />
                 Rotate 45°
               </Button>
-              <Button variant="outline" size="sm" disabled>
+              <Button variant="luxury" size="sm" disabled>
                 <Palette className="h-4 w-4 mr-1" />
                 Color
               </Button>
@@ -208,11 +210,11 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Tips */}
           <div className="space-y-2">
-            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60">Tips</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Tips</h4>
             <div className="space-y-1 text-xs text-muted-foreground">
-              <p>• Drag to move in 3D view</p>
-              <p>• Red glow = collision detected</p>
-              <p>• Items snap to 10cm grid</p>
+              <p><span className="text-primary/40">•</span> Drag to move in 3D view</p>
+              <p><span className="text-primary/40">•</span> Red glow = collision detected</p>
+              <p><span className="text-primary/40">•</span> Items snap to 10cm grid</p>
             </div>
           </div>
         </div>

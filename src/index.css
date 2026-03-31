@@ -858,6 +858,7 @@
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
   color: hsl(var(--primary) / 0.8);
+  text-shadow: 0 0 20px hsl(38 60% 68% / 0.15);
 }
