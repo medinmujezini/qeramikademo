@@ -1700,7 +1700,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         {/* Drop zone indicator */}
         {isDraggingFromLibrary && (
           <div className="absolute inset-0 flex items-center justify-center bg-primary/5 pointer-events-none">
-            <div className="glass-toolbar text-sm font-medium">
+            <div className="glass-toolbar text-xs uppercase tracking-widest font-medium text-primary/80">
               Drop here to place
             </div>
           </div>
@@ -1711,8 +1711,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 glass-toolbar flex items-center gap-4 flex-wrap overflow-visible">
         <div className="flex items-center gap-2">
           <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-90" />
-          <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-sm">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+          <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
             Enhanced
           </Label>
         </div>
@@ -1737,11 +1737,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           </Popover>
         )}
         
-        <div className="h-4 w-px bg-border/50" />
+        <div className="h-4 w-px bg-primary/20" />
         
         <div className="flex items-center gap-2">
           <Switch id="show-tiles" checked={showTiles} onCheckedChange={setShowTiles} className="scale-90" />
-          <Label htmlFor="show-tiles" className="flex items-center gap-1.5 text-sm">
+          <Label htmlFor="show-tiles" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
             <Grid3X3 className="h-3.5 w-3.5" />
             Tiles
           </Label>
@@ -1751,12 +1751,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           <>
             <div className="flex items-center gap-2">
               <Switch id="show-ceiling" checked={showCeiling} onCheckedChange={setShowCeiling} className="scale-90" />
-              <Label htmlFor="show-ceiling" className="text-sm">Ceiling</Label>
+              <Label htmlFor="show-ceiling" className="text-xs uppercase tracking-wider text-muted-foreground">Ceiling</Label>
             </div>
 
             <div className="flex items-center gap-2">
               <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-90" />
-              <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-sm">
+              <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
                 <Droplets className="h-3.5 w-3.5 text-blue-500" />
                 Plumbing
               </Label>
@@ -2044,7 +2044,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-opacity duration-300">
           <div className="flex flex-col items-center gap-4 text-center">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <h3 className="text-xl font-semibold text-foreground">Preparing walkthrough…</h3>
+            <h3 className="text-xl font-display font-semibold text-foreground">Preparing walkthrough…</h3>
             <p className="text-sm text-muted-foreground">Generating 3D scene</p>
           </div>
         </div>
@@ -2055,12 +2055,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-center">
             <PersonStanding className="h-12 w-12 text-primary" />
-            <h3 className="text-xl font-semibold text-foreground">Walkthrough Mode</h3>
+            <h3 className="text-xl font-display font-semibold text-foreground">Walkthrough Mode</h3>
             <p className="text-sm text-muted-foreground">
               Move with WASD · Look with mouse · Esc to exit
             </p>
             <Button
               size="lg"
+              variant="luxury"
               className="gap-2"
               onClick={() => plcRef.current?.lock()}
             >

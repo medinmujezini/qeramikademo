@@ -94,7 +94,7 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
   
   return (
     <button
-      className="w-full p-3 text-left rounded-lg border bg-card hover:bg-accent hover:border-primary/50 transition-colors group cursor-grab active:cursor-grabbing"
+      className="w-full p-3 text-left rounded-md border border-border/60 bg-card hover:bg-accent hover:border-primary/40 transition-colors group cursor-grab active:cursor-grabbing"
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
@@ -274,7 +274,7 @@ export const UnifiedLibrary: React.FC = () => {
     <div className="h-full flex flex-col bg-muted/30 w-full box-border overflow-hidden">
       {/* Header + Search */}
       <div className="px-3 pt-3 pb-2 space-y-2 shrink-0">
-        <h3 className="font-semibold text-sm">Item Library</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Item Library</h3>
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -310,10 +310,10 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                         {FURNITURE_CATEGORY_ICONS[category]}
-                        <span className="capitalize">{category}</span>
-                        <span className="text-xs">({items.length})</span>
+                        <span>{category}</span>
+                        <span className="text-[10px] opacity-60">({items.length})</span>
                       </div>
                       <div className="space-y-2">
                         {items.map((item, index) => (
@@ -354,10 +354,10 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-sm font-medium text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                         {FIXTURE_CATEGORY_ICONS[category]}
-                        <span className="capitalize">{category}</span>
-                        <span className="text-xs">({items.length})</span>
+                        <span>{category}</span>
+                        <span className="text-[10px] opacity-60">({items.length})</span>
                       </div>
                       <div className="space-y-2">
                         {items.map((item, index) => (
