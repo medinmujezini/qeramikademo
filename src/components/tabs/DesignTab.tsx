@@ -1265,6 +1265,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const exitWalkthrough = useCallback(() => {
     document.exitPointerLock();
     setViewMode('design');
+    setShowCeiling(ceilingBeforeWalkRef.current);
     setShowSpawnMarker(true);
     if (cameraRef.current) cameraRef.current.position.copy(savedOrbitPos.current);
     if (orbitControlsRef.current) {
