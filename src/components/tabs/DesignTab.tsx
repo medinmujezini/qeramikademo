@@ -2061,6 +2061,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             </p>
             <Button
               size="lg"
+              variant="luxury"
               className="gap-2"
               onClick={() => plcRef.current?.lock()}
             >
