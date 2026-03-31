@@ -31,7 +31,7 @@ export function createTriplanarMaterial(options: TriplanarMaterialOptions): THRE
     map = null,
     roughness = 0.9,
     metalness = 0,
-    textureScale = 1.0,
+    textureScale = 0.5,
     side = THREE.DoubleSide,
     sharpness = 4.0,
   } = options;
@@ -112,7 +112,7 @@ varying vec3 vTriWorldNormal;`
   material.needsUpdate = true;
   // Custom key so Three.js caches the modified program properly
   material.customProgramCacheKey = () =>
-    `triplanar_${textureScale}_${sharpness}`;
+    `triplanar_${map.id}_${textureScale}_${sharpness}`;
 
   return material;
 }

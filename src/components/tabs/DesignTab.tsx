@@ -417,13 +417,20 @@ const Wall3D = ({
 
   const wallColor = getWallColor();
   const wallMaterial = useMemo(() => {
-    const mat = createTriplanarMaterial({
+    if (texture) {
+      return createTriplanarMaterial({
+        color: wallColor,
+        map: texture,
+        roughness: 0.7,
+        textureScale: 0.5,
+      });
+    }
+    return new THREE.MeshStandardMaterial({
       color: wallColor,
-      map: texture,
-      roughness: texture ? 0.7 : 0.9,
-      textureScale: 2.0,
+      roughness: 0.9,
+      metalness: 0,
+      side: THREE.DoubleSide,
     });
-    return mat;
   }, [wallColor, texture]);
 
   // Dispose material on cleanup
