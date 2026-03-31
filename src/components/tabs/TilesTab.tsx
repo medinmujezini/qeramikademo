@@ -583,10 +583,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
         </div>
       )}
 
-      {/* FLOATING BOTTOM HINT */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
-        Click walls to select • Use elevation viewer to configure tiles
-      </div>
+      </div>{/* end flex-1 canvas area */}
     </div>
   );
 };
