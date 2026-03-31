@@ -229,6 +229,19 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
         <meshBasicMaterial visible={false} />
       </mesh>
       
+      {/* Large invisible drag plane — captures pointer during furniture drag */}
+      {isDragging && draggedItem && (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.001, 0]}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+        >
+          <planeGeometry args={[100, 100]} />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+      )}
+      
       {/* Grid overlay when dragging - positioned based on floor plan */}
       {isDragging && (() => {
         // Calculate floor bounds from floor plan points
