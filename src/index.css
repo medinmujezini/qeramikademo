@@ -1016,3 +1016,20 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(38 60% 68% / 0.25);
 }
+
+/* WebUI Transparency Mode — makes everything transparent for Unreal Engine overlay */
+.unreal-transparent {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+.unreal-transparent #root {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+.unreal-transparent .canvas-vignette {
+  background: transparent !important;
+}
+.unreal-transparent .canvas-vignette::before,
+.unreal-transparent .canvas-vignette::after {
+  display: none !important;
+}
