@@ -1257,8 +1257,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     isAnimatingCamera.current = false;
     setIsPreparingWalkthrough(false);
     setShowSpawnMarker(false);
+    ceilingBeforeWalkRef.current = showCeiling;
+    setShowCeiling(true);
     setViewMode('walkthrough');
-  }, [floorPlan, spawnPoint, isAnimatingCamera]);
+  }, [floorPlan, spawnPoint, isAnimatingCamera, showCeiling]);
 
   const exitWalkthrough = useCallback(() => {
     document.exitPointerLock();
