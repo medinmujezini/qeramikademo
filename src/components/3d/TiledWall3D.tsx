@@ -265,10 +265,14 @@ const TiledWallInner: React.FC<{
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
-  const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+  const originalLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const midX = (start.x + end.x) / 2 * CM_TO_METERS;
-  const midZ = (start.y + end.y) / 2 * CM_TO_METERS;
+  const dirX = Math.cos(angle);
+  const dirY = Math.sin(angle);
+  const length = originalLength + startExtension + endExtension;
+  const shiftCm = (endExtension - startExtension) / 2;
+  const midX = ((start.x + end.x) / 2 + dirX * shiftCm) * CM_TO_METERS;
+  const midZ = ((start.y + end.y) / 2 + dirY * shiftCm) * CM_TO_METERS;
   const wallThicknessM = wall.thickness * CM_TO_METERS;
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
