@@ -27,6 +27,8 @@ import { TiledWall3D } from '@/components/3d/TiledWall3D';
 import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
+import { Staircase3D } from '@/components/3d/Staircase3D';
+import { FloorSlab3D } from '@/components/3d/FloorSlab3D';
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
@@ -37,7 +39,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
@@ -585,6 +588,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   findTile,
   floorPlan,
 }) => {
+  const { staircases, building, activeLevel } = useFloorPlanContext();
   const { 
     fixtures, 
     selectedFixtureId, 
@@ -889,6 +893,28 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
+      {/* Staircases on the active floor */}
+      {staircases
+        .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
+        .map(stair => (
+          <Staircase3D key={stair.id} staircase={stair} yOffset={0} />
+        ))
+      }
+
+      {/* Floor slabs for upper floors */}
+      {building.floors
+        .filter(f => f.level > 0 && f.slab && (f.level === activeLevel || f.level === activeLevel + 1))
+        .map(floor => (
+          <FloorSlab3D
+            key={`slab-${floor.level}`}
+            slab={floor.slab!}
+            roomWidth={floorPlan.roomWidth || 800}
+            roomHeight={floorPlan.roomHeight || 600}
+            yPosition={floor.floorToFloorHeight * 0.01 * floor.level}
+          />
+        ))
+      }
+
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
     </>
@@ -911,7 +937,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -1633,6 +1659,38 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Lightbulb className="h-3 w-3" />
                 Light
               </Button>
+
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
+                const cx = (floorPlan.roomWidth || 800) / 2;
+                const cy = (floorPlan.roomHeight || 600) / 2;
+                addStaircase('straight', cx - 50, cy - 140);
+                toast.success('Staircase added');
+              }}>
+                <ArrowUpDown className="h-3 w-3" />
+                Stairs
+              </Button>
+
+              <div className="w-px h-4 bg-primary/15" />
+
+              {/* Floor selector */}
+              <div className="flex items-center gap-1">
+                <Layers className="h-3 w-3 text-muted-foreground" />
+                <Select value={String(activeLevel)} onValueChange={(v) => setActiveLevel(Number(v))}>
+                  <SelectTrigger className="h-7 w-[100px] text-xs border-primary/15">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {building.floors.map(floor => (
+                      <SelectItem key={floor.level} value={String(floor.level)} className="text-xs">
+                        {floor.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { addFloor(); toast.success('Floor added'); }}>
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
 
               <div className="w-px h-4 bg-primary/15" />
 
