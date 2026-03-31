@@ -183,8 +183,8 @@ export const LayerCanvas: React.FC<LayerCanvasProps> = ({
       ctx.globalAlpha = wallsOpacity;
       
       // Neon color definitions - thinner and less opaque
-      const neonEdge = 'hsla(142, 76%, 50%, 0.7)';
-      const glassFill = 'hsla(142, 40%, 20%, 0.4)';
+      const neonEdge = 'hsla(38, 60%, 58%, 0.7)';
+      const glassFill = 'hsla(38, 30%, 20%, 0.4)';
       
       floorPlan.walls.forEach(wall => {
         const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);
