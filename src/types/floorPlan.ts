@@ -454,7 +454,25 @@ export interface FloorPlan {
   roomLights?: RoomLight[];
   // Saved camera viewpoints
   savedCameraViews?: SavedCameraView[];
+  // Ceiling emissive lighting config
+  ceilingEmitterConfig?: CeilingEmitterConfig;
 }
+
+export type CeilingEmitterDensity = 'sparse' | 'normal' | 'dense';
+
+export interface CeilingEmitterConfig {
+  enabled: boolean;
+  intensity: number;
+  color: string;
+  density: CeilingEmitterDensity;
+}
+
+export const DEFAULT_CEILING_EMITTER_CONFIG: CeilingEmitterConfig = {
+  enabled: true,
+  intensity: 0.8,
+  color: '#fff5e6',
+  density: 'normal',
+};
 
 // Room light for ceiling-mounted rect lights
 export interface RoomLight {

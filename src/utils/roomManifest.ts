@@ -62,6 +62,15 @@ export interface ManifestFloor {
   lights: ManifestLight[];
 }
 
+export interface ManifestEmitter {
+  position: { x: number; y: number; z: number };
+  intensity: number;
+  color: string;
+  type: 'point';
+  decay: number;
+  distance: number;
+}
+
 export interface RoomManifest {
   projectId: string;
   revision: number;
@@ -73,6 +82,7 @@ export interface RoomManifest {
   lights: ManifestLight[];
   materials: ManifestMaterial[];
   furniture: ManifestFurniture[];
+  emissiveLights?: ManifestEmitter[];
   floors?: ManifestFloor[];
   staircases?: Array<{
     id: string;
@@ -205,6 +215,39 @@ export function generateRoomManifest(
     furniture: extractFurniture(furnitureItems ?? [], heightCm),
     exportedAt: new Date().toISOString(),
   };
+
+  // Ceiling emitter grid for Unreal
+  const emitterConfig = floorPlan.ceilingEmitterConfig;
+  if (emitterConfig?.enabled) {
+    const spacingMap: Record<string, number> = { sparse: 3.0, normal: 2.0, dense: 1.2 };
+    const spacing = spacingMap[emitterConfig.density] ?? 2.0;
+    const fW = widthCm * CM_TO_METERS;
+    const fD = depthCm * CM_TO_METERS;
+    const fMinX = minX * CM_TO_METERS;
+    const fMinZ = minY * CM_TO_METERS;
+    const cH = heightCm * CM_TO_METERS;
+    const area = fW * fD;
+    const cols = Math.max(1, Math.round(fW / spacing));
+    const rows = Math.max(1, Math.round(fD / spacing));
+    const total = cols * rows;
+    const perLight = (emitterConfig.intensity * area) / (total * 1.2);
+    const emitters: ManifestEmitter[] = [];
+    const stepX = fW / (cols + 1);
+    const stepZ = fD / (rows + 1);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        emitters.push({
+          position: { x: fMinX + stepX * (c + 1), y: cH - 0.02, z: fMinZ + stepZ * (r + 1) },
+          intensity: Math.max(0.1, perLight),
+          color: emitterConfig.color,
+          type: 'point',
+          decay: 2,
+          distance: 8,
+        });
+      }
+    }
+    manifest.emissiveLights = emitters;
+  }
 
   // Multi-floor data
   if (building && building.floors.length > 1) {

@@ -40,7 +40,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2 } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun } from 'lucide-react';
 import { FloorManager } from '@/components/floor-plan/FloorManager';
 import { StaircaseTypePicker } from '@/components/3d/StaircaseTypePicker';
 import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
@@ -48,8 +48,8 @@ import { CM_TO_METERS } from '@/constants/units';
 
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
-import { TILE_LIBRARY } from '@/types/floorPlan';
-import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls } from '@/types/floorPlan';
+import { TILE_LIBRARY, DEFAULT_CEILING_EMITTER_CONFIG } from '@/types/floorPlan';
+import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
@@ -998,7 +998,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel, updateCeilingEmitterConfig } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -1721,6 +1721,65 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <Lightbulb className="h-3 w-3" />
                 Light
               </Button>
+
+              {/* Auto Emitter Controls */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                    <Sun className="h-3 w-3" />
+                    Auto Lights
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="start">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs uppercase tracking-wider text-muted-foreground">Auto Ceiling Lights</Label>
+                      <Switch
+                        checked={floorPlan.ceilingEmitterConfig?.enabled ?? DEFAULT_CEILING_EMITTER_CONFIG.enabled}
+                        onCheckedChange={(v) => updateCeilingEmitterConfig({ enabled: v })}
+                        className="scale-75"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Intensity: {(floorPlan.ceilingEmitterConfig?.intensity ?? DEFAULT_CEILING_EMITTER_CONFIG.intensity).toFixed(1)}</Label>
+                      <input
+                        type="range"
+                        min="0.2"
+                        max="3"
+                        step="0.1"
+                        value={floorPlan.ceilingEmitterConfig?.intensity ?? DEFAULT_CEILING_EMITTER_CONFIG.intensity}
+                        onChange={(e) => updateCeilingEmitterConfig({ intensity: parseFloat(e.target.value) })}
+                        className="w-full h-1.5 accent-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Color</Label>
+                      <input
+                        type="color"
+                        value={floorPlan.ceilingEmitterConfig?.color ?? DEFAULT_CEILING_EMITTER_CONFIG.color}
+                        onChange={(e) => updateCeilingEmitterConfig({ color: e.target.value })}
+                        className="w-full h-6 cursor-pointer rounded border border-border"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Density</Label>
+                      <Select
+                        value={floorPlan.ceilingEmitterConfig?.density ?? DEFAULT_CEILING_EMITTER_CONFIG.density}
+                        onValueChange={(v) => updateCeilingEmitterConfig({ density: v as CeilingEmitterDensity })}
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sparse">Sparse</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="dense">Dense</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
 
               <StaircaseTypePicker />
 
