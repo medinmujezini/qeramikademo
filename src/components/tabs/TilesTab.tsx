@@ -390,42 +390,42 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   const isApplyMode = !!pendingWallId;
 
   return (
-    <div className="h-full relative overflow-hidden">
-      {/* FULL-SCREEN TILES CANVAS */}
-      <div className="absolute inset-0 z-0">
-        <TilesCanvas
-          selectedTile={selectedTile}
-          selectedWallId={selectedWallId}
-          onWallSelect={setSelectedWallId}
-          jointWidth={jointWidth}
-          showTilePreview={showTilePreview}
-          pendingWallId={pendingWallId}
-          tiles={tileLibrary}
-        />
+    <div className="h-full flex flex-col">
+      {/* Layer 3 — contextual toolbar */}
+      <div className="h-10 border-b bg-card/30 px-4 flex items-center shrink-0" style={{ borderColor: 'hsl(var(--primary) / 0.08)' }}>
+        <div className="flex items-center gap-3 h-full">
+          {isApplyMode && selectedWallId && (
+            <>
+              <Badge variant="outline" className="gap-1 text-[10px] h-5">
+                <ArrowLeft className="h-3 w-3" />
+                Wall {selectedWallIndex + 1}
+              </Badge>
+              <span className="text-xs text-muted-foreground">Select tile & pattern</span>
+              {selectedTile && (
+                <Button onClick={handleApplyToWall} size="sm" className="gap-1 h-7 text-xs">
+                  <Grid3X3 className="h-3 w-3" />
+                  Apply
+                </Button>
+              )}
+              <div className="w-px h-4 bg-primary/15" />
+            </>
+          )}
+          <div className="flex items-center gap-1.5">
+            <Eye className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground uppercase tracking-wider">Preview</span>
+          </div>
+          <div className="w-px h-4 bg-primary/15" />
+          <span className="text-xs text-muted-foreground">{tiledWallCount}/{floorPlan.walls.length} walls tiled</span>
+          <span className="text-[10px] text-muted-foreground/60 ml-auto">Click walls to select · Use panels to configure</span>
+        </div>
       </div>
 
-      {/* TOP CENTER - Apply mode indicator */}
-      {isApplyMode && selectedWallId && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar flex items-center gap-3">
-          <Badge variant="secondary" className="gap-1 bg-white/20">
-            <ArrowLeft className="h-3 w-3" />
-            Wall {selectedWallIndex + 1}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            Select tile & pattern
-          </span>
-          {selectedTile && (
-            <Button onClick={handleApplyToWall} size="sm" className="gap-1.5 h-7">
-              <Grid3X3 className="h-3.5 w-3.5" />
-              Apply
-            </Button>
-          )}
-        </div>
-      )}
+      {/* Canvas area */}
+      <div className="flex-1 relative overflow-hidden">
 
       {/* LEFT PANEL - Tile Library */}
       {showTileLibrary ? (
-        <div className="absolute top-20 left-6 z-20 w-52 max-h-[calc(100%-140px)]">
+        <div className="absolute top-4 left-6 z-20 w-52 max-h-[calc(100%-48px)]">
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0 flex items-center justify-between">
               <span className="panel-header-title">Tile Library</span>
@@ -467,7 +467,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
           </div>
         </div>
       ) : (
-        <div className="absolute top-20 left-6 z-20">
+        <div className="absolute top-4 left-6 z-20">
           <Button
             variant="outline"
             size="sm"
@@ -501,7 +501,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
       </div>
 
       {/* RIGHT TOP - Toggle Buttons */}
-      <div className="absolute top-16 right-4 z-30 flex gap-1.5">
+      <div className="absolute top-4 right-4 z-30 flex gap-1.5">
         <Button
           variant={rightPanelTab === 'preview' ? 'default' : 'outline'}
           size="sm"
@@ -583,10 +583,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
         </div>
       )}
 
-      {/* FLOATING BOTTOM HINT */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 glass-toolbar text-xs text-muted-foreground">
-        Click walls to select • Use elevation viewer to configure tiles
-      </div>
+      </div>{/* end flex-1 canvas area */}
     </div>
   );
 };
