@@ -62,6 +62,15 @@ export interface ManifestFloor {
   lights: ManifestLight[];
 }
 
+export interface ManifestEmitter {
+  position: { x: number; y: number; z: number };
+  intensity: number;
+  color: string;
+  type: 'point';
+  decay: number;
+  distance: number;
+}
+
 export interface RoomManifest {
   projectId: string;
   revision: number;
@@ -73,6 +82,7 @@ export interface RoomManifest {
   lights: ManifestLight[];
   materials: ManifestMaterial[];
   furniture: ManifestFurniture[];
+  emissiveLights?: ManifestEmitter[];
   floors?: ManifestFloor[];
   staircases?: Array<{
     id: string;
