@@ -941,7 +941,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
