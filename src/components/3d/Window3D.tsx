@@ -5,8 +5,9 @@
  * Supports optional custom GLB model via modelUrl.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import type { Window as FloorPlanWindow, WindowType } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
 
