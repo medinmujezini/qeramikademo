@@ -1442,6 +1442,21 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     });
   }, []);
 
+  // Toggle transparent mode for WebUI plugin when Unreal walkthrough is active
+  useEffect(() => {
+    if (unrealActive) {
+      document.documentElement.classList.add('unreal-transparent');
+      document.body.classList.add('unreal-transparent');
+    } else {
+      document.documentElement.classList.remove('unreal-transparent');
+      document.body.classList.remove('unreal-transparent');
+    }
+    return () => {
+      document.documentElement.classList.remove('unreal-transparent');
+      document.body.classList.remove('unreal-transparent');
+    };
+  }, [unrealActive]);
+
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
     if (!imageUrl) return;
