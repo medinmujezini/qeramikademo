@@ -94,7 +94,7 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
   
   return (
     <button
-      className="w-full p-3 text-left rounded-none border border-primary/10 bg-card hover:bg-accent hover:border-primary/30 hover:shadow-[0_0_15px_hsl(38_60%_68%/0.08)] transition-all group cursor-grab active:cursor-grabbing"
+      className="w-full p-3 text-left rounded-none border border-primary/10 bg-card luxury-hover-glow transition-all group cursor-grab active:cursor-grabbing"
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
