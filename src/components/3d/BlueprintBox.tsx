@@ -119,13 +119,14 @@ const CornerMarker: React.FC<{ position: [number, number, number] }> = ({ positi
   );
 };
 
-export const BlueprintBox: React.FC<BlueprintBoxProps> = ({
+export const BlueprintBox: React.FC<BlueprintBoxProps & { ceilingHeight?: number }> = ({
   item,
   isSelected,
   isDragging = false,
   hasCollision = false,
   onSelect,
   onDragStart,
+  ceilingHeight = 280,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const edgesRef = useRef<THREE.LineSegments>(null);
@@ -135,35 +136,45 @@ export const BlueprintBox: React.FC<BlueprintBoxProps> = ({
   const height = item.dimensions.height * CM_TO_METERS;
   const depth = item.dimensions.depth * CM_TO_METERS;
   
-  // Create box geometry and edges
+  const isCarpet = item.category === 'decor' && item.dimensions.height <= 5;
+  const isLight = item.category === 'lighting';
+  
+  // Create geometry — flat plane for carpets, box for everything else
   const { boxGeometry, edgesGeometry } = useMemo(() => {
+    if (isCarpet) {
+      const plane = new THREE.BoxGeometry(width, 0.005, depth);
+      const edges = new THREE.EdgesGeometry(plane);
+      return { boxGeometry: plane, edgesGeometry: edges };
+    }
     const box = new THREE.BoxGeometry(width, height, depth);
     const edges = new THREE.EdgesGeometry(box);
     return { boxGeometry: box, edgesGeometry: edges };
-  }, [width, height, depth]);
+  }, [width, height, depth, isCarpet]);
   
   // Corner positions
   const corners = useMemo(() => {
     const hw = width / 2;
-    const hh = height / 2;
+    const hh = isCarpet ? 0.0025 : height / 2;
     const hd = depth / 2;
     return [
       [-hw, -hh, -hd], [-hw, -hh, hd], [-hw, hh, -hd], [-hw, hh, hd],
       [hw, -hh, -hd], [hw, -hh, hd], [hw, hh, -hd], [hw, hh, hd],
     ] as [number, number, number][];
-  }, [width, height, depth]);
+  }, [width, height, depth, isCarpet]);
+  
+  // Y position: ceiling for lights, ground for everything else
+  const baseY = isLight
+    ? (ceilingHeight * CM_TO_METERS) - height / 2
+    : isCarpet ? 0.003 : height / 2;
   
   // Animated edges
   useFrame(({ clock }) => {
     if (edgesRef.current) {
       const material = edgesRef.current.material as THREE.LineDashedMaterial;
-      // Animate line opacity for pulsing effect (dashOffset not available in all Three.js versions)
       material.opacity = 0.7 + Math.sin(clock.getElapsedTime() * 3) * 0.3;
     }
     
     if (groupRef.current) {
-      // Subtle hover animation
-      const baseY = height / 2;
       const hoverOffset = isSelected ? Math.sin(clock.getElapsedTime() * 2) * 0.01 : 0;
       groupRef.current.position.y = baseY + hoverOffset;
     }
@@ -180,7 +191,8 @@ export const BlueprintBox: React.FC<BlueprintBoxProps> = ({
     }
   };
   
-  const edgeColor = hasCollision ? '#ef4444' : isSelected ? '#67e8f9' : '#00d4ff';
+  const edgeColor = hasCollision ? '#ef4444' : isSelected ? '#67e8f9' : isLight ? '#ffd700' : isCarpet ? '#c9a96e' : '#00d4ff';
+  const shaderColor = isLight ? '#ffd700' : isCarpet ? '#c9a96e' : '#00d4ff';
   
   return (
     <group
@@ -220,34 +232,45 @@ export const BlueprintBox: React.FC<BlueprintBoxProps> = ({
         
         {/* Dimension labels */}
         <Text
-          position={[0, height / 2 + 0.08, 0]}
+          position={[0, (isCarpet ? 0.01 : height / 2) + 0.08, 0]}
           fontSize={0.06}
-          color="#00d4ff"
+          color={shaderColor}
           anchorX="center"
           anchorY="middle"
           font={undefined}
         >
-          {`${item.dimensions.width}×${item.dimensions.depth}×${item.dimensions.height}`}
+          {`${item.dimensions.width}×${item.dimensions.depth}${!isCarpet ? `×${item.dimensions.height}` : ''}`}
         </Text>
         
         {/* Loading indicator text */}
         <Text
           position={[0, 0, depth / 2 + 0.02]}
           fontSize={0.04}
-          color="#00d4ff"
+          color={shaderColor}
           anchorX="center"
           anchorY="middle"
           font={undefined}
         >
-          Loading...
+          {isLight ? '💡' : isCarpet ? 'Carpet' : 'Loading...'}
         </Text>
+        
+        {/* Point light for lighting items */}
+        {isLight && (
+          <pointLight
+            color={item.color || '#FFF8DC'}
+            intensity={3}
+            distance={5}
+            decay={2}
+            position={[0, -0.1, 0]}
+          />
+        )}
       </group>
       
       {/* Ground shadow */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
         <planeGeometry args={[width * 1.1, depth * 1.1]} />
         <meshBasicMaterial
-          color={hasCollision ? '#ef4444' : '#00d4ff'}
+          color={hasCollision ? '#ef4444' : isLight ? '#ffd700' : '#00d4ff'}
           transparent
           opacity={0.1}
         />

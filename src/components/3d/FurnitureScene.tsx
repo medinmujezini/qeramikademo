@@ -399,6 +399,7 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
         const isBeingDragged = isDragging && draggedItem?.id === item.id;
         const showCollision = isBeingDragged && (collisionState[item.id] || false);
         const isRejecting = rejectionState?.itemId === item.id;
+        const ceilingHeight = floorPlan.walls?.[0]?.height ?? 280;
         
         return (
           <Furniture3D
@@ -412,6 +413,7 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
             onSelect={handleSelect}
             onDragStart={(e) => handleDragStart(item, e)}
             modelUrl={item.modelUrl}
+            ceilingHeight={ceilingHeight}
           />
         );
       })}
