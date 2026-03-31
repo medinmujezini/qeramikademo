@@ -80,7 +80,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     ctx.clearRect(0, 0, width, height);
 
     // Draw grid - thin white lines for high-tech look
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)'; // Light blue grid
+    ctx.strokeStyle = 'rgba(201, 169, 110, 0.12)'; // Gold grid
     ctx.lineWidth = 0.5;
     const gridSize = 25;
     const gridStart = screenToWorld(0, 0);
@@ -135,8 +135,8 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       }
 
       // Neon color definitions - thinner and less opaque
-      const neonEdge = isSelected ? 'hsla(142, 100%, 65%, 0.7)' : 'hsla(142, 76%, 50%, 0.7)';
-      const glassFill = 'hsla(142, 40%, 20%, 0.4)';
+      const neonEdge = isSelected ? 'hsla(38, 80%, 68%, 0.8)' : 'hsla(38, 60%, 58%, 0.7)';
+      const glassFill = 'hsla(38, 30%, 20%, 0.4)';
       
       // Calculate wall angle
       const angle = Math.atan2(end.y - start.y, end.x - start.x);
@@ -216,7 +216,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
           const tileWidth = displayTile.width * scale;
           const numTiles = Math.ceil(wallLen * scale / tileWidth);
           
-          ctx.strokeStyle = 'hsla(142, 76%, 45%, 0.2)';
+          ctx.strokeStyle = 'hsla(38, 60%, 55%, 0.2)';
           ctx.lineWidth = 1;
           for (let i = 1; i < numTiles; i++) {
             const t = i / numTiles;
@@ -460,16 +460,16 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       const halfSize = squareSize / 2;
       
       // Subtle outer glow
-      ctx.shadowColor = 'hsl(142, 76%, 45%)';
+      ctx.shadowColor = 'hsl(38, 60%, 58%)';
       ctx.shadowBlur = 12;
       
       // Main square
-      ctx.fillStyle = 'hsl(142, 76%, 45%)';
+      ctx.fillStyle = 'hsl(38, 60%, 58%)';
       ctx.fillRect(screen.x - halfSize, screen.y - halfSize, squareSize, squareSize);
       
       // Inner bright core
       ctx.shadowBlur = 0;
-      ctx.fillStyle = 'hsl(142, 90%, 70%)';
+      ctx.fillStyle = 'hsl(38, 70%, 75%)';
       const innerSize = squareSize * 0.35;
       const innerHalf = innerSize / 2;
       ctx.fillRect(screen.x - innerHalf, screen.y - innerHalf, innerSize, innerSize);

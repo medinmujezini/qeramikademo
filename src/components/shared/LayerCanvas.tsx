@@ -156,7 +156,7 @@ export const LayerCanvas: React.FC<LayerCanvasProps> = ({
 
     // Draw grid - thin white lines for high-tech look
     if (showGrid) {
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)'; // Light blue grid
+      ctx.strokeStyle = 'rgba(201, 169, 110, 0.12)'; // Gold grid
       ctx.lineWidth = 0.5;
       const gridStart = screenToWorld(0, 0);
       const gridEnd = screenToWorld(width, height);
@@ -183,8 +183,8 @@ export const LayerCanvas: React.FC<LayerCanvasProps> = ({
       ctx.globalAlpha = wallsOpacity;
       
       // Neon color definitions - thinner and less opaque
-      const neonEdge = 'hsla(142, 76%, 50%, 0.7)';
-      const glassFill = 'hsla(142, 40%, 20%, 0.4)';
+      const neonEdge = 'hsla(38, 60%, 58%, 0.7)';
+      const glassFill = 'hsla(38, 30%, 20%, 0.4)';
       
       floorPlan.walls.forEach(wall => {
         const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);
@@ -225,7 +225,7 @@ export const LayerCanvas: React.FC<LayerCanvasProps> = ({
         ctx.fill();
         
         // Thin glowing edge stroke
-        const edgeColor = isSelected ? 'hsla(142, 100%, 65%, 0.7)' : neonEdge;
+        const edgeColor = isSelected ? 'hsla(38, 80%, 68%, 0.8)' : neonEdge;
         ctx.shadowColor = edgeColor;
         ctx.shadowBlur = 8;
         ctx.strokeStyle = edgeColor;
