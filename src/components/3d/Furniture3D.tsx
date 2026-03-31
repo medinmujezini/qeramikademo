@@ -98,6 +98,7 @@ interface Furniture3DProps {
   onSelect: (id: string) => void;
   onDragStart?: (e: ThreeEvent<PointerEvent>) => void;
   modelUrl?: string;
+  ceilingHeight?: number;
 }
 
 // FallbackBox is now replaced by BlueprintBox imported above
@@ -300,9 +301,16 @@ const GLTFModel: React.FC<{
     }
   });
   
+  // Ceiling lights render at ceiling height instead of ground
+  const isLightingItem = item.category === 'lighting';
+  const isCarpetItem = item.category === 'decor' && item.dimensions.height <= 5;
+  const yPos = isLightingItem
+    ? (280 * CM_TO_METERS) - (item.dimensions.height * CM_TO_METERS / 2)
+    : isCarpetItem ? 0.003 : groundOffset;
+  
   const position: [number, number, number] = [
     item.position.x * CM_TO_METERS,
-    groundOffset,
+    yPos,
     item.position.y * CM_TO_METERS,
   ];
   
@@ -334,6 +342,17 @@ const GLTFModel: React.FC<{
       onPointerOut={() => setHovered(false)}
     >
       <primitive object={clonedScene} />
+      {/* Attach point light to lighting category items */}
+      {isLightingItem && (
+        <pointLight
+          color={item.color || '#FFF8DC'}
+          intensity={4}
+          distance={6}
+          decay={2}
+          position={[0, -0.15, 0]}
+          castShadow
+        />
+      )}
     </group>
   );
 };
@@ -351,6 +370,7 @@ export const Furniture3D: React.FC<Furniture3DProps> = ({
   onSelect,
   onDragStart,
   modelUrl,
+  ceilingHeight = 280,
 }) => {
   // BlueprintBox is shown while model loads (animated placeholder)
   const blueprintPlaceholder = (
@@ -360,7 +380,8 @@ export const Furniture3D: React.FC<Furniture3DProps> = ({
       isDragging={isDragging} 
       hasCollision={hasCollision} 
       onSelect={onSelect} 
-      onDragStart={onDragStart} 
+      onDragStart={onDragStart}
+      ceilingHeight={ceilingHeight}
     />
   );
 

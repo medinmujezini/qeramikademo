@@ -81,6 +81,8 @@ export function useFurnitureByCategory() {
     dining: [],
     office: [],
     storage: [],
+    decor: [],
+    lighting: [],
   };
 
   if (templates) {
