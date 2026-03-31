@@ -569,7 +569,7 @@
   }
 
   .glass-tint-primary {
-    background: hsl(217 91% 60% / 0.03);
+    background: hsl(var(--primary) / 0.03);
   }
 
   .glass-tint-success {
