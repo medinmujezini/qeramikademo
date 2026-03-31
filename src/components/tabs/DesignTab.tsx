@@ -1737,7 +1737,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           </Popover>
         )}
         
-        <div className="h-4 w-px bg-border/50" />
+        <div className="h-4 w-px bg-primary/20" />
         
         <div className="flex items-center gap-2">
           <Switch id="show-tiles" checked={showTiles} onCheckedChange={setShowTiles} className="scale-90" />
