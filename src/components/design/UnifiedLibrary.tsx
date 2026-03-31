@@ -94,14 +94,14 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
   
   return (
     <button
-      className="w-full p-3 text-left rounded-none border border-primary/10 bg-card hover:bg-accent hover:border-primary/30 hover:shadow-[0_0_15px_hsl(38_60%_68%/0.08)] transition-all group cursor-grab active:cursor-grabbing"
+      className="w-full p-3 text-left rounded-none border border-primary/10 bg-card luxury-hover-glow transition-all group cursor-grab active:cursor-grabbing"
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
     >
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 rounded-none bg-muted border border-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-12 h-12 rounded-none bg-muted border border-primary/10 flex items-center justify-center overflow-hidden shrink-0 transition-border-color duration-400 group-hover:border-primary/30">
           {thumbnailUrl && !imageError ? (
             <img 
               src={thumbnailUrl} 
@@ -290,11 +290,11 @@ export const UnifiedLibrary: React.FC = () => {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'furniture' | 'fixtures')} className="flex-1 flex flex-col min-h-0 w-full">
         <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)] rounded-none">
-          <TabsTrigger value="furniture" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+          <TabsTrigger value="furniture" className="flex-1 gap-1 rounded-none relative data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-primary after:transition-all after:duration-300 data-[state=active]:after:w-full data-[state=inactive]:after:w-0">
             <Sofa className="h-3.5 w-3.5" />
             Furniture
           </TabsTrigger>
-          <TabsTrigger value="fixtures" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+          <TabsTrigger value="fixtures" className="flex-1 gap-1 rounded-none relative data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-primary after:transition-all after:duration-300 data-[state=active]:after:w-full data-[state=inactive]:after:w-0">
             <Bath className="h-3.5 w-3.5" />
             Fixtures
           </TabsTrigger>

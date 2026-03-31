@@ -62,26 +62,26 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
             <div className="space-y-3">
               <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Scene Summary</h4>
               
-              <Card>
+              <Card className="luxury-hover-glow">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Armchair className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Furniture</span>
                     </div>
-                    <Badge variant="secondary">0 items</Badge>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">0 items</Badge>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="luxury-hover-glow">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Droplets className="h-4 w-4 text-blue-500" />
+                      <Droplets className="h-4 w-4 text-primary/70" />
                       <span className="text-sm">Fixtures</span>
                     </div>
-                    <Badge variant="secondary">{fixtures.length} items</Badge>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">{fixtures.length} items</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -135,7 +135,8 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
           {/* Selected item info */}
-          <Card>
+          <Card className="luxury-hover-glow">
+            <div className="h-[2px] bg-primary/40" />
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Armchair className="h-4 w-4" />
@@ -158,14 +159,14 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
               
               <div>
                 <span className="text-sm text-muted-foreground">Dimensions</span>
-                <p className="text-sm font-medium">
+                <p className="text-sm font-display font-medium">
                   {selectedFurniture.dimensions.width} × {selectedFurniture.dimensions.depth} × {selectedFurniture.dimensions.height} cm
                 </p>
               </div>
               
               <div>
                 <span className="text-sm text-muted-foreground">Position</span>
-                <p className="text-sm font-medium">
+                <p className="text-sm font-display font-medium">
                   X: {Math.round(selectedFurniture.position.x)} cm, Y: {Math.round(selectedFurniture.position.y)} cm
                 </p>
               </div>
