@@ -301,9 +301,16 @@ const GLTFModel: React.FC<{
     }
   });
   
+  // Ceiling lights render at ceiling height instead of ground
+  const isLightingItem = item.category === 'lighting';
+  const isCarpetItem = item.category === 'decor' && item.dimensions.height <= 5;
+  const yPos = isLightingItem
+    ? (280 * CM_TO_METERS) - (item.dimensions.height * CM_TO_METERS / 2)
+    : isCarpetItem ? 0.003 : groundOffset;
+  
   const position: [number, number, number] = [
     item.position.x * CM_TO_METERS,
-    groundOffset,
+    yPos,
     item.position.y * CM_TO_METERS,
   ];
   
