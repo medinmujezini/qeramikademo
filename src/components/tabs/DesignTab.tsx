@@ -2096,7 +2096,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                   <Button variant="outline" onClick={() => setRenderDialogOpen(false)}>
                     Close
                   </Button>
-                  <Button onClick={handleDownloadRender} className="gap-2">
+                  <Button variant="luxury" onClick={handleDownloadRender} className="gap-2">
                     <Download className="h-4 w-4" />
                     Download
                   </Button>
