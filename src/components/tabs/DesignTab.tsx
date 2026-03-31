@@ -901,7 +901,21 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {staircases
         .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
         .map(stair => (
-          <Staircase3D key={stair.id} staircase={stair} yOffset={0} />
+          <group
+            key={stair.id}
+            onClick={(e) => { e.stopPropagation(); setSelectedStaircaseId(stair.id); }}
+          >
+            <Staircase3D staircase={stair} yOffset={0} />
+            {/* Selection outline */}
+            {selectedStaircaseId === stair.id && (
+              <mesh
+                position={[stair.x * CM_TO_METERS + stair.width * CM_TO_METERS / 2, 0.01, stair.y * CM_TO_METERS + stair.depth * CM_TO_METERS / 2]}
+              >
+                <boxGeometry args={[stair.width * CM_TO_METERS, 0.02, stair.depth * CM_TO_METERS]} />
+                <meshBasicMaterial color="#C9A96E" transparent opacity={0.3} />
+              </mesh>
+            )}
+          </group>
         ))
       }
 
@@ -914,10 +928,53 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             slab={floor.slab!}
             roomWidth={floorPlan.roomWidth || 800}
             roomHeight={floorPlan.roomHeight || 600}
-            yPosition={floor.floorToFloorHeight * 0.01 * floor.level}
+            yPosition={floor.floorToFloorHeight * CM_TO_METERS * floor.level}
           />
         ))
       }
+
+      {/* Ghost floors — adjacent floors rendered as transparent wireframes */}
+      {showAdjacentFloors && (() => {
+        const ghostLevels = [activeLevel - 1, activeLevel + 1].filter(l =>
+          building.floors.some(f => f.level === l)
+        );
+        return ghostLevels.map(level => {
+          const ghostPlan = getFloorPlanForLevel(level);
+          if (!ghostPlan || ghostPlan.walls.length === 0) return null;
+          const floor = building.floors.find(f => f.level === level)!;
+          const yOffset = (level - activeLevel) * floor.floorToFloorHeight * CM_TO_METERS;
+          const ghostOpacity = level > activeLevel ? 0.12 : 0.08;
+          
+          return (
+            <group key={`ghost-${level}`} position={[0, yOffset, 0]}>
+              {ghostPlan.walls.map(wall => {
+                const start = ghostPlan.points.find(p => p.id === wall.startPointId);
+                const end = ghostPlan.points.find(p => p.id === wall.endPointId);
+                if (!start || !end) return null;
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                const length = Math.sqrt(dx * dx + dy * dy) * scale;
+                const angle = Math.atan2(dy, dx);
+                const wallHeight = (wall.height ?? 280) * scale;
+                const thickness = (wall.thickness ?? 15) * scale;
+                const cx = ((start.x + end.x) / 2) * scale;
+                const cz = ((start.y + end.y) / 2) * scale;
+                
+                return (
+                  <mesh
+                    key={`ghost-wall-${wall.id}`}
+                    position={[cx, wallHeight / 2, cz]}
+                    rotation={[0, -angle, 0]}
+                  >
+                    <boxGeometry args={[length, wallHeight, thickness]} />
+                    <meshBasicMaterial color="#888" transparent opacity={ghostOpacity} wireframe />
+                  </mesh>
+                );
+              })}
+            </group>
+          );
+        });
+      })()}
 
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
