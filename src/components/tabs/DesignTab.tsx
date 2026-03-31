@@ -1585,7 +1585,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
-      <div className="h-10 border-b bg-card px-4 flex items-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.10)' }}>
+      <div className="h-10 border-b border-t bg-card px-4 flex items-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.10)', borderTopColor: 'hsl(var(--primary) / 0.08)' }}>
         <div className="flex items-center gap-3 h-full">
           <div className="flex items-center gap-1.5">
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
