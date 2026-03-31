@@ -425,7 +425,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
 
       {/* LEFT PANEL - Tile Library */}
       {showTileLibrary ? (
-        <div className="absolute top-20 left-6 z-20 w-52 max-h-[calc(100%-140px)]">
+        <div className="absolute top-4 left-6 z-20 w-52 max-h-[calc(100%-48px)]">
           <div className="glass-floating rounded-xl overflow-hidden flex flex-col h-full">
             <div className="panel-header shrink-0 flex items-center justify-between">
               <span className="panel-header-title">Tile Library</span>
