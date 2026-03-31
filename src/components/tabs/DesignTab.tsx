@@ -1780,10 +1780,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             <div className="h-4 w-px bg-border/50" />
             
             <div className="flex items-center gap-2 text-sm">
-              <Badge variant="secondary" className="gap-1 bg-white/20">
+              <Badge variant="secondary" className="gap-1">
                 {furnitureCount} Furniture
               </Badge>
-              <Badge variant="secondary" className="gap-1 bg-white/20">
+              <Badge variant="secondary" className="gap-1">
                 {fixtureCount} Fixtures
               </Badge>
             </div>
