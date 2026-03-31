@@ -5,8 +5,9 @@
  * Supports optional custom GLB model via modelUrl.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import type { Window as FloorPlanWindow, WindowType } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
 
@@ -89,6 +90,30 @@ export const Window3D: React.FC<Window3DProps> = ({
     return bars;
   }, [winW, winH, cols, rows, mullionW]);
 
+  // If a custom model URL is provided, render it instead
+  if (win.modelUrl) {
+    return (
+      <group position={[posX, sillY, posZ]} rotation={[0, -wallAngle, 0]}>
+        <Suspense fallback={
+          <mesh position={[0, winH / 2, 0]}>
+            <boxGeometry args={[winW, winH, 0.01]} />
+            <meshStandardMaterial color="#a0c0e0" transparent opacity={0.3} />
+          </mesh>
+        }>
+          <CustomWindowModel url={win.modelUrl} width={winW} height={winH} depth={wallT} />
+        </Suspense>
+        {/* Still add the rect area light for illumination */}
+        <rectAreaLight
+          color="#fff8e7"
+          intensity={2}
+          width={winW}
+          height={winH}
+          position={[0, winH / 2, wallT / 2 + 0.01]}
+        />
+      </group>
+    );
+  }
+
   return (
     <group
       position={[posX, sillY, posZ]}
@@ -167,6 +192,30 @@ export const Window3D: React.FC<Window3DProps> = ({
       </mesh>
     </group>
   );
+};
+
+/**
+ * Custom GLB window model loader — scales model to fit opening dimensions.
+ */
+const CustomWindowModel: React.FC<{ url: string; width: number; height: number; depth: number }> = ({ url, width, height, depth }) => {
+  const { scene } = useGLTF(url);
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    const box = new THREE.Box3().setFromObject(clone);
+    const size = box.getSize(new THREE.Vector3());
+    const scaleX = size.x > 0 ? width / size.x : 1;
+    const scaleY = size.y > 0 ? height / size.y : 1;
+    const scaleZ = size.z > 0 ? depth / size.z : 1;
+    clone.scale.set(scaleX, scaleY, scaleZ);
+    const newBox = new THREE.Box3().setFromObject(clone);
+    const center = newBox.getCenter(new THREE.Vector3());
+    clone.position.x -= center.x;
+    clone.position.y -= newBox.min.y;
+    clone.position.z -= center.z;
+    return clone;
+  }, [scene, width, height, depth]);
+
+  return <primitive object={clonedScene} />;
 };
 
 export default Window3D;

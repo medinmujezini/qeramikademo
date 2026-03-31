@@ -1,10 +1,12 @@
 /**
  * Door3D — Proper 3D door geometry with frame, panel, handle, and swing arc.
  * Supports: hinged-left, hinged-right, sliding, pocket, double door types.
+ * Supports optional custom GLB model via modelUrl.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import type { Door, DoorType } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
 
@@ -114,6 +116,22 @@ export const Door3D: React.FC<Door3DProps> = ({
     }
     return points;
   }, [door.type, doorW]);
+
+  // If a custom model URL is provided, render it instead of procedural geometry
+  if (door.modelUrl) {
+    return (
+      <group position={[posX, 0, posZ]} rotation={[0, -wallAngle, 0]}>
+        <Suspense fallback={
+          <mesh position={[0, doorH / 2, 0]}>
+            <boxGeometry args={[doorW, doorH, panelThickness]} />
+            <meshStandardMaterial color={DOOR_COLOR} />
+          </mesh>
+        }>
+          <CustomDoorModel url={door.modelUrl} width={doorW} height={doorH} depth={wallT} />
+        </Suspense>
+      </group>
+    );
+  }
 
   return (
     <group
@@ -249,6 +267,32 @@ export const Door3D: React.FC<Door3DProps> = ({
       </mesh>
     </group>
   );
+};
+
+/**
+ * Custom GLB door model loader — scales model to fit opening dimensions.
+ */
+const CustomDoorModel: React.FC<{ url: string; width: number; height: number; depth: number }> = ({ url, width, height, depth }) => {
+  const { scene } = useGLTF(url);
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    // Compute bounding box and scale to fit
+    const box = new THREE.Box3().setFromObject(clone);
+    const size = box.getSize(new THREE.Vector3());
+    const scaleX = size.x > 0 ? width / size.x : 1;
+    const scaleY = size.y > 0 ? height / size.y : 1;
+    const scaleZ = size.z > 0 ? depth / size.z : 1;
+    clone.scale.set(scaleX, scaleY, scaleZ);
+    // Center horizontally, sit on floor
+    const newBox = new THREE.Box3().setFromObject(clone);
+    const center = newBox.getCenter(new THREE.Vector3());
+    clone.position.x -= center.x;
+    clone.position.y -= newBox.min.y;
+    clone.position.z -= center.z;
+    return clone;
+  }, [scene, width, height, depth]);
+
+  return <primitive object={clonedScene} />;
 };
 
 export default Door3D;
