@@ -600,7 +600,7 @@
     height: 500px;
     top: -150px;
     left: -100px;
-    background: radial-gradient(circle, hsl(217 91% 60% / 0.45) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.25) 0%, transparent 70%);
     animation: gradient-shift-1 12s ease-in-out infinite;
   }
 
@@ -609,7 +609,7 @@
     height: 450px;
     top: 20%;
     right: -120px;
-    background: radial-gradient(circle, hsl(190 90% 50% / 0.38) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
     animation: gradient-shift-2 15s ease-in-out infinite;
   }
 
@@ -618,7 +618,7 @@
     height: 400px;
     bottom: -100px;
     left: 35%;
-    background: radial-gradient(circle, hsl(260 80% 60% / 0.32) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(30 40% 50% / 0.12) 0%, transparent 70%);
     animation: gradient-shift-3 10s ease-in-out infinite;
   }
 
@@ -627,7 +627,7 @@
     height: 350px;
     top: 45%;
     left: 15%;
-    background: radial-gradient(circle, hsl(170 70% 50% / 0.28) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.1) 0%, transparent 70%);
     animation: gradient-shift-2 18s ease-in-out infinite reverse;
   }
 }
