@@ -2217,8 +2217,22 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {/* WALKTHROUGH OVERLAYS */}
-      {viewMode === 'walkthrough' && !isPointerLocked && !isTouchDevice && (
+      {/* UNREAL ACTIVE INDICATOR */}
+      {unrealActive && (
+        <div className="absolute top-4 right-4 z-50">
+          <div className="flex items-center gap-2 bg-card/80 backdrop-blur-sm border border-primary/20 rounded-lg px-3 py-2">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs font-display text-foreground/80 uppercase tracking-wider">Running in Unreal Engine</span>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={exitWalkthrough}>
+              <X className="h-3 w-3 mr-1" />
+              Exit
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* WALKTHROUGH OVERLAYS — browser only */}
+      {!unrealActive && viewMode === 'walkthrough' && !isPointerLocked && !isTouchDevice && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-center">
             <PersonStanding className="h-12 w-12 text-primary" />
@@ -2242,7 +2256,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
+      {!unrealActive && viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
         <>
           {/* Crosshair */}
           <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
@@ -2270,7 +2284,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* Mobile joystick zones */}
-      {viewMode === 'walkthrough' && isTouchDevice && (
+      {!unrealActive && viewMode === 'walkthrough' && isTouchDevice && (
         <>
           <div id="left-joystick-zone" className="absolute bottom-0 left-0 w-44 h-44 z-40 pointer-events-auto" />
           <div id="right-joystick-zone" className="absolute bottom-0 right-0 w-44 h-44 z-40 pointer-events-auto" />
