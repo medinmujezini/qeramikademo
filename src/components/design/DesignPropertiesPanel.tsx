@@ -159,7 +159,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
               
               <div>
                 <span className="text-sm text-muted-foreground">Dimensions</span>
-                <p className="text-sm font-medium">
+                <p className="text-sm font-display font-medium">
                   {selectedFurniture.dimensions.width} × {selectedFurniture.dimensions.depth} × {selectedFurniture.dimensions.height} cm
                 </p>
               </div>
