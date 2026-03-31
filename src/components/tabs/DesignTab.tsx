@@ -40,7 +40,11 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2 } from 'lucide-react';
+import { FloorManager } from '@/components/floor-plan/FloorManager';
+import { StaircaseTypePicker } from '@/components/3d/StaircaseTypePicker';
+import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
+import { CM_TO_METERS } from '@/constants/units';
 
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
@@ -588,7 +592,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   findTile,
   floorPlan,
 }) => {
-  const { staircases, building, activeLevel } = useFloorPlanContext();
+  const { staircases, building, activeLevel, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   const { 
     fixtures, 
     selectedFixtureId, 
@@ -897,7 +901,21 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {staircases
         .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
         .map(stair => (
-          <Staircase3D key={stair.id} staircase={stair} yOffset={0} />
+          <group
+            key={stair.id}
+            onClick={(e) => { e.stopPropagation(); setSelectedStaircaseId(stair.id); }}
+          >
+            <Staircase3D staircase={stair} yOffset={0} />
+            {/* Selection outline */}
+            {selectedStaircaseId === stair.id && (
+              <mesh
+                position={[stair.x * CM_TO_METERS + stair.width * CM_TO_METERS / 2, 0.01, stair.y * CM_TO_METERS + stair.depth * CM_TO_METERS / 2]}
+              >
+                <boxGeometry args={[stair.width * CM_TO_METERS, 0.02, stair.depth * CM_TO_METERS]} />
+                <meshBasicMaterial color="#C9A96E" transparent opacity={0.3} />
+              </mesh>
+            )}
+          </group>
         ))
       }
 
@@ -910,10 +928,53 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             slab={floor.slab!}
             roomWidth={floorPlan.roomWidth || 800}
             roomHeight={floorPlan.roomHeight || 600}
-            yPosition={floor.floorToFloorHeight * 0.01 * floor.level}
+            yPosition={floor.floorToFloorHeight * CM_TO_METERS * floor.level}
           />
         ))
       }
+
+      {/* Ghost floors — adjacent floors rendered as transparent wireframes */}
+      {showAdjacentFloors && (() => {
+        const ghostLevels = [activeLevel - 1, activeLevel + 1].filter(l =>
+          building.floors.some(f => f.level === l)
+        );
+        return ghostLevels.map(level => {
+          const ghostPlan = getFloorPlanForLevel(level);
+          if (!ghostPlan || ghostPlan.walls.length === 0) return null;
+          const floor = building.floors.find(f => f.level === level)!;
+          const yOffset = (level - activeLevel) * floor.floorToFloorHeight * CM_TO_METERS;
+          const ghostOpacity = level > activeLevel ? 0.12 : 0.08;
+          
+          return (
+            <group key={`ghost-${level}`} position={[0, yOffset, 0]}>
+              {ghostPlan.walls.map(wall => {
+                const start = ghostPlan.points.find(p => p.id === wall.startPointId);
+                const end = ghostPlan.points.find(p => p.id === wall.endPointId);
+                if (!start || !end) return null;
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                const length = Math.sqrt(dx * dx + dy * dy) * scale;
+                const angle = Math.atan2(dy, dx);
+                const wallHeight = (wall.height ?? 280) * scale;
+                const thickness = (wall.thickness ?? 15) * scale;
+                const cx = ((start.x + end.x) / 2) * scale;
+                const cz = ((start.y + end.y) / 2) * scale;
+                
+                return (
+                  <mesh
+                    key={`ghost-wall-${wall.id}`}
+                    position={[cx, wallHeight / 2, cz]}
+                    rotation={[0, -angle, 0]}
+                  >
+                    <boxGeometry args={[length, wallHeight, thickness]} />
+                    <meshBasicMaterial color="#888" transparent opacity={ghostOpacity} wireframe />
+                  </mesh>
+                );
+              })}
+            </group>
+          );
+        });
+      })()}
 
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
@@ -937,7 +998,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -1116,7 +1177,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       const scene = sceneRef.current;
       if (scene) {
         const glbBlob = await exportSceneToGLBBlob(scene);
-        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint, furniture);
+        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint, furniture, building);
 
         if (isInsideUnreal()) {
           const buffer = await glbBlob.arrayBuffer();
@@ -1254,7 +1315,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   // Handle canvas click to close panel (via onPointerMissed)
   const handleCanvasPointerMissed = useCallback(() => {
     setIsPanelOpen(false);
-  }, []);
+    setSelectedStaircaseId(null);
+  }, [setSelectedStaircaseId]);
 
   // Render image functionality
   const handleRenderImage = useCallback(async () => {
@@ -1660,36 +1722,20 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 Light
               </Button>
 
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
-                const cx = (floorPlan.roomWidth || 800) / 2;
-                const cy = (floorPlan.roomHeight || 600) / 2;
-                addStaircase('straight', cx - 50, cy - 140);
-                toast.success('Staircase added');
-              }}>
-                <ArrowUpDown className="h-3 w-3" />
-                Stairs
-              </Button>
+              <StaircaseTypePicker />
 
               <div className="w-px h-4 bg-primary/15" />
 
-              {/* Floor selector */}
+              {/* Floor manager */}
+              <FloorManager />
+
+              {/* Ghost floors toggle */}
               <div className="flex items-center gap-1">
-                <Layers className="h-3 w-3 text-muted-foreground" />
-                <Select value={String(activeLevel)} onValueChange={(v) => setActiveLevel(Number(v))}>
-                  <SelectTrigger className="h-7 w-[100px] text-xs border-primary/15">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {building.floors.map(floor => (
-                      <SelectItem key={floor.level} value={String(floor.level)} className="text-xs">
-                        {floor.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { addFloor(); toast.success('Floor added'); }}>
-                  <Plus className="h-3 w-3" />
-                </Button>
+                <Switch id="show-ghost" checked={showAdjacentFloors} onCheckedChange={setShowAdjacentFloors} className="scale-75" />
+                <Label htmlFor="show-ghost" className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
+                  <Building2 className="h-3 w-3" />
+                  <span className="uppercase tracking-wider">Ghost</span>
+                </Label>
               </div>
 
               <div className="w-px h-4 bg-primary/15" />
@@ -1997,11 +2043,15 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
             </div>
             <ScrollArea className="flex-1 relative z-10">
-              <DesignPropertiesPanel
-                selectedFurniture={selectedFurniture}
-                onRotate={handleRotateSelected}
-                onDelete={handleDeleteSelected}
-              />
+              {selectedStaircaseId ? (
+                <StaircasePropertiesPanel />
+              ) : (
+                <DesignPropertiesPanel
+                  selectedFurniture={selectedFurniture}
+                  onRotate={handleRotateSelected}
+                  onDelete={handleDeleteSelected}
+                />
+              )}
             </ScrollArea>
           </div>
         </div>
