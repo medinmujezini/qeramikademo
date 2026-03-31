@@ -1966,7 +1966,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       {/* PREPARING WALKTHROUGH OVERLAY */}
       {isPreparingWalkthrough && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-opacity duration-300">
-          <div className="flex flex-col items-center gap-4 text-center">
+          <div className="pointer-events-none absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
+          <div className="flex flex-col items-center gap-4 text-center relative z-10">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
             <h3 className="text-xl font-display font-semibold text-foreground">Preparing walkthrough…</h3>
             <p className="text-sm text-muted-foreground">Generating 3D scene</p>
