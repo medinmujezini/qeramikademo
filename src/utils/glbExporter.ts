@@ -77,8 +77,8 @@ function convertRectAreaLightsToProxies(scene: THREE.Object3D): void {
     const proxy = new THREE.PointLight(
       light.color,
       pointIntensity,
-      light.distance || 10,
-      light.decay ?? 2
+      10,
+      2
     );
     proxy.name = light.name || 'rectarea_proxy';
     proxy.position.copy(light.position);
