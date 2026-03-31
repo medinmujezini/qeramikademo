@@ -1,44 +1,36 @@
 
 
-# Fix Triplanar Material Artifacts (Wave/Ripple Pattern)
+# Fix: Include Ceiling and Lights in Unreal GLB Export
 
 ## Problem
 
-The screenshot shows concentric wave/ripple patterns on all wall and ceiling surfaces. This happens because the `createTriplanarMaterial` function replaces `#include <map_fragment>` in the fragment shader with triplanar sampling code even when a texture IS provided — but the real issue is that when `texture` is a canvas-based or procedural texture, the triplanar projection coordinates (`worldPos.yz`, `.xz`, `.xy`) create visible moiré interference patterns at certain scales and viewing angles.
+The GLB export runs **before** `setShowCeiling(true)` — so the ceiling mesh and room lights are not in the scene at export time. The emitter grid (`pointLight`s) always renders but GLTFExporter needs `KHR_lights_punctual` extension support to include them, and the manifest already describes lights separately.
 
-For **plain walls** (no texture), the function correctly returns early without shader injection — so the artifacts are from walls/surfaces that DO have a texture assigned.
+## Two Issues to Fix
 
-## Root Cause
-
-The `textureScale: 2.0` combined with the wall dimensions creates repeating patterns that interfere visually. The ceiling surface likely has its own material with similar issues.
-
-## Fix — 2 Changes
-
-### 1. Only use triplanar on walls that actually need it
+### 1. Force ceiling visible before export snapshot
 
 **File: `src/components/tabs/DesignTab.tsx`**
 
-When `texture` is null (plain walls — which is the common case), use a regular `MeshStandardMaterial` directly instead of calling `createTriplanarMaterial`. Only use triplanar when there's an actual texture that needs to display on side faces.
+In `enterWalkthrough`, move the ceiling visibility toggle **before** the GLB export call:
 
-### 2. Fix triplanar scale and add fallback
+- Set `ceilingBeforeWalkRef.current = showCeiling` and `setShowCeiling(true)` before the export
+- Add a short `await new Promise(r => setTimeout(r, 100))` to let React re-render the ceiling into the scene
+- Then run `exportSceneToGLBBlob(scene)`
 
-**File: `src/utils/triplanarMaterial.ts`**
+This ensures the ceiling mesh exists in the Three.js scene graph when the exporter clones it.
 
-- Change default `textureScale` from `1.0` to `0.5` (larger textures, less repetition)
-- Ensure the `customProgramCacheKey` includes texture ID to prevent shader cache collisions
-- Add `map` to the material constructor so Three.js knows the material uses a texture (required for the `#include <map_fragment>` code path to exist in the shader)
+### 2. Ensure ceiling mesh exports as double-sided
 
-### 3. FloorSlab3D — remove triplanar for untextured slabs
+**File: `src/utils/glbExporter.ts`**
 
-**File: `src/components/3d/FloorSlab3D.tsx`**
+The ceiling mesh is named `"ceiling"` — verify it's not accidentally stripped by `isEditorObject`. Currently it isn't (no pattern match), so it will export correctly once visible. The `DoubleSide` material is already set in `Ceiling3D.tsx`.
 
-Currently calls `createTriplanarMaterial` with no `map` — this should already return a plain material (early return in the function). Verify this is working correctly; if so, no change needed. If the slab shows artifacts, switch to plain `MeshStandardMaterial`.
+For lights: Three.js `GLTFExporter` does not export `pointLight` objects by default (needs `KHR_lights_punctual`). The manifest already includes emitter data for Unreal to create its own lights, so this is fine — Unreal should use the manifest `emissiveLights` array, not the GLB lights.
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/tabs/DesignTab.tsx` | Use plain material for untextured walls, triplanar only when texture exists |
-| `src/utils/triplanarMaterial.ts` | Fix default scale, improve cache key |
-| `src/components/3d/FloorSlab3D.tsx` | Verify plain material path works (likely no change needed) |
+| `src/components/tabs/DesignTab.tsx` | Move ceiling visibility ON before GLB export, add render delay |
 
