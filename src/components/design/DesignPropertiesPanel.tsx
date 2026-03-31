@@ -40,9 +40,10 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
   if (!selectedFurniture) {
     return (
-      <div className="h-full flex flex-col border-l bg-muted/30">
-        <div className="p-4 border-b">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
+      <div className="h-full flex flex-col border-l border-primary/10 bg-card/50">
+        <div className="p-4 border-b border-primary/15">
+              <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
+              <div className="w-8 h-px bg-primary/25 mt-1" />
         </div>
         
         <ScrollArea className="flex-1">
