@@ -182,14 +182,14 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Actions */}
           <div className="space-y-2">
-            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60">Actions</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Actions</h4>
             
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" onClick={onRotate}>
+              <Button variant="luxury" size="sm" onClick={onRotate}>
                 <RotateCw className="h-4 w-4 mr-1" />
                 Rotate 45°
               </Button>
-              <Button variant="outline" size="sm" disabled>
+              <Button variant="luxury" size="sm" disabled>
                 <Palette className="h-4 w-4 mr-1" />
                 Color
               </Button>
