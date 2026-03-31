@@ -62,26 +62,26 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
             <div className="space-y-3">
               <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Scene Summary</h4>
               
-              <Card>
+              <Card className="luxury-hover-glow">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Armchair className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Furniture</span>
                     </div>
-                    <Badge variant="secondary">0 items</Badge>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">0 items</Badge>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="luxury-hover-glow">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Droplets className="h-4 w-4 text-blue-500" />
+                      <Droplets className="h-4 w-4 text-primary/70" />
                       <span className="text-sm">Fixtures</span>
                     </div>
-                    <Badge variant="secondary">{fixtures.length} items</Badge>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">{fixtures.length} items</Badge>
                   </div>
                 </CardContent>
               </Card>
