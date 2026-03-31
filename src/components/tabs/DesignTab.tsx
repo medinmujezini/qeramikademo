@@ -1090,7 +1090,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       const scene = sceneRef.current;
       if (scene) {
         const glbBlob = await exportSceneToGLBBlob(scene);
-        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint);
+        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint, furniture);
 
         if (isInsideUnreal()) {
           const buffer = await glbBlob.arrayBuffer();
