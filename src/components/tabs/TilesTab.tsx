@@ -467,7 +467,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
           </div>
         </div>
       ) : (
-        <div className="absolute top-20 left-6 z-20">
+        <div className="absolute top-4 left-6 z-20">
           <Button
             variant="outline"
             size="sm"
