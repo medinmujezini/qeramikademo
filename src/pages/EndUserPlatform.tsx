@@ -40,7 +40,7 @@ const EndUserPlatform = () => {
     <AuthProvider>
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
-        <header className="border-b bg-card px-6 h-16 flex items-center justify-between relative z-10 overflow-hidden shimmer-border-bottom" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
+        <header className="bg-card px-6 h-16 flex items-center justify-between relative z-10 overflow-hidden shimmer-border-bottom" style={{ borderBottom: 'none' }}>
           <div className="pointer-events-none absolute -top-16 -right-24 w-[350px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
           <div className="pointer-events-none absolute -bottom-12 -left-20 w-[280px] h-[150px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
           <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[500px] h-[200px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.05)_0%,transparent_60%)]" />
