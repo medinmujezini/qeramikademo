@@ -40,13 +40,13 @@ const EndUserPlatform = () => {
     <AuthProvider>
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
-        <header className="border-b border-border bg-card/80 backdrop-blur-sm px-4 h-12 flex items-center justify-between relative z-10">
+        <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm px-6 h-14 flex items-center justify-between relative z-10" style={{ borderBottomColor: 'hsl(var(--primary) / 0.12)' }}>
           <div className="flex items-center gap-3">
             <BackToHome />
-            <div className="w-px h-5 bg-border" />
+            <div className="w-px h-5 bg-border/30" />
             <div className="flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="font-medium text-sm text-foreground">Design Studio</span>
+              <Sparkles className="h-4 w-4 text-primary/70" />
+              <span className="font-medium text-sm text-foreground tracking-wider">Design Studio</span>
             </div>
           </div>
           

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Wrench, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleCard } from '@/components/home/RoleCard';
 
@@ -8,18 +8,19 @@ const HomePage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <div className="w-4 h-4 rounded bg-primary-foreground" />
+      <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-2xl font-display font-bold tracking-tight text-primary">SD</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-foreground tracking-wide">SanitariDraft</span>
+              <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Interior Design</span>
             </div>
-            <span className="text-lg font-bold text-foreground">SanitariDraft</span>
           </div>
           
-          <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground tracking-wider text-xs uppercase">
             <Link to="/admin">
-              <Shield className="h-4 w-4 mr-1.5" />
+              <Shield className="h-3.5 w-3.5 mr-1.5" />
               Admin
             </Link>
           </Button>
@@ -27,23 +28,33 @@ const HomePage = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+      <main className="flex-1 flex flex-col items-center justify-center px-8 py-32">
         {/* Hero Section */}
-        <div className="text-center mb-14 max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
+        <div className="text-center mb-20 max-w-3xl animate-fade-in">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-primary/80 mb-6">Professional Interior Design</p>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-foreground mb-6 leading-[1.05] tracking-tight">
             Transform Your
-            <span className="text-primary block mt-1">Living Space</span>
+            <span className="text-primary block mt-2">Living Space</span>
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          
+          {/* Gold divider */}
+          <div className="w-16 h-px bg-primary/40 mx-auto my-8" />
+          
+          <p className="text-base text-muted-foreground leading-relaxed max-w-xl mx-auto font-light">
             Professional interior design and planning tools made simple. 
             Design rooms, select finishes, and visualize in stunning 3D.
           </p>
         </div>
 
         {/* Role Selection Cards */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl w-full">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full animate-fade-in" style={{ animationDelay: '0.15s' }}>
           <RoleCard
-            icon={Home}
+            icon={() => (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            )}
             title="Design Your Space"
             subtitle="Homeowner"
             description="An intuitive platform to visualize and design your perfect bathroom or kitchen."
@@ -59,7 +70,11 @@ const HomePage = () => {
           />
 
           <RoleCard
-            icon={Wrench}
+            icon={() => (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+            )}
             title="Worker Platform"
             subtitle="Professional"
             description="Complete professional toolkit for contractors and designers with MEP planning."
@@ -77,9 +92,12 @@ const HomePage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 px-6 border-t border-border">
-        <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
-          <p>© 2024 SanitariDraft. Professional design tools.</p>
+      <footer className="py-10 px-8 border-t border-border/30">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-3">
+          <div className="w-10 h-px bg-primary/30" />
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">
+            © 2024 SanitariDraft — Professional Design Tools
+          </p>
         </div>
       </footer>
     </div>
