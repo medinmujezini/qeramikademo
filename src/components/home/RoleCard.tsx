@@ -63,7 +63,7 @@ export const RoleCard: React.FC<RoleCardProps> = ({
         </ul>
 
         {/* CTA */}
-        <Button asChild variant="outline" size="lg" className="w-full border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 tracking-wider text-xs uppercase group-hover:border-primary/60 transition-all duration-500">
+        <Button asChild variant="luxury" size="lg" className="w-full btn-shimmer group-hover:border-primary/60 transition-all duration-500">
           <Link to={to} className="flex items-center justify-center gap-2">
             {ctaText}
             <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
