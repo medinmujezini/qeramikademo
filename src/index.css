@@ -442,7 +442,7 @@
 
   .glass-header {
     position: relative;
-    border-radius: 8px;
+    border-radius: 0;
     background: linear-gradient(
       180deg, 
       rgba(255, 255, 255, 0.08), 
