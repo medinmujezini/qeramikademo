@@ -1104,7 +1104,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   
   const [showTiles, setShowTiles] = useState(true);
   const [showPlumbing, setShowPlumbing] = useState(false);
-  const [showCeiling, setShowCeiling] = useState(true);
+  const [showCeiling, setShowCeiling] = useState(false);
   const [giEnabled, setGiEnabled] = useState(false);
   const [giQuality, setGiQuality] = useState<GIQualityTier>('high');
   const [selectedLightId, setSelectedLightId] = useState<string | null>(null);
@@ -1116,6 +1116,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
+  const ceilingBeforeWalkRef = useRef(false);
   const [showSpawnMarker, setShowSpawnMarker] = useState(true);
   const [spawnPoint, setSpawnPoint] = useState<SpawnPoint>(() => {
     // Default spawn at room center
@@ -1257,12 +1258,15 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     isAnimatingCamera.current = false;
     setIsPreparingWalkthrough(false);
     setShowSpawnMarker(false);
+    ceilingBeforeWalkRef.current = showCeiling;
+    setShowCeiling(true);
     setViewMode('walkthrough');
-  }, [floorPlan, spawnPoint, isAnimatingCamera]);
+  }, [floorPlan, spawnPoint, isAnimatingCamera, showCeiling]);
 
   const exitWalkthrough = useCallback(() => {
     document.exitPointerLock();
     setViewMode('design');
+    setShowCeiling(ceilingBeforeWalkRef.current);
     setShowSpawnMarker(true);
     if (cameraRef.current) cameraRef.current.position.copy(savedOrbitPos.current);
     if (orbitControlsRef.current) {
