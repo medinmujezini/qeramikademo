@@ -39,6 +39,8 @@ interface TiledWall3DProps {
   windows?: WindowType[];
   textureUrls?: TileTextureUrls;
   textureScaleCm?: number;
+  startExtension?: number;
+  endExtension?: number;
 }
 
 interface TilePosition {
@@ -253,17 +255,24 @@ const TiledWallInner: React.FC<{
   doors: Door[];
   windows: WindowType[];
   textureProps?: PBRTextureProps;
+  startExtension?: number;
+  endExtension?: number;
 }> = ({
   wall, start, end, tileConfig, tile,
   animationState, onAnimationComplete,
   doors, windows, textureProps,
+  startExtension = 0, endExtension = 0,
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
-  const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+  const originalLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const midX = (start.x + end.x) / 2 * CM_TO_METERS;
-  const midZ = (start.y + end.y) / 2 * CM_TO_METERS;
+  const dirX = Math.cos(angle);
+  const dirY = Math.sin(angle);
+  const length = originalLength + startExtension + endExtension;
+  const shiftCm = (endExtension - startExtension) / 2;
+  const midX = ((start.x + end.x) / 2 + dirX * shiftCm) * CM_TO_METERS;
+  const midZ = ((start.y + end.y) / 2 + dirY * shiftCm) * CM_TO_METERS;
   const wallThicknessM = wall.thickness * CM_TO_METERS;
   const wallLengthM = length * CM_TO_METERS;
   const wallHeightM = wall.height * CM_TO_METERS;
@@ -360,13 +369,13 @@ const TiledWallInner: React.FC<{
 };
 
 export const TiledWall3D: React.FC<TiledWall3DProps> = (props) => {
-  const { textureUrls, textureScaleCm, ...wallProps } = props;
+  const { textureUrls, textureScaleCm, startExtension, endExtension, ...wallProps } = props;
   const urlMap = resolveTextureUrlMap(textureUrls);
 
   if (urlMap) {
     return (
       <Suspense fallback={
-        <TiledWallInner {...wallProps} doors={wallProps.doors ?? []} windows={wallProps.windows ?? []} />
+        <TiledWallInner {...wallProps} doors={wallProps.doors ?? []} windows={wallProps.windows ?? []} startExtension={startExtension} endExtension={endExtension} />
       }>
         <TextureLoader urls={urlMap}>
           {(textureProps) => (
@@ -375,6 +384,8 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = (props) => {
               doors={wallProps.doors ?? []}
               windows={wallProps.windows ?? []}
               textureProps={textureProps}
+              startExtension={startExtension}
+              endExtension={endExtension}
             />
           )}
         </TextureLoader>
@@ -382,7 +393,7 @@ export const TiledWall3D: React.FC<TiledWall3DProps> = (props) => {
     );
   }
 
-  return <TiledWallInner {...wallProps} doors={wallProps.doors ?? []} windows={wallProps.windows ?? []} />;
+  return <TiledWallInner {...wallProps} doors={wallProps.doors ?? []} windows={wallProps.windows ?? []} startExtension={startExtension} endExtension={endExtension} />;
 };
 
 export default TiledWall3D;

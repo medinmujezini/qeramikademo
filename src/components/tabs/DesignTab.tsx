@@ -57,6 +57,7 @@ import { isFixturePositionValid } from '@/utils/fixtureCollision';
 import { createWallShapeWithOpenings } from '@/utils/wallOpeningGeometry';
 import { exportSceneToGLBBlob } from '@/utils/glbExporter';
 import { generateRoomManifest } from '@/utils/roomManifest';
+import { analyzeWallJunctions, getWallExtension } from '@/utils/wallJunctionGeometry';
 import { isInsideUnreal, startUnrealWalkthrough, onExitWalkthrough, arrayBufferToBase64 } from '@/utils/unrealBridge';
 import { toast } from 'sonner';
 import type { FurnitureTemplate } from '@/data/furnitureLibrary';
@@ -277,6 +278,8 @@ const Wall3D = ({
   previewWallpaperId,
   doors = [],
   windows = [],
+  startExtension = 0,
+  endExtension = 0,
 }: {
   wall: Wall;
   start: { x: number; y: number };
@@ -289,6 +292,8 @@ const Wall3D = ({
   previewWallpaperId?: string | null;
   doors?: import('@/types/floorPlan').Door[];
   windows?: import('@/types/floorPlan').Window[];
+  startExtension?: number;
+  endExtension?: number;
 }) => {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
   
@@ -296,11 +301,21 @@ const Wall3D = ({
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
   const DRAG_THRESHOLD = 5; // pixels
 
-  const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2) * scale;
+  const originalLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const midX = (start.x + end.x) / 2 * scale;
-  const midZ = (start.y + end.y) / 2 * scale;
-  const wallLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+  const dirX = Math.cos(angle);
+  const dirY = Math.sin(angle);
+  
+  // Extend wall endpoints by junction extensions (in cm, converted to scene units)
+  const extStartCm = startExtension; // cm
+  const extEndCm = endExtension; // cm
+  const effectiveLength = (originalLength + extStartCm + extEndCm) * scale;
+  
+  // Shift midpoint along wall direction to account for asymmetric extensions
+  const shiftCm = (extEndCm - extStartCm) / 2;
+  const midX = ((start.x + end.x) / 2 + dirX * shiftCm) * scale;
+  const midZ = ((start.y + end.y) / 2 + dirY * shiftCm) * scale;
+  const wallLength = originalLength + extStartCm + extEndCm;
   
   const startHeight = (wall.startHeight ?? wall.height) * scale;
   const endHeight = (wall.endHeight ?? wall.height) * scale;
@@ -380,7 +395,7 @@ const Wall3D = ({
     const halfThick = wallThickness / 2;
 
     const shape = createWallShapeWithOpenings({
-      wallLength: length,
+      wallLength: effectiveLength,
       startHeight,
       endHeight,
       doors,
@@ -397,7 +412,7 @@ const Wall3D = ({
     geo.translate(0, 0, -halfThick);
     
     return geo;
-  }, [length, startHeight, endHeight, wallThickness, doors, windows, scale]);
+  }, [effectiveLength, startHeight, endHeight, wallThickness, doors, windows, scale]);
 
   const yPosition = 0;
 
@@ -619,6 +634,11 @@ const DesignScene: React.FC<DesignSceneProps> = ({
     };
   }, [floorPlan.points, scale]);
 
+  // Compute wall junctions for seamless corner geometry
+  const junctions = useMemo(() => {
+    return analyzeWallJunctions(floorPlan.walls, floorPlan.points);
+  }, [floorPlan.walls, floorPlan.points]);
+
   const floorWidth = bounds.maxX - bounds.minX;
   const floorDepth = bounds.maxY - bounds.minY;
   const floorCenterX = (bounds.minX + bounds.maxX) / 2;
@@ -745,6 +765,10 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         const end = floorPlan.points.find(p => p.id === wall.endPointId);
         if (!start || !end) return null;
 
+        // Compute junction extensions for seamless corners
+        const startExt = getWallExtension(wall.id, wall.startPointId, junctions);
+        const endExt = getWallExtension(wall.id, wall.endPointId, junctions);
+
         const tileSection = showTiles 
           ? floorPlan.tileSections.find(s => s.wallId === wall.id) 
           : null;
@@ -806,6 +830,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 onAnimationComplete={() => onTileAnimationComplete?.(wall.id)}
                 doors={wallDoors}
                 windows={wallWindows}
+                startExtension={startExt}
+                endExtension={endExt}
               />
             ) : (
               <Wall3D 
@@ -820,6 +846,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 previewWallpaperId={previewWallpaperId}
                 doors={wallDoors}
                 windows={wallWindows}
+                startExtension={startExt}
+                endExtension={endExt}
               />
             )}
 

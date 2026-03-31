@@ -43,6 +43,16 @@ function normalizeAngle(a: number): number {
 }
 
 /**
+ * Compute the signed angular difference between two angles, result in (-π, π]
+ */
+function angleDiff(a: number, b: number): number {
+  let d = a - b;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d <= -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
+/**
  * Analyze all wall junctions in the floor plan.
  * Returns junction info per shared point.
  */
@@ -73,30 +83,47 @@ export function analyzeWallJunctions(walls: Wall[], points: Point[]): JunctionIn
       const a1 = wallAngleFromPoint(w1, pointId, points);
       const a2 = wallAngleFromPoint(w2, pointId, points);
 
-      const bisector = (a1 + a2) / 2;
-      const halfAngle = Math.abs(normalizeAngle(a2 - a1)) / 2;
-      const sinHalf = Math.sin(halfAngle);
+      // Compute the angle between the two walls using signed difference
+      const diff = Math.abs(angleDiff(a2, a1));
 
-      // Extension = thickness / (2 * sin(halfAngle)) — miter geometry
-      const ext1 = sinHalf > 0.01 ? (w1.thickness / 2) / Math.tan(halfAngle) : 0;
-      const ext2 = sinHalf > 0.01 ? (w2.thickness / 2) / Math.tan(halfAngle) : 0;
+      // Half-angle between the two directions
+      const halfAngle = diff / 2;
+
+      // Collinear walls (nearly 180° apart) — no extension needed
+      if (diff > Math.PI - 0.05) {
+        junctions.push({
+          pointId,
+          wallIds,
+          type: 'corner',
+          bisectorAngle: (a1 + a2) / 2,
+          extensions: { [w1.id]: 0, [w2.id]: 0 },
+        });
+        continue;
+      }
+
+      // Very acute angles (< 15°) — cap aggressively
+      const MAX_EXT_FACTOR = 2.0;
+
+      // Miter extension = halfThickness / tan(halfAngle)
+      const tanHalf = Math.tan(halfAngle);
+      const ext1 = tanHalf > 0.01 ? (w1.thickness / 2) / tanHalf : 0;
+      const ext2 = tanHalf > 0.01 ? (w2.thickness / 2) / tanHalf : 0;
 
       junctions.push({
         pointId,
         wallIds,
         type: 'corner',
-        bisectorAngle: bisector,
+        bisectorAngle: (a1 + a2) / 2,
         extensions: {
-          [w1.id]: Math.min(ext1, w1.thickness * 2), // cap to prevent extreme extensions
-          [w2.id]: Math.min(ext2, w2.thickness * 2),
+          [w1.id]: Math.min(Math.abs(ext1), w1.thickness * MAX_EXT_FACTOR),
+          [w2.id]: Math.min(Math.abs(ext2), w2.thickness * MAX_EXT_FACTOR),
         },
       });
     } else {
       // T-junction or multi-way junction
       const extensions: Record<string, number> = {};
+      const maxThickness = Math.max(...connectedWalls.map(cw => cw.thickness));
       for (const w of connectedWalls) {
-        // For T-junctions, extend by half the thickest intersecting wall
-        const maxThickness = Math.max(...connectedWalls.map(cw => cw.thickness));
         extensions[w.id] = maxThickness / 2;
       }
 
