@@ -1222,6 +1222,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     // Show loading overlay while generating GLB
     setIsPreparingWalkthrough(true);
 
+    // Force ceiling visible before export so it's included in the GLB
+    ceilingBeforeWalkRef.current = showCeiling;
+    setShowCeiling(true);
+
+    // Wait for React to render the ceiling mesh into the scene
+    await new Promise(r => setTimeout(r, 100));
+
     try {
       const scene = sceneRef.current;
       if (scene) {
@@ -1258,8 +1265,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     isAnimatingCamera.current = false;
     setIsPreparingWalkthrough(false);
     setShowSpawnMarker(false);
-    ceilingBeforeWalkRef.current = showCeiling;
-    setShowCeiling(true);
     setViewMode('walkthrough');
   }, [floorPlan, spawnPoint, isAnimatingCamera, showCeiling]);
 
