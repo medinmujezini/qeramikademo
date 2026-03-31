@@ -210,11 +210,11 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Tips */}
           <div className="space-y-2">
-            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60">Tips</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Tips</h4>
             <div className="space-y-1 text-xs text-muted-foreground">
-              <p>• Drag to move in 3D view</p>
-              <p>• Red glow = collision detected</p>
-              <p>• Items snap to 10cm grid</p>
+              <p><span className="text-primary/40">•</span> Drag to move in 3D view</p>
+              <p><span className="text-primary/40">•</span> Red glow = collision detected</p>
+              <p><span className="text-primary/40">•</span> Items snap to 10cm grid</p>
             </div>
           </div>
         </div>

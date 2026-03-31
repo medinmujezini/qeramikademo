@@ -2059,7 +2059,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             ) : (
               <div className="space-y-4">
                 {/* Show enhanced or original */}
-                <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                <div className="relative aspect-video bg-muted rounded-none overflow-hidden">
                   {(enhancedRender || originalRender) && (
                     <img 
                       src={enhancedRender || originalRender || ''} 
@@ -2068,12 +2068,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                     />
                   )}
                   {!enhancedRender && originalRender && (
-                    <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded text-xs">
+                    <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded-none text-xs">
                       Original (enhancement failed)
                     </div>
                   )}
                   {enhancedRender && (
-                    <div className="absolute top-2 left-2 bg-primary/80 text-primary-foreground px-2 py-1 rounded text-xs">
+                    <div className="absolute top-2 left-2 bg-primary/80 text-primary-foreground px-2 py-1 rounded-none text-xs">
                       AI Enhanced
                     </div>
                   )}
