@@ -1872,6 +1872,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 minZ: roomBounds.minZ,
                 maxZ: roomBounds.maxZ,
               }}
+              onDragStart={() => setIsDraggingSpawn(true)}
+              onDragEnd={() => setIsDraggingSpawn(false)}
             />
           )}
           {/* Room light markers in design mode */}

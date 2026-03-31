@@ -177,7 +177,7 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
           if (!isDragging) document.body.style.cursor = 'default';
         }}
       >
-        <planeGeometry args={[0.8, 0.8]} />
+        <planeGeometry args={[isDragging ? 100 : 0.8, isDragging ? 100 : 0.8]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
