@@ -271,17 +271,18 @@ export const UnifiedLibrary: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-muted/30 w-full box-border overflow-hidden">
+    <div className="h-full flex flex-col bg-card/50 w-full box-border overflow-hidden">
       {/* Header + Search */}
       <div className="px-3 pt-3 pb-2 space-y-2 shrink-0">
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Item Library</h3>
+        <h3 className="text-xs font-display font-semibold uppercase tracking-widest text-primary/70">Item Library</h3>
+        <div className="w-full h-px bg-primary/15 -mt-1" />
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 w-full"
+            className="pl-8 w-full rounded-none border-primary/15 bg-card focus:border-primary/40 focus:shadow-[0_0_15px_hsl(38_60%_68%/0.06)]"
           />
         </div>
       </div>
