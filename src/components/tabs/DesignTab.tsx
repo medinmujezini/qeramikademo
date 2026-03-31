@@ -1756,7 +1756,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
             <div className="flex items-center gap-2">
               <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-90" />
-              <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-sm">
+              <Label htmlFor="show-plumbing" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
                 <Droplets className="h-3.5 w-3.5 text-blue-500" />
                 Plumbing
               </Label>
