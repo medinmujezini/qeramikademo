@@ -42,7 +42,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
     return (
       <div className="h-full flex flex-col border-l bg-muted/30">
         <div className="p-4 border-b">
-          <h3 className="font-semibold">Properties</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-primary/70">Properties</h3>
         </div>
         
         <ScrollArea className="flex-1">
