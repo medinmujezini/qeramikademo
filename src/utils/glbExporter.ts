@@ -7,6 +7,9 @@
  * 
  * Strips all editor-only artifacts: grids, gizmos, selection highlights,
  * spawn markers, drag planes, collision indicators, debug spheres.
+ * 
+ * Exports point/spot/directional lights via KHR_lights_punctual extension.
+ * RectAreaLights are converted to point light proxies (glTF has no rect light).
  */
 
 import * as THREE from 'three';
@@ -16,6 +19,7 @@ export interface GLBExportOptions {
   binary?: boolean;
   includeInvisible?: boolean;
   enhanceMaterials?: boolean;
+  includeLights?: boolean;
 }
 
 /**
@@ -24,7 +28,7 @@ export interface GLBExportOptions {
 const EDITOR_OBJECT_PATTERNS = [
   '__helper', '__gizmo', '__spawn_marker', '__drag_plane',
   '__selection_', '__grid', '__collision_indicator',
-  '__debug', '__roomlight_', '__light_marker',
+  '__debug', '__light_marker',
 ];
 
 const EDITOR_EXACT_NAMES = new Set([
@@ -45,10 +49,44 @@ function isEditorObject(obj: THREE.Object3D): boolean {
     if (name.startsWith(pattern.toLowerCase()) || obj.name.startsWith(pattern)) return true;
   }
   
-  // Strip invisible meshes (drag planes, etc.)
+  // Strip invisible meshes (drag planes, etc.) — but NOT lights
   if (obj instanceof THREE.Mesh && !obj.visible) return true;
   
   return false;
+}
+
+/**
+ * Convert RectAreaLights to PointLight proxies for glTF export.
+ * glTF KHR_lights_punctual only supports point, spot, and directional lights.
+ */
+function convertRectAreaLightsToProxies(scene: THREE.Object3D): void {
+  const rectLights: { light: THREE.RectAreaLight; parent: THREE.Object3D }[] = [];
+  
+  scene.traverse((obj) => {
+    if (obj instanceof THREE.RectAreaLight) {
+      rectLights.push({ light: obj, parent: obj.parent! });
+    }
+  });
+
+  for (const { light, parent } of rectLights) {
+    // Approximate rect area light as a point light
+    // Scale intensity: rect area lights are in nits (cd/m²), point lights in candela
+    const area = light.width * light.height;
+    const pointIntensity = light.intensity * area * 0.5;
+    
+    const proxy = new THREE.PointLight(
+      light.color,
+      pointIntensity,
+      10,
+      2
+    );
+    proxy.name = light.name || 'rectarea_proxy';
+    proxy.position.copy(light.position);
+    proxy.userData = { ...light.userData, originalType: 'RectAreaLight' };
+    
+    parent.add(proxy);
+    light.removeFromParent();
+  }
 }
 
 /**
@@ -68,7 +106,6 @@ function enhanceExportMaterials(scene: THREE.Object3D): void {
 
     // Reset any selection-glow emissive to black (clean export)
     if (mat.emissive && mat.emissiveIntensity > 0) {
-      // Keep intentional emissives (lights, windows) but strip selection highlights
       const isIntentionalEmissive = name.includes('light') || name.includes('emissive') || 
         name.includes('window') || name.includes('daylight');
       if (!isIntentionalEmissive) {
@@ -110,12 +147,13 @@ function enhanceExportMaterials(scene: THREE.Object3D): void {
 /**
  * Export a Three.js scene (or specific object) to GLB binary.
  * Returns an ArrayBuffer of the .glb file.
+ * Includes KHR_lights_punctual for point/spot/directional lights.
  */
 export async function exportSceneToGLB(
   scene: THREE.Object3D,
   options: GLBExportOptions = {}
 ): Promise<ArrayBuffer> {
-  const { binary = true, enhanceMaterials: doEnhance = true } = options;
+  const { binary = true, enhanceMaterials: doEnhance = true, includeLights = true } = options;
 
   // Clone the scene to avoid mutating the live scene
   const exportScene = scene.clone(true);
@@ -136,6 +174,11 @@ export async function exportSceneToGLB(
     }
   });
   toRemove.forEach((obj) => obj.removeFromParent());
+
+  // Convert RectAreaLights to point light proxies (glTF doesn't support rect lights)
+  if (includeLights) {
+    convertRectAreaLightsToProxies(exportScene);
+  }
 
   // Enhance materials for better UE appearance
   if (doEnhance) {
