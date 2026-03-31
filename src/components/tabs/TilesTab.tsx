@@ -392,7 +392,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
-      <div className="h-10 border-b bg-card/30 px-4 flex items-center shrink-0" style={{ borderColor: 'hsl(var(--primary) / 0.08)' }}>
+      <div className="h-10 border-b bg-card/30 px-4 flex items-center justify-center shrink-0" style={{ borderColor: 'hsl(var(--primary) / 0.08)' }}>
         <div className="flex items-center gap-3 h-full">
           {isApplyMode && selectedWallId && (
             <>
