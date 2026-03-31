@@ -142,6 +142,17 @@ export async function exportSceneToGLB(
     enhanceExportMaterials(exportScene);
   }
 
+  // Propagate userData to glTF extras so UE can identify objects
+  exportScene.traverse((obj) => {
+    if (obj.userData && Object.keys(obj.userData).length > 0) {
+      // Strip editor-only flags from extras
+      const { editorOnly, ...extras } = obj.userData;
+      if (Object.keys(extras).length > 0) {
+        obj.userData = extras;
+      }
+    }
+  });
+
   const exporter = new GLTFExporter();
 
   return new Promise<ArrayBuffer>((resolve, reject) => {
@@ -164,6 +175,7 @@ export async function exportSceneToGLB(
         embedImages: true,
         forceIndices: true,
         truncateDrawRange: true,
+        includeCustomExtensions: true,
       }
     );
   });
