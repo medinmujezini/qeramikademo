@@ -2031,7 +2031,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </>
       )}
       
-      {/* FULL-SCREEN 3D CANVAS */}
+      {/* FULL-SCREEN 3D CANVAS — hidden in Unreal mode */}
+      {!unrealActive && (
       <div 
         ref={canvasContainerRef}
         className={`absolute inset-0 ${isDraggingFromLibrary ? 'drop-zone-pulse' : ''}`}
