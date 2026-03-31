@@ -765,6 +765,10 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         const end = floorPlan.points.find(p => p.id === wall.endPointId);
         if (!start || !end) return null;
 
+        // Compute junction extensions for seamless corners
+        const startExt = getWallExtension(wall.id, wall.startPointId, junctions);
+        const endExt = getWallExtension(wall.id, wall.endPointId, junctions);
+
         const tileSection = showTiles 
           ? floorPlan.tileSections.find(s => s.wallId === wall.id) 
           : null;
@@ -826,6 +830,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 onAnimationComplete={() => onTileAnimationComplete?.(wall.id)}
                 doors={wallDoors}
                 windows={wallWindows}
+                startExtension={startExt}
+                endExtension={endExt}
               />
             ) : (
               <Wall3D 
@@ -840,6 +846,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 previewWallpaperId={previewWallpaperId}
                 doors={wallDoors}
                 windows={wallWindows}
+                startExtension={startExt}
+                endExtension={endExt}
               />
             )}
 
