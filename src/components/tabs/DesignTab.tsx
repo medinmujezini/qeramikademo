@@ -278,6 +278,8 @@ const Wall3D = ({
   previewWallpaperId,
   doors = [],
   windows = [],
+  startExtension = 0,
+  endExtension = 0,
 }: {
   wall: Wall;
   start: { x: number; y: number };
@@ -290,6 +292,8 @@ const Wall3D = ({
   previewWallpaperId?: string | null;
   doors?: import('@/types/floorPlan').Door[];
   windows?: import('@/types/floorPlan').Window[];
+  startExtension?: number;
+  endExtension?: number;
 }) => {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
   
