@@ -27,16 +27,21 @@ export const RoleCard: React.FC<RoleCardProps> = ({
 }) => {
   return (
     <Card className="relative overflow-hidden border-border/50 hover:border-primary/30 transition-all duration-500 group">
+      {/* Gradient orbs */}
+      <div className="pointer-events-none absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 w-[350px] h-[350px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
+      
       {/* Thin gold accent line at top */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
       
-      <CardContent className="p-8 pt-10">
+      <CardContent className="relative z-10 p-8 pt-10">
         {/* Subtitle label */}
         <p className="text-[10px] uppercase tracking-[0.25em] text-primary/70 mb-4">{subtitle}</p>
         
         {/* Icon + Title */}
         <div className="flex items-center gap-4 mb-5">
-          <div className="w-10 h-10 rounded-md border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/80">
+          <div className="w-10 h-10 rounded-none border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/80">
             <Icon className="w-5 h-5" />
           </div>
           <h2 className="text-xl font-display font-semibold text-foreground tracking-tight">{title}</h2>
