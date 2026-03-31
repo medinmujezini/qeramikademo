@@ -58,7 +58,7 @@ const EndUserPlatform = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col relative z-10">
           {/* Tab Navigation */}
-          <div className="border-b border-border bg-card/50 flex justify-center px-4">
+          <div className="border-b bg-card flex justify-center px-4" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
             <TabsList className="h-10">
               <TabsTrigger value="floor-plan" className="gap-1.5">
                 <PenTool className="h-3.5 w-3.5" />
