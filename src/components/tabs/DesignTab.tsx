@@ -1711,8 +1711,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 glass-toolbar flex items-center gap-4 flex-wrap overflow-visible">
         <div className="flex items-center gap-2">
           <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-90" />
-          <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-sm">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+          <Label htmlFor="gi-enabled" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
             Enhanced
           </Label>
         </div>
