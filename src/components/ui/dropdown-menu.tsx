@@ -44,19 +44,15 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-2xl p-1 text-popover-foreground",
-      /* True glass background */
-      "bg-[hsl(0_0%_100%/0.9)] backdrop-blur-xl",
-      /* Multi-layer glass shadows */
-      "[box-shadow:0_8px_32px_0_hsl(217_91%_60%/0.08),inset_0_1px_1px_0_hsl(0_0%_100%/0.9),inset_0_2px_4px_0_hsl(0_0%_100%/0.5),inset_0_-1px_2px_0_hsl(222_47%_11%/0.05),inset_0_0_0_1px_hsl(214_32%_91%/0.8)]",
-      /* Animations */
+      "z-50 min-w-[8rem] overflow-hidden rounded-none p-1 text-popover-foreground",
+      "bg-card/95 backdrop-blur-xl",
+      "[box-shadow:0_8px_32px_0_hsl(0_0%_0%/0.4),0_0_20px_0_hsl(38_60%_68%/0.06),inset_0_1px_0_0_hsl(38_60%_68%/0.1),inset_0_0_0_1px_hsl(38_60%_68%/0.08)]",
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className,
     )}
     {...props}
   >
-    {/* Glass shine effect */}
-    <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-white to-transparent z-10 pointer-events-none" />
+    <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent z-10 pointer-events-none" />
     {props.children}
   </DropdownMenuPrimitive.SubContent>
 ));
