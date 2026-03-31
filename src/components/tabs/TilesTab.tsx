@@ -501,7 +501,7 @@ export const TilesTab: React.FC<TilesTabProps> = ({
       </div>
 
       {/* RIGHT TOP - Toggle Buttons */}
-      <div className="absolute top-16 right-4 z-30 flex gap-1.5">
+      <div className="absolute top-4 right-4 z-30 flex gap-1.5">
         <Button
           variant={rightPanelTab === 'preview' ? 'default' : 'outline'}
           size="sm"
