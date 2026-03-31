@@ -108,7 +108,7 @@ const QuoteTab = () => {
     <div className="h-full flex items-center justify-center p-8">
       <Card className="max-w-2xl w-full">
         <CardHeader className="text-center">
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 rounded-none bg-primary/10 flex items-center justify-center mx-auto mb-3 border border-primary/20 relative overflow-hidden">
             <ShoppingCart className="w-7 h-7 text-primary" />
           </div>
           <CardTitle className="text-xl">Your Project Quote</CardTitle>
