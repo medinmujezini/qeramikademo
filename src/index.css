@@ -482,7 +482,7 @@
 
   .dark .glass:hover {
     box-shadow: 
-      0 0 40px -6px hsl(217 91% 60% / 0.25),
+      0 0 40px -6px hsl(var(--primary) / 0.25),
       0 8px 32px -8px rgba(0, 0, 0, 0.6),
       inset 1px 2px 20px -4px rgba(255, 255, 255, 0.2),
       inset -2px -2px 14px -4px rgba(255, 255, 255, 0.12),
