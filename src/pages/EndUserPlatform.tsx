@@ -40,17 +40,17 @@ const EndUserPlatform = () => {
     <AuthProvider>
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
-        <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm px-6 h-14 flex items-center justify-between relative z-10" style={{ borderBottomColor: 'hsl(var(--primary) / 0.12)' }}>
+        <header className="border-b bg-card px-6 h-14 flex items-center justify-between relative z-10" style={{ borderBottomColor: 'hsl(var(--primary) / 0.10)' }}>
           <div className="flex items-center gap-3">
             <BackToHome />
-            <div className="w-px h-5 bg-border/30" />
+            <div className="w-px h-5 bg-primary/15" />
             <div className="flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-primary/70" />
-              <span className="font-medium text-sm text-foreground tracking-wider">Design Studio</span>
+              <Sparkles className="h-4 w-4 text-primary/50" />
+              <span className="font-display text-xs uppercase tracking-[0.15em] text-primary">Design Studio</span>
             </div>
           </div>
           
-          <Button variant="outline" size="sm" className="gap-1.5">
+          <Button variant="luxury" size="sm" className="gap-1.5">
             <ShoppingCart className="h-4 w-4" />
             Cart
           </Button>
