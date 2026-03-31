@@ -59,14 +59,16 @@ export const Fixture3D: React.FC<Fixture3DProps> = ({
   // }
   
   return (
-    <BlueprintBoxFixture
-      fixture={fixture}
-      isSelected={isSelected}
-      isDragging={isDragging}
-      hasCollision={hasCollision}
-      onSelect={onSelect}
-      onDragStart={onDragStart}
-    />
+    <group userData={{ fixtureId: fixture.id, category: fixture.category, type: fixture.type, name: fixture.name }}>
+      <BlueprintBoxFixture
+        fixture={fixture}
+        isSelected={isSelected}
+        isDragging={isDragging}
+        hasCollision={hasCollision}
+        onSelect={onSelect}
+        onDragStart={onDragStart}
+      />
+    </group>
   );
 };
 
