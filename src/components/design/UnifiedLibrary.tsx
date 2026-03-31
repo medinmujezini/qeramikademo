@@ -94,14 +94,14 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
   
   return (
     <button
-      className="w-full p-3 text-left rounded-md border border-border/60 bg-card hover:bg-accent hover:border-primary/40 transition-colors group cursor-grab active:cursor-grabbing"
+      className="w-full p-3 text-left rounded-none border border-primary/10 bg-card hover:bg-accent hover:border-primary/30 hover:shadow-[0_0_15px_hsl(38_60%_68%/0.08)] transition-all group cursor-grab active:cursor-grabbing"
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
     >
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-12 h-12 rounded-none bg-muted border border-primary/10 flex items-center justify-center overflow-hidden shrink-0">
           {thumbnailUrl && !imageError ? (
             <img 
               src={thumbnailUrl} 
@@ -115,7 +115,7 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate" title={name}>{name}</p>
+          <p className="font-display font-medium text-sm truncate" title={name}>{name}</p>
           <p className="text-xs text-muted-foreground">
             {dimensions.width}×{dimensions.depth}×{dimensions.height} cm
           </p>
