@@ -1275,6 +1275,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   }, [floorPlan, spawnPoint, isAnimatingCamera, showCeiling]);
 
   const exitWalkthrough = useCallback(() => {
+    if (unrealActive) {
+      sendToUnreal('exitWalkthrough');
+      setUnrealActive(false);
+      setShowCeiling(ceilingBeforeWalkRef.current);
+      setShowSpawnMarker(true);
+      return;
+    }
     document.exitPointerLock();
     setViewMode('design');
     setShowCeiling(ceilingBeforeWalkRef.current);
