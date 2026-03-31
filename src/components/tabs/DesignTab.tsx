@@ -1436,9 +1436,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   useEffect(() => {
     if (!isInsideUnreal()) return;
     return onExitWalkthrough(() => {
-      exitWalkthrough();
+      setUnrealActive(false);
+      setShowCeiling(ceilingBeforeWalkRef.current);
+      setShowSpawnMarker(true);
     });
-  }, [exitWalkthrough]);
+  }, []);
 
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
