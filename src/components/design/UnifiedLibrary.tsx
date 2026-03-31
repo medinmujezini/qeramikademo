@@ -282,7 +282,7 @@ export const UnifiedLibrary: React.FC = () => {
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 w-full rounded-none border-primary/15 bg-card focus:border-primary/40 focus:shadow-[0_0_15px_hsl(38_60%_68%/0.06)]"
+            className="pl-8 w-full rounded-none border-primary/15 bg-card luxury-search"
           />
         </div>
       </div>
@@ -311,7 +311,7 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-2 border-primary/30 pl-2">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-[3px] border-primary/40 pl-2">
                         {FURNITURE_CATEGORY_ICONS[category]}
                         <span>{category}</span>
                         <span className="text-[10px] opacity-60">({items.length})</span>
@@ -355,7 +355,7 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-2 border-primary/30 pl-2">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-[3px] border-primary/40 pl-2">
                         {FIXTURE_CATEGORY_ICONS[category]}
                         <span>{category}</span>
                         <span className="text-[10px] opacity-60">({items.length})</span>
@@ -391,6 +391,7 @@ export const UnifiedLibrary: React.FC = () => {
 
       {/* Footer hint */}
       <div className="px-3 py-2 border-t border-primary/10 text-[10px] uppercase tracking-widest text-muted-foreground text-center shrink-0">
+        <div className="w-12 h-px bg-primary/25 mx-auto mb-1" />
         Click or drag to add
       </div>
     </div>
