@@ -1241,6 +1241,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           const glbBase64 = arrayBufferToBase64(buffer);
           startUnrealWalkthrough(glbBase64, manifest as unknown as Record<string, unknown>);
           toast.success('Walkthrough started in Unreal Engine');
+          setIsPreparingWalkthrough(false);
+          setUnrealActive(true);
+          setShowSpawnMarker(false);
+          // Don't enter browser walkthrough — Unreal handles it
+          return;
         }
       }
     } catch (error) {
