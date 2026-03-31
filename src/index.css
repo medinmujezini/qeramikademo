@@ -551,7 +551,7 @@
     height: 16px;
     background: radial-gradient(
       ellipse at center,
-      hsl(217 91% 60% / 0.15) 0%,
+      hsl(var(--primary) / 0.15) 0%,
       transparent 70%
     );
     filter: blur(8px);
