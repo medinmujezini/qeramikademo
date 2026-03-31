@@ -1722,6 +1722,65 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 Light
               </Button>
 
+              {/* Auto Emitter Controls */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                    <Sun className="h-3 w-3" />
+                    Auto Lights
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="start">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs uppercase tracking-wider text-muted-foreground">Auto Ceiling Lights</Label>
+                      <Switch
+                        checked={floorPlan.ceilingEmitterConfig?.enabled ?? DEFAULT_CEILING_EMITTER_CONFIG.enabled}
+                        onCheckedChange={(v) => updateCeilingEmitterConfig({ enabled: v })}
+                        className="scale-75"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Intensity: {(floorPlan.ceilingEmitterConfig?.intensity ?? DEFAULT_CEILING_EMITTER_CONFIG.intensity).toFixed(1)}</Label>
+                      <input
+                        type="range"
+                        min="0.2"
+                        max="3"
+                        step="0.1"
+                        value={floorPlan.ceilingEmitterConfig?.intensity ?? DEFAULT_CEILING_EMITTER_CONFIG.intensity}
+                        onChange={(e) => updateCeilingEmitterConfig({ intensity: parseFloat(e.target.value) })}
+                        className="w-full h-1.5 accent-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Color</Label>
+                      <input
+                        type="color"
+                        value={floorPlan.ceilingEmitterConfig?.color ?? DEFAULT_CEILING_EMITTER_CONFIG.color}
+                        onChange={(e) => updateCeilingEmitterConfig({ color: e.target.value })}
+                        className="w-full h-6 cursor-pointer rounded border border-border"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Density</Label>
+                      <Select
+                        value={floorPlan.ceilingEmitterConfig?.density ?? DEFAULT_CEILING_EMITTER_CONFIG.density}
+                        onValueChange={(v) => updateCeilingEmitterConfig({ density: v as CeilingEmitterDensity })}
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sparse">Sparse</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="dense">Dense</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
               <StaircaseTypePicker />
 
               <div className="w-px h-4 bg-primary/15" />
