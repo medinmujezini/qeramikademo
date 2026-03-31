@@ -1952,7 +1952,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-32 right-6 z-20 glass-control h-8 w-8"
+          className="absolute top-4 right-6 z-20 glass-control h-8 w-8"
           onClick={() => setIsPanelOpen(true)}
         >
           <PanelRight className="h-4 w-4" />
