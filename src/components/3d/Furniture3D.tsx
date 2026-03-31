@@ -342,6 +342,17 @@ const GLTFModel: React.FC<{
       onPointerOut={() => setHovered(false)}
     >
       <primitive object={clonedScene} />
+      {/* Attach point light to lighting category items */}
+      {isLightingItem && (
+        <pointLight
+          color={item.color || '#FFF8DC'}
+          intensity={4}
+          distance={6}
+          decay={2}
+          position={[0, -0.15, 0]}
+          castShadow
+        />
+      )}
     </group>
   );
 };
