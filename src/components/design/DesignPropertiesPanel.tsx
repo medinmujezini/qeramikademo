@@ -173,7 +173,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Color</span>
                 <div 
-                  className="w-5 h-5 rounded border"
+                  className="w-5 h-5 rounded-none border border-primary/20"
                   style={{ backgroundColor: selectedFurniture.color }}
                 />
               </div>
