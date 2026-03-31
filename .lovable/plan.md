@@ -1,33 +1,42 @@
 
 
-# Square Cards with Glow & Gradient Orbs
+# Apply Luxury Style to Design Tab & Platform Header
+
+The Design tab's header layers and floating panels need to match the square-cornered, gold-glowing, orb-adorned card style used on the Home page.
 
 ## Changes
 
-### 1. `src/components/ui/card.tsx` — Remove rounded corners, add glow
-- Change `rounded-md` to `rounded-none`
-- Add gold glow: `shadow-[0_0_30px_hsl(38_60%_68%/0.08)]`
-- Add `relative overflow-hidden` for orb containment
+### 1. `src/pages/EndUserPlatform.tsx` — Luxury header styling
 
-### 2. `src/components/ui/glass-card.tsx` — Same treatment
-- Remove any `rounded-*` from the `.glass` usage, add `rounded-none`
-- Enable `showOrbs` by default (change default from `false` to `true`)
+- **Layer 1 (brand header)**: Add gold glow shadow, gold bottom border (`hsl(var(--primary) / 0.15)`), remove `backdrop-blur-sm`, use solid `bg-card` background. Add "Design Studio" text with `font-display` (Outfit) and `uppercase tracking-[0.15em]`.
+- **Layer 2 (tab nav)**: Gold bottom border, solid `bg-card` background. Tab triggers already use gold active state via `data-[state=active]:text-primary`.
+- **Quote tab card**: Remove `rounded-xl` from icon container (use `rounded-none`), add gradient orbs inside the card.
 
-### 3. `src/index.css` — Global card styling
-- Update `.glass`, `.glass-card`, `.glass-sm`, `.glass-lg` to use `border-radius: 0`
-- Add a gold glow box-shadow to all glass variants: `box-shadow: 0 0 30px hsl(var(--primary) / 0.06)`
-- Ensure `.gradient-orbs` and `.orb` classes use gold-tinted colors (hsl 38) instead of any blue remnants
-- Add a utility class `.card-glow` for `box-shadow: 0 0 30px hsl(var(--primary) / 0.08)` reuse
+### 2. `src/components/tabs/DesignTab.tsx` — Layer 3 toolbar & panels
 
-### 4. `src/components/home/RoleCard.tsx` — Add gradient orbs
-- Add 2-3 absolute-positioned gradient orb divs inside the Card (small radial gold gradients at corners, low opacity ~6-10%)
-- Wrap content in `relative z-10`
-- Remove `rounded-md` from icon container (use `rounded-none`)
+- **Layer 3 toolbar** (line 1588): Solid `bg-card` background, gold bottom border (`hsl(var(--primary) / 0.12)`), remove transparency.
+- **Floating Library panel** (line 1913): Change `rounded-xl` to `rounded-none`, add gold glow `shadow-[0_0_30px_hsl(38_60%_68%/0.08)]`, add gradient orb divs inside the panel wrapper.
+- **Floating Properties panel** (line 1927): Same treatment — `rounded-none`, gold glow, gradient orbs.
+- **Glass control button** (line 1955): `rounded-none` instead of default rounded.
+- **Render dialog** (line 2037): Already uses `DialogContent` which inherits card styling.
+- **Walkthrough overlay** (line 1966): Already fine with `bg-background/80`.
 
-### 5. Other card usages — Search and fix
-- `ExportTab.tsx`, `DesignPropertiesPanel.tsx`, `EstimateWizard.tsx`, `NodePropertiesPanel.tsx`, etc. all use `Card` or `GlassCard` — they inherit the base changes automatically
-- Any component with explicit `rounded-*` overrides on cards: remove them
+### 3. `src/components/toolbars/DesignToolbar.tsx` — No structural changes needed
 
-## Result
-All cards become square-cornered with a subtle gold glow aura and animated gold gradient orbs inside, consistent with the luxury black & gold theme.
+The toolbar component renders inline content — it inherits the Layer 3 bar styling from the parent. No changes.
+
+### 4. `src/index.css` — Glass panel updates
+
+- `.glass-floating`: Set `border-radius: 0`, add `box-shadow: 0 0 30px hsl(var(--primary) / 0.06)`, solid dark background instead of transparent.
+- `.glass-toolbar`: Set `border-radius: 0`.
+- `.glass-control`: Set `border-radius: 0`.
+- `.panel-header`: Ensure gold bottom border uses `hsl(var(--primary) / 0.15)`.
+
+## Files Modified
+
+| File | Change |
+|---|---|
+| `src/pages/EndUserPlatform.tsx` | Solid bg, gold borders, font-display title, orbs in Quote card |
+| `src/components/tabs/DesignTab.tsx` | Square panels, gold glow, gradient orbs in Library/Properties |
+| `src/index.css` | Force `border-radius: 0` and gold glow on glass utilities |
 
