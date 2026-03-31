@@ -1,40 +1,34 @@
 
 
-# Fix White Popup Backgrounds — Dark Luxury Theme
+# Fix Furniture Drag — Use R3F Drag Plane Like Spawn Marker
 
-## Changes
+## Problem
 
-Apply identical dark luxury styling to all three components:
+Furniture dragging uses `window.addEventListener('pointermove'/'pointerup')` which means OrbitControls (listening on the canvas DOM element) receives the same pointer events and orbits the camera simultaneously. The spawn point marker doesn't have this issue because it uses a large R3F mesh plane that captures all pointer events within the Three.js event system, where `stopPropagation()` actually prevents OrbitControls from seeing them.
 
-### Shared pattern (replacing current white glass)
+## Solution
 
-- **Background**: `bg-card/95 backdrop-blur-xl` (replaces `bg-[hsl(0_0%_100%/0.85-0.9)]`)
-- **Shadows**: `[box-shadow:0_8px_32px_0_hsl(0_0%_0%/0.4),0_0_20px_0_hsl(38_60%_68%/0.06),inset_0_1px_0_0_hsl(38_60%_68%/0.1),inset_0_0_0_1px_hsl(38_60%_68%/0.08)]`
-- **Shine**: `via-white` → `via-primary/15`
-- **Corners**: `rounded-2xl` → `rounded-none`
+Apply the same pattern used by SpawnPointMarker: render a large invisible R3F drag plane when dragging, and handle `onPointerMove`/`onPointerUp` on that plane instead of on `window`.
 
-### Per-file specifics
+### `src/components/3d/FurnitureScene.tsx`
 
-| File | What changes |
+1. **Remove `window.addEventListener` approach** — delete the `useEffect` that registers `pointermove`/`pointerup` on `window` (lines 167-258)
+
+2. **Add a large invisible drag plane mesh** (100×100 units) that only renders when `isDragging` is true, positioned at y=0.001 (floor level)
+
+3. **Move pointer handlers to R3F events on the drag plane**:
+   - `onPointerMove` — same logic as current `handlePointerMove` but using `e.point` from R3F intersection (x/z → floor position), call `e.stopPropagation()`
+   - `onPointerUp` — same logic as current `handlePointerUp`, call `e.stopPropagation()`
+
+4. **Update `handleDragStart`** — also call `e.nativeEvent.stopImmediatePropagation()` to prevent OrbitControls from processing the initial pointerdown
+
+### Key changes:
+- Floor position calculation becomes simpler: directly use `e.point.x / CM_TO_METERS` and `e.point.z / CM_TO_METERS` from the plane intersection instead of raycasting
+- The existing `FurnitureDragPlane` grid component is purely visual — the new invisible drag plane is a separate interaction mesh
+
+## Files Modified
+
+| File | Change |
 |---|---|
-| `src/components/ui/dialog.tsx` | DialogContent: bg, shadow, corners, remove glass tint div, gold shine |
-| `src/components/ui/popover.tsx` | PopoverContent: bg, shadow, corners, gold shine |
-| `src/components/ui/dropdown-menu.tsx` | DropdownMenuContent + DropdownMenuSubContent: bg, shadow, corners, gold shine |
-
-### `src/components/ui/dialog.tsx`
-- Line ~42: Replace `bg-[hsl(0_0%_100%/0.85)]` with `bg-card/95`
-- Line ~43: `rounded-2xl` → `rounded-none`
-- Line ~45-46: Replace white/blue box-shadow with gold-tinted dark shadow
-- Line ~53: Remove the glass tint div (`bg-[hsl(217_91%_60%/0.02)]`)
-- Line ~51: Change shine `via-white` → `via-primary/15`
-
-### `src/components/ui/popover.tsx`
-- Line ~20: Replace `bg-[hsl(0_0%_100%/0.9)]` with `bg-card/95`
-- Line ~20: `rounded-2xl` → `rounded-none`
-- Line ~22: Replace white/blue box-shadow with gold-tinted dark shadow
-- Line ~30: Change shine `via-white` → `via-primary/15`
-
-### `src/components/ui/dropdown-menu.tsx`
-- DropdownMenuSubContent (~line 49): Same bg, shadow, corners, shine changes
-- DropdownMenuContent (~line 75): Same bg, shadow, corners, shine changes
+| `src/components/3d/FurnitureScene.tsx` | Replace window event listeners with R3F drag plane mesh, same pattern as SpawnPointMarker |
 
