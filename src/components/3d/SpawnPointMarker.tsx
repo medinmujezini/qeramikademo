@@ -37,6 +37,8 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   onRotate,
   visible,
   floorBounds,
+  onDragStart,
+  onDragEnd,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
