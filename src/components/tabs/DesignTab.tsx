@@ -2120,6 +2120,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         onRemoveFinish={handleRemoveFloorFinish}
         currentFinish={floorPlan.floorFinish}
       />
+      </div>{/* end flex-1 canvas area */}
     </div>
   );
 };
