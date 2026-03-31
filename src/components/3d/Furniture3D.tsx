@@ -340,6 +340,7 @@ const GLTFModel: React.FC<{
       onPointerDown={handlePointerDown}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
+      userData={{ furnitureId: item.id, category: item.category, type: item.type, name: item.name }}
     >
       <primitive object={clonedScene} />
       {/* Attach point light to lighting category items */}

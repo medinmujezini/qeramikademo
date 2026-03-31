@@ -112,7 +112,7 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   if (!visible) return null;
 
   return (
-    <group ref={groupRef} position={[posX, 0, posZ]} rotation={[0, rotRad, 0]}>
+    <group ref={groupRef} position={[posX, 0, posZ]} rotation={[0, rotRad, 0]} userData={{ editorOnly: true }} name="__spawn_marker">
       {/* Ground ring */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
         <ringGeometry args={[0.25, 0.35, 32]} />

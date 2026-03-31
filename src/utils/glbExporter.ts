@@ -4,6 +4,9 @@
  * Serializes the current Three.js scene (walls, floor, furniture, fixtures)
  * into a single .glb binary file with embedded PBR textures.
  * Used for Unreal Engine runtime import via glTFRuntime.
+ * 
+ * Strips all editor-only artifacts: grids, gizmos, selection highlights,
+ * spawn markers, drag planes, collision indicators, debug spheres.
  */
 
 import * as THREE from 'three';
@@ -16,48 +19,88 @@ export interface GLBExportOptions {
 }
 
 /**
+ * Names and prefixes that mark editor-only objects to strip on export.
+ */
+const EDITOR_OBJECT_PATTERNS = [
+  '__helper', '__gizmo', '__spawn_marker', '__drag_plane',
+  '__selection_', '__grid', '__collision_indicator',
+  '__debug', '__roomlight_', '__light_marker',
+];
+
+const EDITOR_EXACT_NAMES = new Set([
+  'spawn_marker', 'dragPlane', 'grid', 'axes',
+]);
+
+function isEditorObject(obj: THREE.Object3D): boolean {
+  const name = (obj.name || '').toLowerCase();
+  
+  // Check userData flag
+  if (obj.userData?.editorOnly) return true;
+  
+  // Check exact names
+  if (EDITOR_EXACT_NAMES.has(name)) return true;
+  
+  // Check prefixes
+  for (const pattern of EDITOR_OBJECT_PATTERNS) {
+    if (name.startsWith(pattern.toLowerCase()) || obj.name.startsWith(pattern)) return true;
+  }
+  
+  // Strip invisible meshes (drag planes, etc.)
+  if (obj instanceof THREE.Mesh && !obj.visible) return true;
+  
+  return false;
+}
+
+/**
  * Enhance materials on the export scene clone so the GLB has better PBR defaults.
- * This does NOT mutate the live scene — only the clone.
+ * Also resets all emissive overrides (selection glow artifacts).
  */
 function enhanceExportMaterials(scene: THREE.Object3D): void {
   scene.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return;
 
     const mat = obj.material;
-    if (!mat || Array.isArray(mat)) return; // skip multi-material
+    if (!mat || Array.isArray(mat)) return;
     if (!(mat instanceof THREE.MeshStandardMaterial)) return;
 
     const name = (obj.name || '').toLowerCase();
     const colorHex = '#' + mat.color.getHexString();
 
-    // Floor detection: mesh rotated -90° on X with large flat geometry, or named floor
+    // Reset any selection-glow emissive to black (clean export)
+    if (mat.emissive && mat.emissiveIntensity > 0) {
+      // Keep intentional emissives (lights, windows) but strip selection highlights
+      const isIntentionalEmissive = name.includes('light') || name.includes('emissive') || 
+        name.includes('window') || name.includes('daylight');
+      if (!isIntentionalEmissive) {
+        mat.emissive.set('#000000');
+        mat.emissiveIntensity = 0;
+      }
+    }
+
+    // Floor detection
     const isFloor = name.includes('floor') ||
       (obj.rotation.x < -1.5 && obj.rotation.x > -1.6 && obj.geometry instanceof THREE.PlaneGeometry);
 
-    // Wall detection: extruded geometry or named wall
+    // Wall detection
     const isWall = name.includes('wall') ||
       obj.geometry instanceof THREE.ExtrudeGeometry ||
       obj.geometry?.type === 'ExtrudeGeometry';
 
     // Door detection
-    const isDoor = name.includes('door') || colorHex === '#8b5a2b';
+    const isDoor = name.includes('door') || colorHex === '#8b5a2b' || colorHex === '#7a5230';
 
     if (isFloor) {
-      // Floor — very low roughness for shiny appearance in Unreal
       mat.roughness = 0.1;
       mat.metalness = 0.0;
     } else if (isWall) {
-      // Walls — slight sheen, not fully matte
       if (mat.roughness > 0.85 && !mat.map) {
         mat.roughness = 0.7;
         mat.metalness = 0.0;
-        // Slightly warm the default wall color
         if (colorHex === '#e5e7eb') {
           mat.color.set('#eae6e1');
         }
       }
     } else if (isDoor) {
-      // Wood doors — warmer, slight sheen
       mat.roughness = 0.5;
       mat.metalness = 0.0;
     }
@@ -72,12 +115,12 @@ export async function exportSceneToGLB(
   scene: THREE.Object3D,
   options: GLBExportOptions = {}
 ): Promise<ArrayBuffer> {
-  const { binary = true, enhanceMaterials = true } = options;
+  const { binary = true, enhanceMaterials: doEnhance = true } = options;
 
   // Clone the scene to avoid mutating the live scene
   const exportScene = scene.clone(true);
 
-  // Clean up: remove helpers, controls, non-mesh objects that shouldn't export
+  // Remove editor-only objects (comprehensive sweep)
   const toRemove: THREE.Object3D[] = [];
   exportScene.traverse((obj) => {
     if (
@@ -87,9 +130,7 @@ export async function exportSceneToGLB(
       obj instanceof THREE.DirectionalLightHelper ||
       obj instanceof THREE.PointLightHelper ||
       obj instanceof THREE.SpotLightHelper ||
-      obj.name.startsWith('__helper') ||
-      obj.name.startsWith('__gizmo') ||
-      obj.name === '__spawn_marker'
+      isEditorObject(obj)
     ) {
       toRemove.push(obj);
     }
@@ -97,7 +138,7 @@ export async function exportSceneToGLB(
   toRemove.forEach((obj) => obj.removeFromParent());
 
   // Enhance materials for better UE appearance
-  if (enhanceMaterials) {
+  if (doEnhance) {
     enhanceExportMaterials(exportScene);
   }
 
@@ -110,7 +151,6 @@ export async function exportSceneToGLB(
         if (result instanceof ArrayBuffer) {
           resolve(result);
         } else {
-          // JSON result — shouldn't happen with binary:true but handle gracefully
           const json = JSON.stringify(result);
           const encoder = new TextEncoder();
           resolve(encoder.encode(json).buffer);

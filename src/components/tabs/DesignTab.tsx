@@ -25,6 +25,8 @@ import { WallSurfaceDialog } from '@/components/3d/WallSurfaceDialog';
 import { FloorSurfaceDialog } from '@/components/3d/FloorSurfaceDialog';
 import { TiledWall3D } from '@/components/3d/TiledWall3D';
 import { Ceiling3D } from '@/components/3d/Ceiling3D';
+import { Door3D } from '@/components/3d/Door3D';
+import { Window3D } from '@/components/3d/Window3D';
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
@@ -814,50 +816,32 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             )}
 
             {/* Doors */}
-            {wallDoors.map(door => {
-              const doorX = start.x + (end.x - start.x) * door.position;
-              const doorY = start.y + (end.y - start.y) * door.position;
-              const doorHeight = door.height * scale;
-              
-              return (
-                <mesh
-                  key={door.id}
-                  position={[doorX * scale, doorHeight / 2, doorY * scale]}
-                  rotation={[0, -angle, 0]}
-                  castShadow
-                >
-                  <boxGeometry args={[door.width * scale, doorHeight, 0.03]} />
-                  <meshStandardMaterial color="#8b5a2b" roughness={0.7} />
-                </mesh>
-              );
-            })}
+            {wallDoors.map(door => (
+              <Door3D
+                key={door.id}
+                door={door}
+                wallAngle={angle}
+                wallThickness={wall.thickness}
+                wallStartX={start.x}
+                wallStartY={start.y}
+                wallEndX={end.x}
+                wallEndY={end.y}
+              />
+            ))}
 
             {/* Windows */}
-            {wallWindows.map(window => {
-              const winX = start.x + (end.x - start.x) * window.position;
-              const winY = start.y + (end.y - start.y) * window.position;
-              const windowBottom = window.sillHeight * scale;
-              const windowHeight = window.height * scale;
-              
-              return (
-                <group key={window.id}>
-                  <mesh
-                    position={[winX * scale, windowBottom + windowHeight / 2, winY * scale]}
-                    rotation={[0, -angle, 0]}
-                  >
-                    <boxGeometry args={[window.width * scale, windowHeight, wall.thickness * scale * 0.3]} />
-                    <meshStandardMaterial color="#87ceeb" transparent opacity={0.4} roughness={0.1} />
-                  </mesh>
-                  <mesh
-                    position={[winX * scale, windowBottom + windowHeight / 2, winY * scale]}
-                    rotation={[0, -angle, 0]}
-                  >
-                    <boxGeometry args={[window.width * scale + 0.04, windowHeight + 0.04, wall.thickness * scale * 0.5]} />
-                    <meshStandardMaterial color="#4b5563" roughness={0.8} />
-                  </mesh>
-                </group>
-              );
-            })}
+            {wallWindows.map(win => (
+              <Window3D
+                key={win.id}
+                window={win}
+                wallAngle={angle}
+                wallThickness={wall.thickness}
+                wallStartX={start.x}
+                wallStartY={start.y}
+                wallEndX={end.x}
+                wallEndY={end.y}
+              />
+            ))}
           </group>
         );
       })}
@@ -1106,7 +1090,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       const scene = sceneRef.current;
       if (scene) {
         const glbBlob = await exportSceneToGLBBlob(scene);
-        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint);
+        const manifest = generateRoomManifest(floorPlan, 'local', 1, spawnPoint, furniture);
 
         if (isInsideUnreal()) {
           const buffer = await glbBlob.arrayBuffer();
