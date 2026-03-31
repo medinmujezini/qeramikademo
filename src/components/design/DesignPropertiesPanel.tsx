@@ -60,7 +60,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
             {/* Room summary */}
             <div className="space-y-3">
-              <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-2 border-primary/25 pl-2">Scene Summary</h4>
+              <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60 border-l-[3px] border-primary/35 pl-2">Scene Summary</h4>
               
               <Card className="luxury-hover-glow">
                 <CardContent className="p-3">
