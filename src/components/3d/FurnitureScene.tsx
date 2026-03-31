@@ -11,8 +11,8 @@
  * Floor plan data must be passed as props.
  */
 
-import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { ThreeEvent, useThree, useFrame } from '@react-three/fiber';
+import React, { useCallback, useState, useRef } from 'react';
+import { ThreeEvent, useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { useFurnitureContext } from '@/contexts/FurnitureContext';
 import { Furniture3D } from './Furniture3D';
