@@ -1,74 +1,71 @@
 
 
-# 5-Step Plan: Connected Wall Geometry (Seamless Corners)
+# Triplanar Material Mapping for Walls
 
 ## Problem
 
-Each wall is an independent `ExtrudeGeometry` mesh positioned at its midpoint. At shared endpoints (corners), walls don't extend far enough to meet, leaving visible gaps as shown in the screenshot. The `wallJunctionGeometry.ts` utility already exists with `analyzeWallJunctions()` and `getWallExtension()` but is **not wired into the rendering**.
+Wall meshes use `ExtrudeGeometry` which generates UVs based on the 2D shape profile. The front/back faces get proper UVs but the **top, bottom, and side (thickness) faces** get stretched or missing UVs — they appear as flat gray. The user wants to see material texture on all surfaces, including wall cross-sections visible from outside.
 
-## Current Architecture
+## Approach
 
-- `Wall3D` component in `DesignTab.tsx` (line 268) computes wall length from start/end points, creates an extruded shape via `createWallShapeWithOpenings`, and positions the mesh at the midpoint
-- Wall thickness is extruded symmetrically (`translate(0, 0, -halfThick)`)
-- No junction awareness — each wall is an island
+Create a custom `TriplanarMaterial` using Three.js `onBeforeCompile` shader injection on `MeshStandardMaterial`. Triplanar mapping projects the texture from 3 axes (X, Y, Z) in world space and blends based on the surface normal, so every face — front, back, top, sides — gets correctly scaled texture without relying on UV coordinates.
 
----
+## Steps
 
-## Step 1 — Wire Junction Analysis into DesignScene
+### 1. Create `src/utils/triplanarMaterial.ts`
 
-**File: `src/components/tabs/DesignTab.tsx`**
+A utility that creates a `MeshStandardMaterial` with triplanar shader injection:
 
-- Import `analyzeWallJunctions` and `getWallExtension` from `wallJunctionGeometry.ts`
-- In `DesignScene`, compute junctions once via `useMemo` from `floorPlan.walls` and `floorPlan.points`
-- Pass `junctions` array down to each `Wall3D` and `TiledWall3DWithMaterial`
+- Accept params: `color`, `map` (texture), `roughness`, `textureScale` (world-space repeat, default ~0.5 for ~2m tiles)
+- Use `material.onBeforeCompile = (shader) => { ... }` to:
+  - Add a `uniform float uTriplanarScale` and `uniform sampler2D uTriplanarMap`
+  - In the vertex shader: pass `vWorldPosition` and `vWorldNormal`
+  - In the fragment shader: replace `#include <map_fragment>` with triplanar sampling:
+    - Sample texture 3 times using `worldPos.yz`, `worldPos.xz`, `worldPos.xy` scaled by `uTriplanarScale`
+    - Blend using `abs(worldNormal)` raised to a sharpness power (~4.0)
+    - Multiply into `diffuseColor.rgb`
+- When no texture map is provided, skip injection and use plain color (current behavior)
 
-## Step 2 — Extend Wall Geometry at Junction Points
+### 2. Update `Wall3D` in `src/components/tabs/DesignTab.tsx`
 
-**File: `src/components/tabs/DesignTab.tsx` (Wall3D component)**
+Replace the inline `<meshStandardMaterial>` JSX with the triplanar material:
 
-- Accept `startExtension` and `endExtension` props (in cm, from `getWallExtension`)
-- Convert extensions to scene units (`* scale`)
-- Before computing `length`, extend the wall's effective start/end positions along the wall direction by the extension amounts
-- Update the `midX`/`midZ` (mesh position) to account for the shifted center
-- The `createWallShapeWithOpenings` call uses the extended `length`
+- When `texture` exists (tile pattern): create triplanar material with the canvas texture
+- When no texture: use triplanar material with just the wall color (so even plain walls look consistent)
+- Use `useMemo` to create the material, dispose on cleanup
+- Set `side={THREE.DoubleSide}` on the material
 
-This makes walls physically longer at corners so they overlap and form a solid joint.
+### 3. Update `TiledWall3D.tsx`
 
-## Step 3 — Apply Same Extensions to TiledWall3D
+Apply the same triplanar material to tiled walls so PBR textures (albedo, normal, roughness) appear on all faces:
 
-**File: `src/components/3d/TiledWall3D.tsx`**
+- For PBR materials: create triplanar material using the albedo map
+- Normal and roughness maps can remain UV-based on front faces (less critical for thickness faces)
 
-- Accept `startExtension` and `endExtension` props
-- Extend the wall length used for tile placement and shape generation
-- Adjust the mesh position offset to match
-- Ensures tiled walls also have seamless corners
+### 4. Apply to `FloorSlab3D.tsx`
 
-## Step 4 — Fix the Junction Math for All Cases
+Floor slabs also use extrusion — their side faces are plain. Apply triplanar with a concrete/slab color so edges look textured when visible from below or at angles.
 
-**File: `src/utils/wallJunctionGeometry.ts`**
+## Technical Detail — Triplanar GLSL Snippet
 
-- The current miter math uses a simplified `(thickness/2) / tan(halfAngle)` which can produce wrong values for obtuse angles
-- Fix: use `abs(angle difference)` properly, handle the 180° (collinear) case gracefully
-- Add handling for walls with different thicknesses at a junction (use the thicker wall's extension)
-- Cap extensions to prevent visual artifacts at very acute angles (< 15°)
+```text
+vec3 blending = pow(abs(vWorldNormal), vec3(4.0));
+blending /= dot(blending, vec3(1.0));
 
-## Step 5 — Door/Window Offset Correction
+vec4 xAxis = texture2D(uTriplanarMap, vWorldPosition.yz * uScale);
+vec4 yAxis = texture2D(uTriplanarMap, vWorldPosition.xz * uScale);
+vec4 zAxis = texture2D(uTriplanarMap, vWorldPosition.xy * uScale);
 
-**Files: `src/components/tabs/DesignTab.tsx`, `src/components/3d/Door3D.tsx`, `src/components/3d/Window3D.tsx`**
+vec4 triColor = xAxis * blending.x + yAxis * blending.y + zAxis * blending.z;
+diffuseColor *= triColor;
+```
 
-- When walls are extended, door and window positions (defined as `position` along the wall length 0–1) shift because the wall is now longer
-- Remap door/window `position` values to account for `startExtension`: `adjustedPosition = (originalPosition * originalLength + startExtension) / extendedLength`
-- Apply this remapping when passing doors/windows to `Wall3D` and `Door3D`/`Window3D` position calculations
+## Files Modified
 
----
-
-## Summary
-
-| Step | File(s) | What |
-|---|---|---|
-| 1 | `DesignTab.tsx` | Compute junctions, pass to wall components |
-| 2 | `DesignTab.tsx` (Wall3D) | Extend wall mesh length at junction endpoints |
-| 3 | `TiledWall3D.tsx` | Same extension logic for tiled walls |
-| 4 | `wallJunctionGeometry.ts` | Fix miter math for all angle cases |
-| 5 | `DesignTab.tsx`, `Door3D`, `Window3D` | Correct door/window positions on extended walls |
+| File | Change |
+|---|---|
+| New `src/utils/triplanarMaterial.ts` | Triplanar `MeshStandardMaterial` factory with `onBeforeCompile` |
+| `src/components/tabs/DesignTab.tsx` | `Wall3D` uses triplanar material instead of inline `meshStandardMaterial` |
+| `src/components/3d/TiledWall3D.tsx` | Use triplanar for PBR-textured tiled walls |
+| `src/components/3d/FloorSlab3D.tsx` | Use triplanar for slab side faces |
 
