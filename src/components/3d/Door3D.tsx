@@ -1,10 +1,12 @@
 /**
  * Door3D — Proper 3D door geometry with frame, panel, handle, and swing arc.
  * Supports: hinged-left, hinged-right, sliding, pocket, double door types.
+ * Supports optional custom GLB model via modelUrl.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import type { Door, DoorType } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
 
