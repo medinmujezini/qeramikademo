@@ -2044,7 +2044,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-opacity duration-300">
           <div className="flex flex-col items-center gap-4 text-center">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <h3 className="text-xl font-semibold text-foreground">Preparing walkthrough…</h3>
+            <h3 className="text-xl font-display font-semibold text-foreground">Preparing walkthrough…</h3>
             <p className="text-sm text-muted-foreground">Generating 3D scene</p>
           </div>
         </div>
