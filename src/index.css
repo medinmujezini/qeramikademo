@@ -747,168 +747,42 @@
   border-radius: 2px;
 }
 
-/* Glass variant for floating panels */
+/* Clean floating panel variant */
   .glass-floating {
     position: relative;
-    isolation: isolate;
-    border-radius: 16px;
+    border-radius: 10px;
     overflow: hidden;
-    
-    background-image: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.08) 0%, 
-      rgba(255, 255, 255, 0.03) 100%
-    );
-    
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    
-    box-shadow: 
-      0 8px 32px -4px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
   }
 
-  .glass-floating::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    mask-image: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 50%);
-    -webkit-mask-image: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 50%);
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  .glass-floating::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 1px solid hsl(217 91% 60% / 0.1);
-    mask-image: linear-gradient(135deg, rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
-    -webkit-mask-image: linear-gradient(135deg, rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
-    pointer-events: none;
-    z-index: 2;
-  }
-
-/* Smaller glass variant for compact controls */
+/* Smaller control variant */
   .glass-control {
     position: relative;
-    isolation: isolate;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
-    
-    background-image: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.06) 0%, 
-      rgba(255, 255, 255, 0.02) 100%
-    );
-    
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    
-    box-shadow: 
-      0 4px 16px -2px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.08);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
   }
 
-/* Compact toolbar glass - horizontal pill */
+/* Clean toolbar */
   .glass-toolbar {
     position: relative;
-    isolation: isolate;
     border-radius: 8px;
     overflow: hidden;
     padding: 0.5rem 1rem;
-    
-    background-image: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.08) 0%, 
-      rgba(255, 255, 255, 0.03) 100%
-    );
-    
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    
-    box-shadow: 
-      0 4px 16px -2px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
   }
 
-  .glass-toolbar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    mask-image: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 50%);
-    -webkit-mask-image: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 50%);
-    pointer-events: none;
-    z-index: 2;
-  }
-
-/* Canvas full-screen container */
-.canvas-full {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: var(--z-canvas);
-}
-
-/* Panel header styling */
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-.panel-header-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: hsl(var(--foreground) / 0.8);
-}
-
-/* Dark mode adjustments for floating panels */
-.dark .glass-floating,
-.dark .glass-toolbar {
-  background-image: linear-gradient(
-    135deg, 
-    rgba(255, 255, 255, 0.12) 0%, 
-    rgba(255, 255, 255, 0.04) 100%
-  );
-}
-
-.dark .glass-floating::before,
-.dark .glass-toolbar::before {
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-  /* TabsList glassmorphism style */
+/* Clean tabs */
   .glass-tabs {
-    background-image: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.06) 0%, 
-      rgba(255, 255, 255, 0.02) 100%
-    );
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3);
-  }
-
-  .dark .glass-tabs {
-    background-image: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.06) 0%, 
-      rgba(255, 255, 255, 0.02) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.1);
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    box-shadow: none;
   }
 
 @keyframes gradient-shift-1 {
