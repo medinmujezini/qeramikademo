@@ -133,11 +133,22 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    line-height: 1.7;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+  }
+
+  /* Fade-in animation for page content */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out both;
   }
 }
 
