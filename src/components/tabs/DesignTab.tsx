@@ -1946,6 +1946,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 size="icon" 
                 className="h-5 w-5"
                 onClick={() => setIsPanelOpen(false)}
+                className="h-5 w-5 border border-primary/15"
               >
                 <PanelRightClose className="h-3 w-3" />
               </Button>

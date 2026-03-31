@@ -134,7 +134,7 @@ const QuoteTab = () => {
             </div>
           </div>
 
-          <Button className="w-full" size="lg">
+          <Button variant="luxury" className="w-full" size="lg">
             Request Detailed Quote
           </Button>
         </CardContent>
