@@ -282,7 +282,7 @@ export const UnifiedLibrary: React.FC = () => {
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 w-full rounded-none border-primary/15 bg-card focus:border-primary/40 focus:shadow-[0_0_15px_hsl(38_60%_68%/0.06)]"
+            className="pl-8 w-full rounded-none border-primary/15 bg-card luxury-search"
           />
         </div>
       </div>
