@@ -1116,6 +1116,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
+  const ceilingBeforeWalkRef = useRef(false);
   const [showSpawnMarker, setShowSpawnMarker] = useState(true);
   const [spawnPoint, setSpawnPoint] = useState<SpawnPoint>(() => {
     // Default spawn at room center
