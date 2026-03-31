@@ -433,11 +433,7 @@ const Wall3D = ({
         document.body.style.cursor = 'default';
       }}
     >
-      {texture ? (
-        <meshStandardMaterial map={texture} roughness={0.7} side={THREE.DoubleSide} />
-      ) : (
-        <meshStandardMaterial color={getWallColor()} roughness={0.9} side={THREE.DoubleSide} />
-      )}
+      <primitive object={wallMaterial} attach="material" />
     </mesh>
   );
 };

@@ -80,12 +80,7 @@ export const FloorSlab3D: React.FC<FloorSlab3DProps> = ({
         receiveShadow
       >
         <extrudeGeometry args={[slabShape, extrudeSettings]} />
-        <meshPhysicalMaterial
-          color={slab.topMaterial === 'finished' ? '#d4cdc5' : '#b0aba3'}
-          roughness={0.85}
-          metalness={0}
-          side={THREE.DoubleSide}
-        />
+        <primitive object={slabMaterial} attach="material" />
       </mesh>
     </group>
   );
