@@ -223,7 +223,8 @@ export const FurnitureScene: React.FC<FurnitureSceneProps> = ({
         rotation={[-Math.PI / 2, 0, 0]} 
         position={[0, -0.001, 0]}
         onClick={handleBackgroundClick}
-        userData={{ isGround: true }}
+        userData={{ isGround: true, editorOnly: true }}
+        name="__drag_plane_ground"
       >
         <planeGeometry args={[100, 100]} />
         <meshBasicMaterial visible={false} />
