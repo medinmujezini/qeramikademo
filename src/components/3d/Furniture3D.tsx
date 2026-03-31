@@ -98,6 +98,7 @@ interface Furniture3DProps {
   onSelect: (id: string) => void;
   onDragStart?: (e: ThreeEvent<PointerEvent>) => void;
   modelUrl?: string;
+  ceilingHeight?: number;
 }
 
 // FallbackBox is now replaced by BlueprintBox imported above
