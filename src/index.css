@@ -164,8 +164,8 @@
   .card-tech {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
+    border-radius: 0;
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.06);
   }
 
   .card-tech:hover {
@@ -232,7 +232,7 @@
   .glass {
     position: relative;
     isolation: isolate;
-    border-radius: 16px;
+    border-radius: 0;
     overflow: hidden;
     
     /* TRUE GLASS: Very low opacity so background shows through */
@@ -249,7 +249,8 @@
     /* Subtle depth shadow */
     box-shadow: 
       0 4px 24px -4px rgba(0, 0, 0, 0.15),
-      0 8px 48px -8px rgba(0, 0, 0, 0.1);
+      0 8px 48px -8px rgba(0, 0, 0, 0.1),
+      0 0 30px hsl(38 60% 68% / 0.06);
     
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
@@ -341,19 +342,23 @@
 
   /* Size Variants */
   .glass-pill {
-    border-radius: 8px;
+    border-radius: 0;
   }
 
   .glass-card {
-    border-radius: 16px;
+    border-radius: 0;
   }
 
   .glass-sm {
-    border-radius: 8px;
+    border-radius: 0;
   }
 
   .glass-lg {
-    border-radius: 24px;
+    border-radius: 0;
+  }
+
+  .card-glow {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.08);
   }
 
   /* ========================================
@@ -438,7 +443,7 @@
 
   .glass-header {
     position: relative;
-    border-radius: 8px;
+    border-radius: 0;
     background: linear-gradient(
       180deg, 
       rgba(255, 255, 255, 0.08), 
