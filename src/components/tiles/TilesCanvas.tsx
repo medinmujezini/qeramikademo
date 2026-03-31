@@ -80,7 +80,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     ctx.clearRect(0, 0, width, height);
 
     // Draw grid - thin white lines for high-tech look
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)'; // Light blue grid
+    ctx.strokeStyle = 'rgba(201, 169, 110, 0.12)'; // Gold grid
     ctx.lineWidth = 0.5;
     const gridSize = 25;
     const gridStart = screenToWorld(0, 0);
