@@ -6,7 +6,9 @@ import { RoleCard } from '@/components/home/RoleCard';
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+      {/* Decorative gold orb */}
+      <div className="pointer-events-none absolute -bottom-32 -left-32 w-[700px] h-[700px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.10)_0%,transparent_70%)]" />
       {/* Header */}
       <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
