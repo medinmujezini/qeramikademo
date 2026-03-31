@@ -251,10 +251,10 @@ const GLTFModel: React.FC<{
       targetEmissiveColor = new THREE.Color('#22c55e');
       targetIntensity = 0.4;
     } else if (isSelected) {
-      targetEmissiveColor = new THREE.Color('#3b82f6');
+      targetEmissiveColor = new THREE.Color('#d4a017');
       targetIntensity = 0.5;
     } else if (hovered) {
-      targetEmissiveColor = new THREE.Color('#3b82f6');
+      targetEmissiveColor = new THREE.Color('#d4a017');
       targetIntensity = 0.2;
     }
     
