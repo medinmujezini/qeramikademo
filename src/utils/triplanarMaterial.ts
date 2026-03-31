@@ -112,7 +112,7 @@ varying vec3 vTriWorldNormal;`
   material.needsUpdate = true;
   // Custom key so Three.js caches the modified program properly
   material.customProgramCacheKey = () =>
-    `triplanar_${textureScale}_${sharpness}`;
+    `triplanar_${map.id}_${textureScale}_${sharpness}`;
 
   return material;
 }
