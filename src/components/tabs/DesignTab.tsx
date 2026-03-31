@@ -7,6 +7,7 @@
  */
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { createTriplanarMaterial } from '@/utils/triplanarMaterial';
 import { SpawnPointMarker, type SpawnPoint } from '@/components/3d/SpawnPointMarker';
 import { WalkthroughOverlay } from '@/components/3d/WalkthroughOverlay';
 import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
@@ -414,6 +415,22 @@ const Wall3D = ({
     return geo;
   }, [effectiveLength, startHeight, endHeight, wallThickness, doors, windows, scale]);
 
+  const wallColor = getWallColor();
+  const wallMaterial = useMemo(() => {
+    const mat = createTriplanarMaterial({
+      color: wallColor,
+      map: texture,
+      roughness: texture ? 0.7 : 0.9,
+      textureScale: 2.0,
+    });
+    return mat;
+  }, [wallColor, texture]);
+
+  // Dispose material on cleanup
+  useEffect(() => {
+    return () => { wallMaterial.dispose(); };
+  }, [wallMaterial]);
+
   const yPosition = 0;
 
   return (
@@ -433,11 +450,7 @@ const Wall3D = ({
         document.body.style.cursor = 'default';
       }}
     >
-      {texture ? (
-        <meshStandardMaterial map={texture} roughness={0.7} side={THREE.DoubleSide} />
-      ) : (
-        <meshStandardMaterial color={getWallColor()} roughness={0.9} side={THREE.DoubleSide} />
-      )}
+      <primitive object={wallMaterial} attach="material" />
     </mesh>
   );
 };

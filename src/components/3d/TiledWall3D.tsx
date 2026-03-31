@@ -6,6 +6,7 @@
  */
 
 import React, { useMemo, useState, useEffect, Suspense } from 'react';
+import { createTriplanarMaterial } from '@/utils/triplanarMaterial';
 import { useFrame } from '@react-three/fiber';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -265,6 +266,18 @@ const TiledWallInner: React.FC<{
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
+  const groutMaterial = useMemo(() => {
+    return createTriplanarMaterial({
+      color: tileConfig.groutColor,
+      roughness: 0.9,
+      textureScale: 2.0,
+    });
+  }, [tileConfig.groutColor]);
+
+  useEffect(() => {
+    return () => { groutMaterial.dispose(); };
+  }, [groutMaterial]);
+
   const originalLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
   const dirX = Math.cos(angle);
@@ -340,7 +353,7 @@ const TiledWallInner: React.FC<{
       {/* Base wall / grout backing plane */}
       <mesh position={[0, 0, -wallThicknessM / 2 - 0.002]} castShadow receiveShadow>
         <extrudeGeometry args={[wallShape, { depth: wallThicknessM * 0.5, bevelEnabled: false }]} />
-        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} side={THREE.DoubleSide} />
+        <primitive object={groutMaterial} attach="material" />
       </mesh>
 
       {/* Grout layer */}
