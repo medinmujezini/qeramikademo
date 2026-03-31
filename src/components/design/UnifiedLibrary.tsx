@@ -289,12 +289,12 @@ export const UnifiedLibrary: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'furniture' | 'fixtures')} className="flex-1 flex flex-col min-h-0 w-full">
-        <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)]">
-          <TabsTrigger value="furniture" className="flex-1 gap-1">
+        <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)] rounded-none">
+          <TabsTrigger value="furniture" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
             <Sofa className="h-3.5 w-3.5" />
             Furniture
           </TabsTrigger>
-          <TabsTrigger value="fixtures" className="flex-1 gap-1">
+          <TabsTrigger value="fixtures" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
             <Bath className="h-3.5 w-3.5" />
             Fixtures
           </TabsTrigger>
