@@ -1185,6 +1185,16 @@ export const useFloorPlan = () => {
     });
   }, [saveToHistory]);
 
+  // Ceiling emitter config
+  const updateCeilingEmitterConfig = useCallback((updates: Partial<import('@/types/floorPlan').CeilingEmitterConfig>) => {
+    setFloorPlan(prev => {
+      const current = prev.ceilingEmitterConfig ?? { enabled: true, intensity: 0.8, color: '#fff5e6', density: 'normal' as const };
+      const updated = { ...prev, ceilingEmitterConfig: { ...current, ...updates } };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
   return {
     floorPlan,
     setFloorPlan,
