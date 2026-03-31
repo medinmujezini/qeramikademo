@@ -101,7 +101,7 @@ const LibraryItem: React.FC<LibraryItemPropsExtended> = ({
     >
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 rounded-none bg-muted border border-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-12 h-12 rounded-none bg-muted border border-primary/10 flex items-center justify-center overflow-hidden shrink-0 transition-border-color duration-400 group-hover:border-primary/30">
           {thumbnailUrl && !imageError ? (
             <img 
               src={thumbnailUrl} 
