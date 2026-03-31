@@ -1,68 +1,79 @@
 
 
-# Redesign Design Tab to Luxury Style
+# 3-Layer Header for All Tabs
 
-## What's Changing
+Replace floating toolbars with a fixed 3-layer header structure. The canvas fills the remaining space below.
 
-The Design tab's floating toolbar, panels, and overlays need to match the black & cream-gold luxury aesthetic: refined borders, gold accent lines, uppercase tracked labels, and cleaner spacing.
+```text
+┌──────────────────────────────────────────────────────┐
+│ Layer 1: Brand header  (SD logo · Design Studio)  Cart │  ← already exists
+├──────────────────────────────────────────────────────┤
+│ Layer 2: Tab nav  (Room Layout │ Finishes │ 3D View │ Quote) │  ← already exists
+├──────────────────────────────────────────────────────┤
+│ Layer 3: Contextual toolbar  (per-tab tools/toggles)       │  ← NEW: fixed row
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│                 Canvas / Content area                 │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
 
-## Changes
+## What Changes
 
-### 1. `src/index.css` — Luxury panel/toolbar styles (lines 766-827)
+### 1. `src/pages/EndUserPlatform.tsx`
+- Move the tab-specific toolbar content out of each tab and into a **Layer 3** bar rendered between the TabsList and TabsContent
+- Layer 3: `h-10 border-b border-primary/12 bg-card/40 px-6 flex items-center gap-4` — thin, dark, with gold accent border
+- Render different toolbar content based on `activeTab` value
+- Pass necessary callbacks/state down to each tab (or keep them in the tab and lift only toolbar JSX)
 
-- `.glass-floating`: Add subtle gold top-border (`border-top: 1px solid hsl(var(--primary) / 0.25)`), slightly darker bg
-- `.glass-toolbar`: Add gold top-border accent, increase padding slightly, use `border-radius: 4px` (sharper)
-- `.glass-control`: Gold border accent
-- `.panel-header`: Add gold bottom-border instead of plain border, use uppercase tracking-widest on title
-- `.panel-header-title`: Add `text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.7rem; color: hsl(var(--primary) / 0.8)` — luxury label style
+### 2. `src/components/tabs/FloorPlanTab.tsx`
+- **Remove** the floating `glass-toolbar` wrapper at `top-4 left-1/2` (lines 286-302)
+- **Remove** the bottom-left `glass-control` layer controls panel (lines 304-339) — move those controls (Dims toggle, New Room, From Image) into Layer 3
+- **Remove** the bottom-center drawing status hint (lines 353-360) — move into Layer 3 as a right-aligned status indicator
+- **Export** toolbar state/controls so EndUserPlatform can render them, OR expose the toolbar JSX as a separate component
+- Right-side Properties panel stays as a floating panel (it's contextual to selection)
 
-### 2. `src/components/tabs/DesignTab.tsx` — Toolbar & panels refinement
+### 3. `src/components/tabs/DesignTab.tsx`
+- **Remove** the floating toolbar at `top-4 left-1/2 z-30` (lines 1710-1984) — all those controls (Enhanced toggle, Tiles toggle, Ceiling, Plumbing, camera presets, Render, Walkthrough, saved views) move to Layer 3
+- Left Library panel and right Properties panel stay as floating overlays (they're canvas-appropriate)
+- Drop zone indicator stays (it's a canvas overlay)
 
-**Top toolbar** (line ~1711):
-- Replace `glass-toolbar` with refined styling: add thin gold top-border, tighter layout
-- Group controls into logical sections with gold dividers (`bg-primary/20` instead of `bg-border/50`)
-- Make labels uppercase tracking-wider (luxury-label style) for "Enhanced", "Tiles", "Ceiling", "Plumbing"
-- Badges: use `variant="outline"` with gold border instead of `secondary`
-- Camera preset buttons: add subtle gold hover state
+### 4. `src/components/tabs/TilesTab.tsx`
+- Check for floating toolbar — move any top toolbar controls to Layer 3
 
-**Library panel** (line ~1988-1999):
-- Panel header title "Library" → uppercase tracked gold text (handled by CSS changes)
-- Already uses `glass-floating` so CSS update covers it
+### 5. Approach: Per-tab toolbar components
 
-**Properties panel** (line ~2003-2026):
-- Same as library — CSS update covers it
+Create small toolbar components that each tab exports:
 
-**Walkthrough overlay** (lines 2044-2075):
-- Loading spinner: already uses `text-primary` ✓
-- "Preparing walkthrough" heading: add `font-display` class for Outfit font
-- Walkthrough prompt: style "Click to Enter" button with `luxury` variant
-- WASD hint bar: already uses `glass-toolbar` ✓
+- `FloorPlanToolbar` — tool buttons (Select/Pan/Wall/Column/Door/Window), grid toggle, undo/redo, delete, reset, dims toggle, New Room, From Image
+- `DesignToolbar` — Enhanced toggle, settings, Tiles/Ceiling/Plumbing toggles, Add Light, counts, Render, Reset View, camera presets, saved views, Walkthrough
+- `TilesToolbar` — whatever controls the Tiles tab has at top
+- Quote tab: no toolbar needed (or minimal)
 
-**Render dialog** (lines 2112-2169):
-- "Cinematic Render" title: ensure Outfit font via heading tag
-- "AI Enhanced" badge: use gold accent (`bg-primary/80`) — already done ✓
+Each toolbar is a plain `React.FC` that renders a flat row of buttons/switches — no glass wrapper, no absolute positioning. EndUserPlatform renders the active one inside the Layer 3 bar.
 
-**Drop zone indicator** (line 1702-1706):
-- Change text from `glass-toolbar` to use gold border accent
+### 6. Layer 3 Styling
+```
+h-10 border-b bg-card/30 px-4 flex items-center gap-3
+border-color: hsl(var(--primary) / 0.08)
+```
+- Thin, unobtrusive, matches luxury aesthetic
+- Gold accent dividers between groups (`w-px h-4 bg-primary/15`)
+- Labels: `text-xs uppercase tracking-wider text-muted-foreground`
+- Buttons: `variant="ghost" size="sm" h-7`
 
-### 3. `src/components/design/UnifiedLibrary.tsx` — Library tab styling
-
-- Category tab buttons: use uppercase tracking, gold active state
-- Item cards: subtle gold hover border
-- "Plumbing" badge: keep distinct blue, rest follows gold theme
-
-### 4. `src/components/design/DesignPropertiesPanel.tsx` — Properties styling
-
-- Section labels: uppercase tracked gold
-- Action buttons: use `luxury` variant for rotate/delete
-- Dimension labels: muted gold tint
+### 7. Canvas area adjustment
+- Each tab's canvas container changes from `h-full` to filling the remaining flex space (already works since tabs use `flex-1`)
+- Remove `top-28` offsets on floating Library/Properties panels — they now start from `top-4` since there's no floating toolbar above them
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/index.css` | Gold accents on panel/toolbar classes, luxury header styling |
-| `src/components/tabs/DesignTab.tsx` | Gold dividers, luxury labels, refined toolbar |
-| `src/components/design/UnifiedLibrary.tsx` | Gold active tabs, luxury item cards |
-| `src/components/design/DesignPropertiesPanel.tsx` | Gold labels, luxury action buttons |
+| `src/pages/EndUserPlatform.tsx` | Add Layer 3 bar, render per-tab toolbar |
+| `src/components/tabs/FloorPlanTab.tsx` | Extract toolbar to component, remove floating toolbar/layer controls |
+| `src/components/floor-plan/Toolbar.tsx` | Adapt to render inline (no glass wrapper) |
+| `src/components/tabs/DesignTab.tsx` | Extract toolbar to component, remove floating toolbar, adjust panel offsets |
+| `src/components/tabs/TilesTab.tsx` | Extract any floating toolbar to Layer 3 |
+| `src/pages/WorkerPlatform.tsx` | Same 3-layer pattern for worker platform |
 
