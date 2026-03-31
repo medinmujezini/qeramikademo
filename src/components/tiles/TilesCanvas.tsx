@@ -135,8 +135,8 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       }
 
       // Neon color definitions - thinner and less opaque
-      const neonEdge = isSelected ? 'hsla(142, 100%, 65%, 0.7)' : 'hsla(142, 76%, 50%, 0.7)';
-      const glassFill = 'hsla(142, 40%, 20%, 0.4)';
+      const neonEdge = isSelected ? 'hsla(38, 80%, 68%, 0.8)' : 'hsla(38, 60%, 58%, 0.7)';
+      const glassFill = 'hsla(38, 30%, 20%, 0.4)';
       
       // Calculate wall angle
       const angle = Math.atan2(end.y - start.y, end.x - start.x);
