@@ -1585,7 +1585,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
-      <div className="h-10 border-b border-t bg-card px-4 flex items-center justify-center shrink-0 overflow-x-auto" style={{ borderColor: 'hsl(var(--primary) / 0.10)', borderTopColor: 'hsl(var(--primary) / 0.08)' }}>
+      <div className="h-10 border-b border-t px-4 flex items-center justify-center shrink-0 overflow-x-auto relative" style={{ borderColor: 'hsl(var(--primary) / 0.10)', borderTopColor: 'hsl(var(--primary) / 0.08)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/[0.02] to-transparent" />
         <div className="flex items-center gap-3 h-full">
           <div className="flex items-center gap-1.5">
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
@@ -1778,11 +1779,19 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       </div>
 
       {/* Canvas area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden canvas-vignette">
+      {/* Gold dust particles */}
+      <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
+      <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
+      <div className="gold-particle" style={{ left: '50%', bottom: '8%', ['--duration' as string]: '14s', ['--delay' as string]: '4s' }} />
+      <div className="gold-particle" style={{ left: '70%', bottom: '20%', ['--duration' as string]: '10s', ['--delay' as string]: '1s' }} />
+      <div className="gold-particle" style={{ left: '85%', bottom: '3%', ['--duration' as string]: '11s', ['--delay' as string]: '6s' }} />
+      <div className="gold-particle" style={{ left: '40%', bottom: '12%', ['--duration' as string]: '13s', ['--delay' as string]: '3s' }} />
+      
       {/* FULL-SCREEN 3D CANVAS */}
       <div 
         ref={canvasContainerRef}
-        className={`absolute inset-0 ${isDraggingFromLibrary ? 'ring-2 ring-primary ring-inset' : ''}`}
+        className={`absolute inset-0 ${isDraggingFromLibrary ? 'drop-zone-pulse' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -1894,8 +1903,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         
         {/* Drop zone indicator */}
         {isDraggingFromLibrary && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-primary/5 to-transparent pointer-events-none">
-            <div className="glass-toolbar text-xs font-display uppercase tracking-widest font-medium text-primary/80" style={{ textShadow: '0 0 20px hsl(38 60% 68% / 0.2)' }}>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-primary/5 via-transparent to-primary/3 pointer-events-none z-10">
+            <div className="glass-toolbar text-xs font-display uppercase tracking-[0.25em] font-light text-primary animate-pulse" style={{ textShadow: '0 0 30px hsl(38 60% 68% / 0.4), 0 0 60px hsl(38 60% 68% / 0.15)' }}>
               Drop here to place
             </div>
           </div>
@@ -1912,6 +1921,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         >
           <div className="glass-floating overflow-hidden flex flex-col h-full relative">
             <div className="pointer-events-none absolute -bottom-16 -left-16 w-[200px] h-[200px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
+            <div className="pointer-events-none absolute -top-10 -right-10 w-[120px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
             <div className="panel-header shrink-0">
               <span className="panel-header-title">Library</span>
             </div>
@@ -1927,6 +1937,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute top-4 right-6 z-20 w-64 max-h-[calc(100%-48px)]">
           <div className="glass-floating overflow-hidden flex flex-col h-full relative">
             <div className="pointer-events-none absolute -bottom-12 -right-12 w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
+            <div className="pointer-events-none absolute -top-8 -left-8 w-[100px] h-[100px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
             <div className="panel-header shrink-0">
               <span className="panel-header-title">Properties</span>
               <Button 
@@ -1967,9 +1978,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       {isPreparingWalkthrough && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-opacity duration-300">
           <div className="pointer-events-none absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
+          <div className="gold-particle" style={{ left: '30%', bottom: '20%', ['--duration' as string]: '6s', ['--delay' as string]: '0s' }} />
+          <div className="gold-particle" style={{ left: '60%', bottom: '30%', ['--duration' as string]: '8s', ['--delay' as string]: '1s' }} />
+          <div className="gold-particle" style={{ left: '45%', bottom: '10%', ['--duration' as string]: '7s', ['--delay' as string]: '2s' }} />
           <div className="flex flex-col items-center gap-4 text-center relative z-10">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <h3 className="text-xl font-display font-semibold text-foreground">Preparing walkthrough…</h3>
+            <h3 className="text-xl font-display font-light uppercase tracking-[0.2em] text-foreground" style={{ textShadow: '0 0 40px hsl(38 60% 68% / 0.3)' }}>Preparing walkthrough…</h3>
             <p className="text-sm text-muted-foreground">Generating 3D scene</p>
           </div>
         </div>
@@ -1980,7 +1994,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-center">
             <PersonStanding className="h-12 w-12 text-primary" />
-            <h3 className="text-xl font-display font-semibold text-foreground">Walkthrough Mode</h3>
+            <h3 className="text-xl font-display font-light uppercase tracking-[0.2em] text-foreground" style={{ textShadow: '0 0 40px hsl(38 60% 68% / 0.3)' }}>Walkthrough Mode</h3>
             <p className="text-sm text-muted-foreground">
               Move with WASD · Look with mouse · Esc to exit
             </p>
@@ -2059,7 +2073,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
             ) : (
               <div className="space-y-4">
                 {/* Show enhanced or original */}
-                <div className="relative aspect-video bg-muted rounded-none overflow-hidden">
+                <div className="relative aspect-video bg-muted rounded-none overflow-hidden shadow-[inset_0_0_40px_hsl(38_60%_68%/0.06)]">
                   {(enhancedRender || originalRender) && (
                     <img 
                       src={enhancedRender || originalRender || ''} 
@@ -2083,7 +2097,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                   <Button variant="outline" onClick={() => setRenderDialogOpen(false)}>
                     Close
                   </Button>
-                  <Button onClick={handleDownloadRender} className="gap-2">
+                  <Button variant="luxury" onClick={handleDownloadRender} className="gap-2">
                     <Download className="h-4 w-4" />
                     Download
                   </Button>
