@@ -39,17 +39,19 @@ export const Ceiling3D: React.FC<Ceiling3DProps> = ({ floorPlan, visible }) => {
 
   return (
     <group>
-      {/* Ceiling plane */}
+      {/* Ceiling slab — 20cm thick, double-sided for UE export */}
       <mesh
         rotation={[Math.PI / 2, 0, 0]}
         position={[centerX, ceilingHeight, centerZ]}
         name="ceiling"
+        castShadow
+        receiveShadow
       >
-        <planeGeometry args={[floorWidth, floorDepth]} />
+        <boxGeometry args={[floorWidth, floorDepth, 0.2]} />
         <meshStandardMaterial
           color="#e8e8e8"
           roughness={0.9}
-          side={THREE.FrontSide}
+          side={THREE.DoubleSide}
         />
       </mesh>
 
