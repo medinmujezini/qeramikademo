@@ -266,6 +266,18 @@ const TiledWallInner: React.FC<{
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
+  const groutMaterial = useMemo(() => {
+    return createTriplanarMaterial({
+      color: tileConfig.groutColor,
+      roughness: 0.9,
+      textureScale: 2.0,
+    });
+  }, [tileConfig.groutColor]);
+
+  useEffect(() => {
+    return () => { groutMaterial.dispose(); };
+  }, [groutMaterial]);
+
   const originalLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
   const dirX = Math.cos(angle);
