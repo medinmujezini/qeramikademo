@@ -1,66 +1,74 @@
 
 
-# Add Robust Emissive Ceiling Light System
+# 5-Step Plan: Connected Wall Geometry (Seamless Corners)
 
-## What the user wants
+## Problem
 
-Invisible lights mounted on the ceiling that illuminate the room from above — no visible mesh panel, just the light source. This creates realistic interior lighting without visible fixtures.
+Each wall is an independent `ExtrudeGeometry` mesh positioned at its midpoint. At shared endpoints (corners), walls don't extend far enough to meet, leaving visible gaps as shown in the screenshot. The `wallJunctionGeometry.ts` utility already exists with `analyzeWallJunctions()` and `getWallExtension()` but is **not wired into the rendering**.
 
-## Current state
+## Current Architecture
 
-- `Ceiling3D.tsx` renders `RoomLight3D` which shows a visible emissive plane + `rectAreaLight`
-- Users manually add room lights via toolbar button
-- The system works but lights are visible panels, not invisible emitters
+- `Wall3D` component in `DesignTab.tsx` (line 268) computes wall length from start/end points, creates an extruded shape via `createWallShapeWithOpenings`, and positions the mesh at the midpoint
+- Wall thickness is extruded symmetrically (`translate(0, 0, -halfThick)`)
+- No junction awareness — each wall is an island
 
-## Plan
+---
 
-### 1. Auto-generate ceiling emitters from room bounds
+## Step 1 — Wire Junction Analysis into DesignScene
 
-**File: `src/components/3d/Ceiling3D.tsx`**
+**File: `src/components/tabs/DesignTab.tsx`**
 
-Add an automatic emissive grid system that places invisible lights across the ceiling:
+- Import `analyzeWallJunctions` and `getWallExtension` from `wallJunctionGeometry.ts`
+- In `DesignScene`, compute junctions once via `useMemo` from `floorPlan.walls` and `floorPlan.points`
+- Pass `junctions` array down to each `Wall3D` and `TiledWall3DWithMaterial`
 
-- Compute room bounds from floor plan points (already done)
-- Generate a grid of invisible `pointLight` or `rectAreaLight` sources evenly spaced across the ceiling
-- Grid density: ~1 light per 4m² (adaptive based on room size), with configurable density
-- Lights are invisible (no mesh) — purely emissive sources just below the ceiling plane
-- Default warm white color (`#fff5e6`), moderate intensity (~0.8 per light)
-- Scale total intensity based on room area so small rooms aren't blown out
+## Step 2 — Extend Wall Geometry at Junction Points
 
-### 2. New `CeilingEmitter` sub-component
+**File: `src/components/tabs/DesignTab.tsx` (Wall3D component)**
 
-Inside `Ceiling3D.tsx`, add a `CeilingEmitterGrid` component:
-- Takes room bounds, ceiling height, and config (density, color, intensity, enabled)
-- Generates positions in a grid pattern with slight random jitter to avoid uniform shadows
-- Each emitter is a `pointLight` with `castShadow={false}` (for performance) and `decay={2}` for realistic falloff
-- Tag with `userData={{ editorOnly: false }}` so they export to GLB
-- For Unreal export: also add dim `rectAreaLight` sources at key positions for better GI
+- Accept `startExtension` and `endExtension` props (in cm, from `getWallExtension`)
+- Convert extensions to scene units (`* scale`)
+- Before computing `length`, extend the wall's effective start/end positions along the wall direction by the extension amounts
+- Update the `midX`/`midZ` (mesh position) to account for the shifted center
+- The `createWallShapeWithOpenings` call uses the extended `length`
 
-### 3. Add controls to `DesignTab.tsx` toolbar
+This makes walls physically longer at corners so they overlap and form a solid joint.
 
-Add a toggle and intensity slider near the existing Ceiling toggle:
-- "Auto Lights" switch (on by default)
-- Intensity slider (0.2–3.0)
-- Color picker (warm white default)
-- Density selector: sparse / normal / dense
+## Step 3 — Apply Same Extensions to TiledWall3D
 
-### 4. Export support
+**File: `src/components/3d/TiledWall3D.tsx`**
 
-**File: `src/utils/roomManifest.ts`**
-- Add `emissiveLights` array to manifest with positions, intensities, colors
-- Unreal side can recreate these as point lights or rect lights
+- Accept `startExtension` and `endExtension` props
+- Extend the wall length used for tile placement and shape generation
+- Adjust the mesh position offset to match
+- Ensures tiled walls also have seamless corners
 
-### 5. GLB export cleanup
+## Step 4 — Fix the Junction Math for All Cases
 
-**File: `src/utils/glbExporter.ts`**
-- Ensure invisible light markers (empty groups with metadata) are included in export for Unreal to parse
+**File: `src/utils/wallJunctionGeometry.ts`**
 
-## Files Modified
+- The current miter math uses a simplified `(thickness/2) / tan(halfAngle)` which can produce wrong values for obtuse angles
+- Fix: use `abs(angle difference)` properly, handle the 180° (collinear) case gracefully
+- Add handling for walls with different thicknesses at a junction (use the thicker wall's extension)
+- Cap extensions to prevent visual artifacts at very acute angles (< 15°)
 
-| File | Change |
-|---|---|
-| `src/components/3d/Ceiling3D.tsx` | Add `CeilingEmitterGrid` component with auto-placed invisible lights |
-| `src/components/tabs/DesignTab.tsx` | Add auto-light controls (toggle, intensity, color, density) to toolbar |
-| `src/types/floorPlan.ts` | Add `CeilingEmitterConfig` interface to FloorPlan |
-| `src/utils/roomManifest.ts` | Include emitter grid in manifest for Unreal |
+## Step 5 — Door/Window Offset Correction
+
+**Files: `src/components/tabs/DesignTab.tsx`, `src/components/3d/Door3D.tsx`, `src/components/3d/Window3D.tsx`**
+
+- When walls are extended, door and window positions (defined as `position` along the wall length 0–1) shift because the wall is now longer
+- Remap door/window `position` values to account for `startExtension`: `adjustedPosition = (originalPosition * originalLength + startExtension) / extendedLength`
+- Apply this remapping when passing doors/windows to `Wall3D` and `Door3D`/`Window3D` position calculations
+
+---
+
+## Summary
+
+| Step | File(s) | What |
+|---|---|---|
+| 1 | `DesignTab.tsx` | Compute junctions, pass to wall components |
+| 2 | `DesignTab.tsx` (Wall3D) | Extend wall mesh length at junction endpoints |
+| 3 | `TiledWall3D.tsx` | Same extension logic for tiled walls |
+| 4 | `wallJunctionGeometry.ts` | Fix miter math for all angle cases |
+| 5 | `DesignTab.tsx`, `Door3D`, `Window3D` | Correct door/window positions on extended walls |
 
