@@ -2055,7 +2055,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-center">
             <PersonStanding className="h-12 w-12 text-primary" />
-            <h3 className="text-xl font-semibold text-foreground">Walkthrough Mode</h3>
+            <h3 className="text-xl font-display font-semibold text-foreground">Walkthrough Mode</h3>
             <p className="text-sm text-muted-foreground">
               Move with WASD · Look with mouse · Esc to exit
             </p>
