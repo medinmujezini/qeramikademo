@@ -101,6 +101,7 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsDragging(false);
+    onDragEnd?.();
   };
 
   const handleRotate45 = (e: React.MouseEvent) => {
