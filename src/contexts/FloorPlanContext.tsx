@@ -1,10 +1,10 @@
-import React, { createContext, useContext, ReactNode, useState, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useFloorPlan } from '@/hooks/useFloorPlan';
-import type { CeilingPlane } from '@/types/floorPlan';
-import { DEFAULT_CEILING_PLANE } from '@/types/floorPlan';
+import type { CeilingPlane, FloorPlan } from '@/types/floorPlan';
+import { DEFAULT_CEILING_PLANE, createDefaultFloorPlan } from '@/types/floorPlan';
 import { DEFAULT_WALL_HEIGHT } from '@/constants/units';
-import type { Building, Floor, Staircase, StaircaseType, RailingStyle } from '@/types/multiFloor';
-import { createDefaultBuilding, createDefaultFloor, calculateStaircaseGeometry } from '@/types/multiFloor';
+import type { Building, Floor, Staircase, StaircaseType, RailingStyle, FloorSlab, SlabOpening } from '@/types/multiFloor';
+import { createDefaultBuilding, createDefaultFloor, calculateStaircaseGeometry, DEFAULT_SLAB } from '@/types/multiFloor';
 import { v4 as uuidv4 } from 'uuid';
 
 // Layer visibility state for canvas rendering
@@ -53,10 +53,19 @@ type FloorPlanContextType = ReturnType<typeof useFloorPlan> & {
   addFloor: () => void;
   removeFloor: (level: number) => void;
   renameFloor: (level: number, name: string) => void;
+  duplicateFloor: (level: number) => void;
+  updateFloorHeight: (level: number, height: number) => void;
   staircases: Staircase[];
   addStaircase: (type: StaircaseType, x: number, y: number) => void;
   removeStaircase: (id: string) => void;
   updateStaircase: (id: string, updates: Partial<Staircase>) => void;
+  getFloorPlanForLevel: (level: number) => FloorPlan | null;
+  // Selected staircase
+  selectedStaircaseId: string | null;
+  setSelectedStaircaseId: (id: string | null) => void;
+  // Ghost floor toggle
+  showAdjacentFloors: boolean;
+  setShowAdjacentFloors: (v: boolean) => void;
 };
 
 const FloorPlanContext = createContext<FloorPlanContextType | null>(null);
@@ -65,52 +74,161 @@ const DEFAULT_WALL_SYNC_SETTINGS: WallSyncSettings = {
   autoSyncJunctionHeights: true,
 };
 
+/**
+ * Sync slab openings: for every staircase, ensure the target floor's slab has a matching opening.
+ */
+function syncSlabOpenings(building: Building): Building {
+  const updatedFloors = building.floors.map(floor => {
+    if (floor.level <= 0) return floor;
+    
+    // Find all staircases that go TO this level
+    const stairsToThisFloor = building.staircases.filter(s => s.toLevel === floor.level);
+    
+    const slab: FloorSlab = floor.slab || { ...DEFAULT_SLAB, openings: [] };
+    
+    // Build openings from staircases + keep manual openings (no staircaseId)
+    const manualOpenings = slab.openings.filter(o => !o.staircaseId);
+    const staircaseOpenings: SlabOpening[] = stairsToThisFloor.map(stair => ({
+      id: `slab-opening-${stair.id}`,
+      staircaseId: stair.id,
+      x: stair.x - 10, // 10cm clearance margin
+      y: stair.y - 10,
+      width: stair.width + 20,
+      depth: stair.depth + 20,
+    }));
+    
+    return {
+      ...floor,
+      slab: {
+        ...slab,
+        openings: [...manualOpenings, ...staircaseOpenings],
+      },
+    };
+  });
+  
+  return { ...building, floors: updatedFloors };
+}
+
 export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
   const floorPlanState = useFloorPlan();
   const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>(DEFAULT_LAYER_VISIBILITY);
   const [activeEditingLayer, setActiveEditingLayer] = useState<'floorplan' | 'tiles' | 'plumbing' | 'electrical' | 'fixtures' | 'preview'>('floorplan');
   const [wallSyncSettings, setWallSyncSettings] = useState<WallSyncSettings>(DEFAULT_WALL_SYNC_SETTINGS);
   const [building, setBuilding] = useState<Building>(createDefaultBuilding());
+  const [selectedStaircaseId, setSelectedStaircaseId] = useState<string | null>(null);
+  const [showAdjacentFloors, setShowAdjacentFloors] = useState(true);
+  
+  // Track which level's floor plan is currently loaded in useFloorPlan
+  const loadedLevelRef = useRef<number>(0);
 
   const toggleLayer = (layer: keyof LayerVisibility) => {
     setLayerVisibility(prev => ({ ...prev, [layer]: !prev[layer] }));
   };
 
-  // Multi-floor operations
+  // === STEP 1: Per-floor state isolation ===
+  // Save current floor plan back to building state
+  const saveCurrentFloorPlan = useCallback(() => {
+    const currentPlan = floorPlanState.floorPlan;
+    const currentLevel = loadedLevelRef.current;
+    setBuilding(prev => ({
+      ...prev,
+      floors: prev.floors.map(f =>
+        f.level === currentLevel ? { ...f, floorPlan: currentPlan } : f
+      ),
+    }));
+  }, [floorPlanState.floorPlan]);
+
   const activeLevel = building.activeLevel;
 
   const setActiveLevel = useCallback((level: number) => {
-    setBuilding(prev => ({ ...prev, activeLevel: level }));
-  }, []);
+    // Save current floor plan to building
+    const currentPlan = floorPlanState.floorPlan;
+    const currentLevel = loadedLevelRef.current;
+    
+    setBuilding(prev => {
+      const updated = {
+        ...prev,
+        activeLevel: level,
+        floors: prev.floors.map(f =>
+          f.level === currentLevel ? { ...f, floorPlan: currentPlan } : f
+        ),
+      };
+      
+      // Load the target floor's plan
+      const targetFloor = updated.floors.find(f => f.level === level);
+      if (targetFloor) {
+        // Use setTimeout to avoid state conflicts  
+        setTimeout(() => {
+          floorPlanState.loadFloorPlan(targetFloor.floorPlan);
+          loadedLevelRef.current = level;
+        }, 0);
+      }
+      
+      return updated;
+    });
+  }, [floorPlanState]);
+
+  // Get floor plan for any level (for ghost rendering)
+  const getFloorPlanForLevel = useCallback((level: number): FloorPlan | null => {
+    if (level === loadedLevelRef.current) return floorPlanState.floorPlan;
+    const floor = building.floors.find(f => f.level === level);
+    return floor?.floorPlan || null;
+  }, [building.floors, floorPlanState.floorPlan]);
 
   const addFloor = useCallback(() => {
+    // Save current floor first
+    const currentPlan = floorPlanState.floorPlan;
+    const currentLevel = loadedLevelRef.current;
+    
     setBuilding(prev => {
       const maxLevel = Math.max(...prev.floors.map(f => f.level), -1);
       const newLevel = maxLevel + 1;
       const newFloor = createDefaultFloor(newLevel);
-      return {
+      const updated = {
         ...prev,
-        floors: [...prev.floors, newFloor],
+        floors: prev.floors.map(f =>
+          f.level === currentLevel ? { ...f, floorPlan: currentPlan } : f
+        ).concat(newFloor),
         activeLevel: newLevel,
       };
+      
+      setTimeout(() => {
+        floorPlanState.loadFloorPlan(newFloor.floorPlan);
+        loadedLevelRef.current = newLevel;
+      }, 0);
+      
+      return syncSlabOpenings(updated);
     });
-  }, []);
+  }, [floorPlanState]);
 
   const removeFloor = useCallback((level: number) => {
     setBuilding(prev => {
-      if (prev.floors.length <= 1) return prev; // Keep at least one floor
+      if (prev.floors.length <= 1) return prev;
       const filtered = prev.floors.filter(f => f.level !== level);
       const newActive = prev.activeLevel === level
         ? (filtered[0]?.level ?? 0)
         : prev.activeLevel;
-      return {
+      
+      const updated = {
         ...prev,
         floors: filtered,
         activeLevel: newActive,
         staircases: prev.staircases.filter(s => s.fromLevel !== level && s.toLevel !== level),
       };
+      
+      if (prev.activeLevel === level) {
+        const targetFloor = filtered.find(f => f.level === newActive);
+        if (targetFloor) {
+          setTimeout(() => {
+            floorPlanState.loadFloorPlan(targetFloor.floorPlan);
+            loadedLevelRef.current = newActive;
+          }, 0);
+        }
+      }
+      
+      return syncSlabOpenings(updated);
     });
-  }, []);
+  }, [floorPlanState]);
 
   const renameFloor = useCallback((level: number, name: string) => {
     setBuilding(prev => ({
@@ -119,14 +237,67 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const addStaircase = useCallback((type: StaircaseType, x: number, y: number) => {
+  const duplicateFloor = useCallback((level: number) => {
+    const currentPlan = floorPlanState.floorPlan;
+    const currentLevel = loadedLevelRef.current;
+    
     setBuilding(prev => {
-      const currentFloor = prev.floors.find(f => f.level === prev.activeLevel);
+      const sourceFloor = level === currentLevel
+        ? { ...prev.floors.find(f => f.level === level)!, floorPlan: currentPlan }
+        : prev.floors.find(f => f.level === level);
+      if (!sourceFloor) return prev;
+      
+      const maxLevel = Math.max(...prev.floors.map(f => f.level), -1);
+      const newLevel = maxLevel + 1;
+      const newFloor: Floor = {
+        ...createDefaultFloor(newLevel),
+        floorPlan: JSON.parse(JSON.stringify(sourceFloor.floorPlan)),
+        floorToFloorHeight: sourceFloor.floorToFloorHeight,
+      };
+      
+      const updated = {
+        ...prev,
+        floors: prev.floors.map(f =>
+          f.level === currentLevel ? { ...f, floorPlan: currentPlan } : f
+        ).concat(newFloor),
+        activeLevel: newLevel,
+      };
+      
+      setTimeout(() => {
+        floorPlanState.loadFloorPlan(newFloor.floorPlan);
+        loadedLevelRef.current = newLevel;
+      }, 0);
+      
+      return syncSlabOpenings(updated);
+    });
+  }, [floorPlanState]);
+
+  const updateFloorHeight = useCallback((level: number, height: number) => {
+    setBuilding(prev => ({
+      ...prev,
+      floors: prev.floors.map(f => f.level === level ? { ...f, floorToFloorHeight: height } : f),
+    }));
+  }, []);
+
+  const addStaircase = useCallback((type: StaircaseType, x: number, y: number) => {
+    const currentPlan = floorPlanState.floorPlan;
+    const currentLevel = loadedLevelRef.current;
+    
+    setBuilding(prev => {
+      // Save current plan
+      let updated = {
+        ...prev,
+        floors: prev.floors.map(f =>
+          f.level === currentLevel ? { ...f, floorPlan: currentPlan } : f
+        ),
+      };
+      
+      const currentFloor = updated.floors.find(f => f.level === updated.activeLevel);
       if (!currentFloor) return prev;
       
-      const nextLevel = prev.activeLevel + 1;
-      const targetFloor = prev.floors.find(f => f.level === nextLevel);
-      if (!targetFloor) return prev; // No floor above to connect
+      const nextLevel = updated.activeLevel + 1;
+      const targetFloor = updated.floors.find(f => f.level === nextLevel);
+      if (!targetFloor) return prev;
 
       const geo = calculateStaircaseGeometry(
         currentFloor.floorToFloorHeight,
@@ -136,7 +307,7 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
       const staircase: Staircase = {
         id: uuidv4(),
         type,
-        fromLevel: prev.activeLevel,
+        fromLevel: updated.activeLevel,
         toLevel: nextLevel,
         x,
         y,
@@ -152,25 +323,34 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
         treadMaterial: 'wood',
       };
 
-      return {
-        ...prev,
-        staircases: [...prev.staircases, staircase],
+      updated = {
+        ...updated,
+        staircases: [...updated.staircases, staircase],
       };
+      
+      return syncSlabOpenings(updated);
     });
-  }, []);
+  }, [floorPlanState]);
 
   const removeStaircase = useCallback((id: string) => {
-    setBuilding(prev => ({
-      ...prev,
-      staircases: prev.staircases.filter(s => s.id !== id),
-    }));
-  }, []);
+    setBuilding(prev => {
+      const updated = {
+        ...prev,
+        staircases: prev.staircases.filter(s => s.id !== id),
+      };
+      return syncSlabOpenings(updated);
+    });
+    if (selectedStaircaseId === id) setSelectedStaircaseId(null);
+  }, [selectedStaircaseId]);
 
   const updateStaircase = useCallback((id: string, updates: Partial<Staircase>) => {
-    setBuilding(prev => ({
-      ...prev,
-      staircases: prev.staircases.map(s => s.id === id ? { ...s, ...updates } : s),
-    }));
+    setBuilding(prev => {
+      const updated = {
+        ...prev,
+        staircases: prev.staircases.map(s => s.id === id ? { ...s, ...updates } : s),
+      };
+      return syncSlabOpenings(updated);
+    });
   }, []);
 
   // Derive ceiling plane info from floor plan
@@ -195,11 +375,18 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
     addFloor,
     removeFloor,
     renameFloor,
+    duplicateFloor,
+    updateFloorHeight,
     staircases: building.staircases,
     addStaircase,
     removeStaircase,
     updateStaircase,
-  }), [floorPlanState, layerVisibility, activeEditingLayer, wallSyncSettings, ceilingPlane, isCeilingPlaneEnabled, building, activeLevel, setActiveLevel, addFloor, removeFloor, renameFloor, addStaircase, removeStaircase, updateStaircase]);
+    getFloorPlanForLevel,
+    selectedStaircaseId,
+    setSelectedStaircaseId,
+    showAdjacentFloors,
+    setShowAdjacentFloors,
+  }), [floorPlanState, layerVisibility, activeEditingLayer, wallSyncSettings, ceilingPlane, isCeilingPlaneEnabled, building, activeLevel, setActiveLevel, addFloor, removeFloor, renameFloor, duplicateFloor, updateFloorHeight, addStaircase, removeStaircase, updateStaircase, getFloorPlanForLevel, selectedStaircaseId, showAdjacentFloors]);
   
   return (
     <FloorPlanContext.Provider value={contextValue}>
