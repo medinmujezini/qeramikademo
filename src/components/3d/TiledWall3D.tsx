@@ -255,10 +255,13 @@ const TiledWallInner: React.FC<{
   doors: Door[];
   windows: WindowType[];
   textureProps?: PBRTextureProps;
+  startExtension?: number;
+  endExtension?: number;
 }> = ({
   wall, start, end, tileConfig, tile,
   animationState, onAnimationComplete,
   doors, windows, textureProps,
+  startExtension = 0, endExtension = 0,
 }) => {
   const [animationProgress, setAnimationProgress] = useState(0);
 
