@@ -766,31 +766,34 @@
 /* Clean floating panel variant */
   .glass-floating {
     position: relative;
-    border-radius: 10px;
+    border-radius: 6px;
     overflow: hidden;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
+    border-top: 1px solid hsl(var(--primary) / 0.25);
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
   }
 
 /* Smaller control variant */
   .glass-control {
     position: relative;
-    border-radius: 8px;
+    border-radius: 4px;
     overflow: hidden;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
+    border-top: 1px solid hsl(var(--primary) / 0.2);
     box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
   }
 
 /* Clean toolbar */
   .glass-toolbar {
     position: relative;
-    border-radius: 8px;
+    border-radius: 4px;
     overflow: hidden;
     padding: 0.5rem 1rem;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
+    border-top: 1px solid hsl(var(--primary) / 0.25);
     box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
   }
 
@@ -816,12 +819,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.625rem 0.875rem;
-  border-bottom: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--primary) / 0.15);
   background: hsl(var(--muted) / 0.5);
 }
 
 .panel-header-title {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: hsl(var(--foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: hsl(var(--primary) / 0.8);
 }
