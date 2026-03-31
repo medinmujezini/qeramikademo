@@ -273,7 +273,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    border: 1px solid hsl(217 91% 60% / 0.3);
+    border: 1px solid hsl(var(--primary) / 0.3);
     mask-image: linear-gradient(135deg, rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
     -webkit-mask-image: linear-gradient(135deg, rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
     pointer-events: none;
