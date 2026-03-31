@@ -166,7 +166,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
               
               <div>
                 <span className="text-sm text-muted-foreground">Position</span>
-                <p className="text-sm font-medium">
+                <p className="text-sm font-display font-medium">
                   X: {Math.round(selectedFurniture.position.x)} cm, Y: {Math.round(selectedFurniture.position.y)} cm
                 </p>
               </div>
