@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Home, Wrench, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleCard } from '@/components/home/RoleCard';
 
@@ -49,12 +49,7 @@ const HomePage = () => {
         {/* Role Selection Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full animate-fade-in" style={{ animationDelay: '0.15s' }}>
           <RoleCard
-            icon={() => (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-            )}
+            icon={Home}
             title="Design Your Space"
             subtitle="Homeowner"
             description="An intuitive platform to visualize and design your perfect bathroom or kitchen."
@@ -70,11 +65,7 @@ const HomePage = () => {
           />
 
           <RoleCard
-            icon={() => (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-              </svg>
-            )}
+            icon={Wrench}
             title="Worker Platform"
             subtitle="Professional"
             description="Complete professional toolkit for contractors and designers with MEP planning."
