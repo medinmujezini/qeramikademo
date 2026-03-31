@@ -469,7 +469,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       
       // Inner bright core
       ctx.shadowBlur = 0;
-      ctx.fillStyle = 'hsl(142, 90%, 70%)';
+      ctx.fillStyle = 'hsl(38, 70%, 75%)';
       const innerSize = squareSize * 0.35;
       const innerHalf = innerSize / 2;
       ctx.fillRect(screen.x - innerHalf, screen.y - innerHalf, innerSize, innerSize);

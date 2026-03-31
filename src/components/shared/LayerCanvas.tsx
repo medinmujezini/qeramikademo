@@ -225,7 +225,7 @@ export const LayerCanvas: React.FC<LayerCanvasProps> = ({
         ctx.fill();
         
         // Thin glowing edge stroke
-        const edgeColor = isSelected ? 'hsla(142, 100%, 65%, 0.7)' : neonEdge;
+        const edgeColor = isSelected ? 'hsla(38, 80%, 68%, 0.8)' : neonEdge;
         ctx.shadowColor = edgeColor;
         ctx.shadowBlur = 8;
         ctx.strokeStyle = edgeColor;
