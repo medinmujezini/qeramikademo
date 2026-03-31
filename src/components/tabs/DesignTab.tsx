@@ -1751,7 +1751,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           <>
             <div className="flex items-center gap-2">
               <Switch id="show-ceiling" checked={showCeiling} onCheckedChange={setShowCeiling} className="scale-90" />
-              <Label htmlFor="show-ceiling" className="text-sm">Ceiling</Label>
+              <Label htmlFor="show-ceiling" className="text-xs uppercase tracking-wider text-muted-foreground">Ceiling</Label>
             </div>
 
             <div className="flex items-center gap-2">
