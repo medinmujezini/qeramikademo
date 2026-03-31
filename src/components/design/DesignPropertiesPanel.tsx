@@ -180,7 +180,7 @@ export const DesignPropertiesPanel: React.FC<DesignPropertiesPanelProps> = ({
 
           {/* Actions */}
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">Actions</h4>
+            <h4 className="text-xs font-medium uppercase tracking-wider text-primary/60">Actions</h4>
             
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" size="sm" onClick={onRotate}>
