@@ -2177,7 +2177,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
       
       {/* RIGHT PANEL - Properties */}
-      {viewMode === 'design' && isPanelOpen && (
+      {viewMode === 'design' && isPanelOpen && !unrealActive && (
         <div className="absolute top-4 right-6 z-20 w-64 max-h-[calc(100%-48px)]">
           <div className="glass-floating overflow-hidden flex flex-col h-full relative">
             <div className="pointer-events-none absolute -bottom-12 -right-12 w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
