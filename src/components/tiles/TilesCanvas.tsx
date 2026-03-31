@@ -216,7 +216,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
           const tileWidth = displayTile.width * scale;
           const numTiles = Math.ceil(wallLen * scale / tileWidth);
           
-          ctx.strokeStyle = 'hsla(142, 76%, 45%, 0.2)';
+          ctx.strokeStyle = 'hsla(38, 60%, 55%, 0.2)';
           ctx.lineWidth = 1;
           for (let i = 1; i < numTiles; i++) {
             const t = i / numTiles;
