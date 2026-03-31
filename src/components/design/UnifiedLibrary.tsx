@@ -290,11 +290,11 @@ export const UnifiedLibrary: React.FC = () => {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'furniture' | 'fixtures')} className="flex-1 flex flex-col min-h-0 w-full">
         <TabsList className="mx-3 mb-1 w-[calc(100%-1.5rem)] rounded-none">
-          <TabsTrigger value="furniture" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+          <TabsTrigger value="furniture" className="flex-1 gap-1 rounded-none relative data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-primary after:transition-all after:duration-300 data-[state=active]:after:w-full data-[state=inactive]:after:w-0">
             <Sofa className="h-3.5 w-3.5" />
             Furniture
           </TabsTrigger>
-          <TabsTrigger value="fixtures" className="flex-1 gap-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+          <TabsTrigger value="fixtures" className="flex-1 gap-1 rounded-none relative data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none after:absolute after:bottom-0 after:left-0 after:h-[2px] after:bg-primary after:transition-all after:duration-300 data-[state=active]:after:w-full data-[state=inactive]:after:w-0">
             <Bath className="h-3.5 w-3.5" />
             Fixtures
           </TabsTrigger>
