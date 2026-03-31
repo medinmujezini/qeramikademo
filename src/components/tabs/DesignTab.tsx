@@ -1977,9 +1977,12 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       {isPreparingWalkthrough && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-opacity duration-300">
           <div className="pointer-events-none absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
+          <div className="gold-particle" style={{ left: '30%', bottom: '20%', ['--duration' as string]: '6s', ['--delay' as string]: '0s' }} />
+          <div className="gold-particle" style={{ left: '60%', bottom: '30%', ['--duration' as string]: '8s', ['--delay' as string]: '1s' }} />
+          <div className="gold-particle" style={{ left: '45%', bottom: '10%', ['--duration' as string]: '7s', ['--delay' as string]: '2s' }} />
           <div className="flex flex-col items-center gap-4 text-center relative z-10">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <h3 className="text-xl font-display font-semibold text-foreground">Preparing walkthrough…</h3>
+            <h3 className="text-xl font-display font-light uppercase tracking-[0.2em] text-foreground" style={{ textShadow: '0 0 40px hsl(38 60% 68% / 0.3)' }}>Preparing walkthrough…</h3>
             <p className="text-sm text-muted-foreground">Generating 3D scene</p>
           </div>
         </div>
