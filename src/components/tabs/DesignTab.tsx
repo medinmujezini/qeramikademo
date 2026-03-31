@@ -1902,8 +1902,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         
         {/* Drop zone indicator */}
         {isDraggingFromLibrary && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-primary/5 to-transparent pointer-events-none">
-            <div className="glass-toolbar text-xs font-display uppercase tracking-widest font-medium text-primary/80" style={{ textShadow: '0 0 20px hsl(38 60% 68% / 0.2)' }}>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-primary/5 via-transparent to-primary/3 pointer-events-none z-10">
+            <div className="glass-toolbar text-xs font-display uppercase tracking-[0.25em] font-light text-primary animate-pulse" style={{ textShadow: '0 0 30px hsl(38 60% 68% / 0.4), 0 0 60px hsl(38 60% 68% / 0.15)' }}>
               Drop here to place
             </div>
           </div>
