@@ -1442,6 +1442,21 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     });
   }, []);
 
+  // Toggle transparent mode for WebUI plugin when Unreal walkthrough is active
+  useEffect(() => {
+    if (unrealActive) {
+      document.documentElement.classList.add('unreal-transparent');
+      document.body.classList.add('unreal-transparent');
+    } else {
+      document.documentElement.classList.remove('unreal-transparent');
+      document.body.classList.remove('unreal-transparent');
+    }
+    return () => {
+      document.documentElement.classList.remove('unreal-transparent');
+      document.body.classList.remove('unreal-transparent');
+    };
+  }, [unrealActive]);
+
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
     if (!imageUrl) return;
@@ -1728,8 +1743,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const fixtureCount = fixtures.length;
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Layer 3 — contextual toolbar */}
+    <div className={`h-full flex flex-col ${unrealActive ? 'bg-transparent' : ''}`}>
+      {/* Layer 3 — contextual toolbar (hidden in Unreal mode) */}
+      {!unrealActive && (
       <div className="h-11 border-b px-4 flex flex-col items-center justify-center shrink-0 overflow-x-auto relative shimmer-border-top" style={{ borderColor: 'hsl(var(--primary) / 0.10)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
         <div className="gold-accent-line w-full absolute bottom-0 left-0" />
         <div className="pointer-events-none absolute -top-10 right-1/4 w-[250px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
@@ -1999,18 +2015,24 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           )}
         </div>
       </div>
+      )}
 
       {/* Canvas area */}
-      <div className="flex-1 relative overflow-hidden canvas-vignette">
-      {/* Gold dust particles */}
-      <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
-      <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
-      <div className="gold-particle" style={{ left: '50%', bottom: '8%', ['--duration' as string]: '14s', ['--delay' as string]: '4s' }} />
-      <div className="gold-particle" style={{ left: '70%', bottom: '20%', ['--duration' as string]: '10s', ['--delay' as string]: '1s' }} />
-      <div className="gold-particle" style={{ left: '85%', bottom: '3%', ['--duration' as string]: '11s', ['--delay' as string]: '6s' }} />
-      <div className="gold-particle" style={{ left: '40%', bottom: '12%', ['--duration' as string]: '13s', ['--delay' as string]: '3s' }} />
+      <div className={`flex-1 relative overflow-hidden ${unrealActive ? 'bg-transparent' : 'canvas-vignette'}`}>
+      {/* Gold dust particles — hidden in Unreal mode */}
+      {!unrealActive && (
+        <>
+          <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
+          <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
+          <div className="gold-particle" style={{ left: '50%', bottom: '8%', ['--duration' as string]: '14s', ['--delay' as string]: '4s' }} />
+          <div className="gold-particle" style={{ left: '70%', bottom: '20%', ['--duration' as string]: '10s', ['--delay' as string]: '1s' }} />
+          <div className="gold-particle" style={{ left: '85%', bottom: '3%', ['--duration' as string]: '11s', ['--delay' as string]: '6s' }} />
+          <div className="gold-particle" style={{ left: '40%', bottom: '12%', ['--duration' as string]: '13s', ['--delay' as string]: '3s' }} />
+        </>
+      )}
       
-      {/* FULL-SCREEN 3D CANVAS */}
+      {/* FULL-SCREEN 3D CANVAS — hidden in Unreal mode */}
+      {!unrealActive && (
       <div 
         ref={canvasContainerRef}
         className={`absolute inset-0 ${isDraggingFromLibrary ? 'drop-zone-pulse' : ''}`}
@@ -2134,12 +2156,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           </div>
         )}
       </div>
-
-
-
+      )}
 
       {/* LEFT PANEL - Library */}
-      {viewMode === 'design' && (
+      {viewMode === 'design' && !unrealActive && (
         <div 
           className="absolute top-4 left-6 z-20 w-72 max-h-[calc(100%-48px)]"
         >
@@ -2157,7 +2177,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
       
       {/* RIGHT PANEL - Properties */}
-      {viewMode === 'design' && isPanelOpen && (
+      {viewMode === 'design' && isPanelOpen && !unrealActive && (
         <div className="absolute top-4 right-6 z-20 w-64 max-h-[calc(100%-48px)]">
           <div className="glass-floating overflow-hidden flex flex-col h-full relative">
             <div className="pointer-events-none absolute -bottom-12 -right-12 w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
