@@ -32,7 +32,7 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
       variant = "premium",
       tint = "default",
       size = "md",
-      showOrbs = false,
+      showOrbs = true,
       showShine = true,
       showCaustics = false,
       children,
