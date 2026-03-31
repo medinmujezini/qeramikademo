@@ -1976,7 +1976,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         )}
 
         {isDragging && (
-          <Badge variant="outline" className="gap-1 animate-pulse bg-white/20">
+          <Badge variant="outline" className="gap-1 animate-pulse">
             <Move3D className="h-3 w-3" />
             Dragging...
           </Badge>
