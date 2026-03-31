@@ -1648,8 +1648,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
               <div className="w-px h-4 bg-primary/15" />
 
-              <Badge variant="outline" className="text-[10px] h-5 gap-1">{furnitureCount} Furn</Badge>
-              <Badge variant="outline" className="text-[10px] h-5 gap-1">{fixtureCount} Fix</Badge>
+              <Badge variant="outline" className="text-[10px] h-5 gap-1 border-primary/20">{furnitureCount} Furn</Badge>
+              <Badge variant="outline" className="text-[10px] h-5 gap-1 border-primary/20">{fixtureCount} Fix</Badge>
 
               <div className="w-px h-4 bg-primary/15" />
 
