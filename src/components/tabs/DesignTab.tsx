@@ -1743,9 +1743,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const fixtureCount = fixtures.length;
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Layer 3 — contextual toolbar */}
-      <div className="h-11 border-b px-4 flex flex-col items-center justify-center shrink-0 overflow-x-auto relative shimmer-border-top" style={{ borderColor: 'hsl(var(--primary) / 0.10)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
+    <div className={`h-full flex flex-col ${unrealActive ? 'bg-transparent' : ''}`}>
+      {/* Layer 3 — contextual toolbar (hidden in Unreal mode) */}
+      {!unrealActive && (
         <div className="gold-accent-line w-full absolute bottom-0 left-0" />
         <div className="pointer-events-none absolute -top-10 right-1/4 w-[250px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/[0.02] to-transparent" />
