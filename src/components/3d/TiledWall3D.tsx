@@ -340,7 +340,7 @@ const TiledWallInner: React.FC<{
       {/* Base wall / grout backing plane */}
       <mesh position={[0, 0, -wallThicknessM / 2 - 0.002]} castShadow receiveShadow>
         <extrudeGeometry args={[wallShape, { depth: wallThicknessM * 0.5, bevelEnabled: false }]} />
-        <meshStandardMaterial color={tileConfig.groutColor} roughness={0.9} side={THREE.DoubleSide} />
+        <primitive object={groutMaterial} attach="material" />
       </mesh>
 
       {/* Grout layer */}
