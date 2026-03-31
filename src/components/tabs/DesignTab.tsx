@@ -2042,11 +2042,15 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
             </div>
             <ScrollArea className="flex-1 relative z-10">
-              <DesignPropertiesPanel
-                selectedFurniture={selectedFurniture}
-                onRotate={handleRotateSelected}
-                onDelete={handleDeleteSelected}
-              />
+              {selectedStaircaseId ? (
+                <StaircasePropertiesPanel />
+              ) : (
+                <DesignPropertiesPanel
+                  selectedFurniture={selectedFurniture}
+                  onRotate={handleRotateSelected}
+                  onDelete={handleDeleteSelected}
+                />
+              )}
             </ScrollArea>
           </div>
         </div>
