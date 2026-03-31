@@ -6,6 +6,7 @@
  */
 
 import React, { useMemo, useState, useEffect, Suspense } from 'react';
+import { createTriplanarMaterial } from '@/utils/triplanarMaterial';
 import { useFrame } from '@react-three/fiber';
 import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
