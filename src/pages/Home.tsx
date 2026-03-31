@@ -10,7 +10,8 @@ const HomePage = () => {
       {/* Decorative gold orb */}
       <div className="pointer-events-none absolute -bottom-32 -left-32 w-[700px] h-[700px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.10)_0%,transparent_70%)]" />
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm sticky top-0 z-50 relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-20 -right-32 w-[400px] h-[200px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="text-2xl font-display font-bold tracking-tight text-primary">SD</span>

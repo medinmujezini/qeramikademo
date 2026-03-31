@@ -133,7 +133,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="pointer-events-none absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
 
         {/* Top Bar */}
-        <header className="h-14 bg-card border-b border-primary/10 px-6 flex items-center justify-between relative z-10">
+        <header className="h-14 bg-card border-b border-primary/10 px-6 flex items-center justify-between relative z-10 overflow-hidden">
+          <div className="pointer-events-none absolute -top-16 -right-24 w-[350px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.08)_0%,transparent_70%)]" />
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.12em]">
             <span className="text-muted-foreground font-light">Admin</span>
             <ChevronRight className="w-3 h-3 text-primary/30" />
