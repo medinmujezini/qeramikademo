@@ -123,29 +123,62 @@ export function generateRoomManifest(
       type: 'rect' as const,
     }));
 
-  // Build materials array from wall finishes, floor finish
+  // Build materials array from wall finishes, floor finish, doors, windows
   const materials: ManifestMaterial[] = [];
 
   // Floor material
   if (floorPlan.floorFinish) {
+    const ff = floorPlan.floorFinish;
+    const roughnessMap: Record<string, number> = {
+      hardwood: 0.4, carpet: 0.95, tiles: 0.3, plain: 0.5,
+    };
     materials.push({
-      name: floorPlan.floorFinish.surfaceType || 'floor',
+      name: ff.surfaceType || 'floor',
       slot: 'floor',
       type: 'floor',
-      color: floorPlan.floorFinish.color || '#d4cdc5',
-      roughness: 0.5,
+      color: ff.color || '#d4cdc5',
+      roughness: roughnessMap[ff.surfaceType] ?? 0.5,
       metalness: 0,
+      // materialId can be used by UE to look up PBR textures
+      ...(ff.materialId ? { textureUrls: { albedo: ff.materialId } } : {}),
     });
   }
 
   // Wall materials from wallFinishes
-  (floorPlan.wallFinishes ?? []).forEach((wf, i) => {
+  (floorPlan.wallFinishes ?? []).forEach((wf) => {
+    const roughnessMap: Record<string, number> = {
+      paint: 0.7, wallpaper: 0.8, tiles: 0.3, plain: 0.9,
+    };
     materials.push({
       name: wf.surfaceType || 'wall_paint',
       slot: `wall_${wf.wallId}`,
       type: 'wall',
       color: wf.color || '#eae6e1',
-      roughness: wf.surfaceType === 'tiles' ? 0.3 : 0.7,
+      roughness: roughnessMap[wf.surfaceType] ?? 0.7,
+      metalness: 0,
+    });
+  });
+
+  // Door materials
+  (floorPlan.doors ?? []).forEach((door) => {
+    materials.push({
+      name: `door_${door.type}`,
+      slot: `door_${door.id}`,
+      type: 'door',
+      color: '#7a5230',
+      roughness: 0.45,
+      metalness: 0,
+    });
+  });
+
+  // Window materials
+  (floorPlan.windows ?? []).forEach((win) => {
+    materials.push({
+      name: `window_${win.type}`,
+      slot: `window_${win.id}`,
+      type: 'window',
+      color: '#e8f4f8',
+      roughness: 0.05,
       metalness: 0,
     });
   });
