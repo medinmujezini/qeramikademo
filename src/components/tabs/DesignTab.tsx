@@ -2036,7 +2036,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           />
 
           {/* WASD hint */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs font-display text-muted-foreground">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 glass-toolbar text-xs font-display text-muted-foreground border border-primary/10">
             {isTouchDevice ? 'Left stick to move · Right stick to look' : 'WASD to move · Mouse to look'}
           </div>
         </>
