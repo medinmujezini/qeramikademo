@@ -27,7 +27,7 @@ const PopoverContent = React.forwardRef<
       {...props}
     >
       {/* Glass shine effect */}
-      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-white to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent z-10 pointer-events-none" />
       {props.children}
     </PopoverPrimitive.Content>
   </PopoverPrimitive.Portal>
