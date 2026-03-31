@@ -72,9 +72,8 @@ export const SpawnPointMarker: React.FC<SpawnPointMarkerProps> = ({
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsDragging(true);
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    onDragStart?.();
 
-    // Calculate offset from marker center to click point on floor plane
     const floorPoint = e.point;
     dragOffset.current = {
       x: posX - floorPoint.x,
