@@ -38,7 +38,20 @@ export const FloorSlab3D: React.FC<FloorSlab3DProps> = ({
   const cx = (centerX ?? roomWidth / 2) * scale;
   const cz = (centerY ?? roomHeight / 2) * scale;
 
-  // Build shape with cutouts for stairwell openings
+  const slabColor = slab.topMaterial === 'finished' ? '#d4cdc5' : '#b0aba3';
+  const slabMaterial = useMemo(() => {
+    return createTriplanarMaterial({
+      color: slabColor,
+      roughness: 0.85,
+      metalness: 0,
+      textureScale: 2.0,
+    });
+  }, [slabColor]);
+
+  useEffect(() => {
+    return () => { slabMaterial.dispose(); };
+  }, [slabMaterial]);
+
   const slabShape = useMemo(() => {
     const shape = new THREE.Shape();
     const hw = width / 2;
