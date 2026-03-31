@@ -1583,7 +1583,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const fixtureCount = fixtures.length;
 
   return (
-    <div className="h-full relative overflow-hidden">
+    <div className="h-full flex flex-col">
       {/* FULL-SCREEN 3D CANVAS */}
       <div 
         ref={canvasContainerRef}
