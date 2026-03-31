@@ -21,6 +21,8 @@ interface SpawnPointMarkerProps {
   onRotate: (rotation: number) => void;
   visible: boolean;
   floorBounds: { minX: number; maxX: number; minZ: number; maxZ: number };
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }
 
 const SCALE = 0.01;
