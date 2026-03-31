@@ -2019,13 +2019,17 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
       {/* Canvas area */}
       <div className={`flex-1 relative overflow-hidden ${unrealActive ? 'bg-transparent' : 'canvas-vignette'}`}>
-      {/* Gold dust particles */}
-      <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
-      <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
-      <div className="gold-particle" style={{ left: '50%', bottom: '8%', ['--duration' as string]: '14s', ['--delay' as string]: '4s' }} />
-      <div className="gold-particle" style={{ left: '70%', bottom: '20%', ['--duration' as string]: '10s', ['--delay' as string]: '1s' }} />
-      <div className="gold-particle" style={{ left: '85%', bottom: '3%', ['--duration' as string]: '11s', ['--delay' as string]: '6s' }} />
-      <div className="gold-particle" style={{ left: '40%', bottom: '12%', ['--duration' as string]: '13s', ['--delay' as string]: '3s' }} />
+      {/* Gold dust particles — hidden in Unreal mode */}
+      {!unrealActive && (
+        <>
+          <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
+          <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
+          <div className="gold-particle" style={{ left: '50%', bottom: '8%', ['--duration' as string]: '14s', ['--delay' as string]: '4s' }} />
+          <div className="gold-particle" style={{ left: '70%', bottom: '20%', ['--duration' as string]: '10s', ['--delay' as string]: '1s' }} />
+          <div className="gold-particle" style={{ left: '85%', bottom: '3%', ['--duration' as string]: '11s', ['--delay' as string]: '6s' }} />
+          <div className="gold-particle" style={{ left: '40%', bottom: '12%', ['--duration' as string]: '13s', ['--delay' as string]: '3s' }} />
+        </>
+      )}
       
       {/* FULL-SCREEN 3D CANVAS */}
       <div 
