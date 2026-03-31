@@ -301,11 +301,21 @@ const Wall3D = ({
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
   const DRAG_THRESHOLD = 5; // pixels
 
-  const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2) * scale;
+  const originalLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const midX = (start.x + end.x) / 2 * scale;
-  const midZ = (start.y + end.y) / 2 * scale;
-  const wallLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+  const dirX = Math.cos(angle);
+  const dirY = Math.sin(angle);
+  
+  // Extend wall endpoints by junction extensions (in cm, converted to scene units)
+  const extStartCm = startExtension; // cm
+  const extEndCm = endExtension; // cm
+  const effectiveLength = (originalLength + extStartCm + extEndCm) * scale;
+  
+  // Shift midpoint along wall direction to account for asymmetric extensions
+  const shiftCm = (extEndCm - extStartCm) / 2;
+  const midX = ((start.x + end.x) / 2 + dirX * shiftCm) * scale;
+  const midZ = ((start.y + end.y) / 2 + dirY * shiftCm) * scale;
+  const wallLength = originalLength + extStartCm + extEndCm;
   
   const startHeight = (wall.startHeight ?? wall.height) * scale;
   const endHeight = (wall.endHeight ?? wall.height) * scale;
