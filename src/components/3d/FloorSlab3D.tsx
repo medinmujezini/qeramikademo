@@ -4,10 +4,11 @@
  * Step 8 of the geometry roadmap.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import type { FloorSlab } from '@/types/multiFloor';
 import { CM_TO_METERS } from '@/constants/units';
+import { createTriplanarMaterial } from '@/utils/triplanarMaterial';
 
 interface FloorSlab3DProps {
   slab: FloorSlab;
