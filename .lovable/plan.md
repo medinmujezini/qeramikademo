@@ -1,140 +1,82 @@
 
 
-# Elevate Design Tab to Ultra-Luxury
+# Ultra-Luxury Page Overhaul
 
-Based on research into luxury web design (Chanel, Rolex, Bulgari patterns), the Design tab is missing several hallmarks of true luxury digital experiences:
+Based on 2026 luxury web design research (cinematic micro-interactions, layered depth, animated accents, whispered typography), here are the gaps and fixes across the entire design page experience.
 
-1. **Animated gold shimmer lines** — thin animated gold lines that sweep across panel borders
-2. **Particle/dust motes** — floating gold particles in the canvas background for ambient richness
-3. **Micro-interactions** — buttons that pulse gold on hover with a slow fade
-4. **Layered depth** — panels with inner shadow + outer glow creating a "floating above velvet" feel
-5. **Cinematic overlays** — vignette darkening at canvas edges for photographic drama
-6. **Typography hierarchy** — larger, thinner, more spaced-out headings with gold text-shadow
-7. **Animated gradient borders** — panels with slowly rotating gold gradient borders instead of static lines
+## Current Issues Found
+
+1. **Tab triggers** (`tabs.tsx`) — plain `text-sm font-medium`, no luxury typography
+2. **Layer 2 tab nav** — bare `bg-card`, no gold accent line or gradient orb
+3. **Layer 3 toolbars** — FloorPlan and Tiles use `bg-card/30` (semi-transparent) instead of solid luxury card
+4. **Dividers** — basic `bg-primary/15`, could be animated or have more presence
+5. **Search input** — functional but not elevated with gold focus ring glow
+6. **Badges** — generic `variant="outline"`, no gold tint
+7. **Library footer** — plain text, could have a gold accent line above
+8. **Dialog components** — render dialog and walkthrough dialogs lack gold border treatment
+9. **Walkthrough WASD hint** — uses `glass-toolbar` but no gold accent
+10. **Crosshair** — plain `bg-foreground/50`, could be gold-tinted
 
 ## Changes
 
-### 1. `src/index.css` — New luxury effects
+### 1. `src/components/ui/tabs.tsx` — Luxury tab triggers
 
-**Gold shimmer sweep on panel borders:**
-```css
-@keyframes shimmer-border {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.glass-floating::before {
-  content: '';
-  position: absolute; inset: 0;
-  border: 1px solid transparent;
-  background: linear-gradient(90deg, transparent, hsl(38 60% 68% / 0.3), transparent) border-box;
-  background-size: 200% 100%;
-  animation: shimmer-border 4s ease-in-out infinite;
-  pointer-events: none; z-index: 1;
-  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-}
-```
+- `TabsList`: add `bg-transparent` (remove default bg)
+- `TabsTrigger`: change to `text-xs font-light uppercase tracking-[0.15em]` to match luxury button typography. Gold bottom border on active: `data-[state=active]:border-primary`. Add `transition-all duration-300`.
 
-**Canvas vignette overlay:**
-```css
-.canvas-vignette::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, hsl(0 0% 0% / 0.3) 100%);
-  pointer-events: none; z-index: 1;
-}
-```
+### 2. `src/pages/EndUserPlatform.tsx` — Elevated header & tab nav
 
-**Gold dust particle animation:**
-```css
-@keyframes float-particle {
-  0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
-}
-.gold-particle {
-  position: absolute;
-  width: 2px; height: 2px;
-  background: hsl(38 60% 68% / 0.4);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: float-particle var(--duration, 8s) var(--delay, 0s) infinite;
-}
-```
+- **Layer 1 header**: Add a second gradient orb bottom-left for symmetry
+- **Layer 2 tab nav**: Add `relative overflow-hidden`, insert gradient orb. Add thin gold top accent line (`h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent`)
+- **Quote tab**: Use `variant="luxury"` on the CTA button. Add gold particles to the empty state
 
-**Enhanced panel styling:**
-- `glass-floating`: add `inner shadow inset 0 1px 0 hsl(38 60% 68% / 0.08)` for top edge highlight
-- `panel-header`: subtle gold gradient background instead of flat `muted/0.5`
-- `panel-header-title`: increase letter-spacing to `0.2em`, add stronger text-shadow
+### 3. `src/components/tabs/DesignTab.tsx` — Refined cinematic details
 
-**Luxury hover glow for interactive elements:**
-```css
-.luxury-hover-glow {
-  transition: box-shadow 0.4s ease, border-color 0.4s ease;
-}
-.luxury-hover-glow:hover {
-  box-shadow: 0 0 20px hsl(38 60% 68% / 0.12), inset 0 1px 0 hsl(38 60% 68% / 0.1);
-  border-color: hsl(38 60% 68% / 0.3);
-}
-```
+- **Layer 3 toolbar**: Add thin gold bottom accent line (1px `bg-gradient-to-r from-transparent via-primary/15 to-transparent`)  
+- **Canvas crosshair**: Tint gold (`bg-primary/40` instead of `bg-foreground/50`)
+- **WASD hint bar**: Add `border border-primary/10` for definition
+- **Render dialog**: Add gold accent line at top of dialog content, use `font-display uppercase tracking-widest` on title
+- **Panel toggle button**: Add `border border-primary/15` for visibility
 
-### 2. `src/components/tabs/DesignTab.tsx` — Cinematic canvas
+### 4. `src/components/tabs/FloorPlanTab.tsx` & `TilesTab.tsx` — Consistent Layer 3
 
-**Canvas wrapper (line ~1808):**
-- Add `canvas-vignette` class to the canvas container for photographic edge darkening
-- Add 5-6 `gold-particle` divs with staggered `--delay` and `--duration` CSS vars for ambient floating particles
+- Change `bg-card/30` to `bg-card` (solid, matching Design tab)
+- Add the same subtle gold horizontal gradient as Design tab's toolbar
+- Add `border-t` with gold color for visual separation
 
-**Layer 3 toolbar (line 1588):**
-- Add subtle gold gradient background: `bg-gradient-to-r from-card via-card to-card` with a faint gold center glow
-- Toolbar dividers: animate opacity with a slow pulse
+### 5. `src/index.css` — New luxury utilities
 
-**Library panel (line 1910-1922):**
-- Panel gets the shimmer border automatically from CSS
-- Add a second, smaller gradient orb at top-right for more depth
+- **`.gold-accent-line`**: A reusable `h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent` class
+- **`.luxury-search`**: Enhanced input focus with `box-shadow: 0 0 20px hsl(38 60% 68% / 0.08)` and gold border transition
+- **Scrollbar styling**: Gold-tinted scrollbar thumbs globally (subtle)
+- **Dialog gold border**: `.dialog-luxury` with top gold accent and inner glow
 
-**Properties panel (line 1926-1949):**
-- Same shimmer border treatment
-- Add top-right gradient orb
+### 6. `src/components/design/UnifiedLibrary.tsx` — Richer library
 
-**Walkthrough overlays (line 1968-2000):**
-- Add gold particles behind the loading spinner
-- "Walkthrough Mode" title: add gold text-shadow `0 0 40px hsl(38 60% 68% / 0.3)`
+- Category headers: Add gold left border thicker (3px instead of 2px) with more opacity
+- Footer hint: Add gold accent line above (`w-12 h-px bg-primary/25 mx-auto mb-1`)
+- Search input: Add `luxury-search` class
 
-**Drop zone overlay (line 1896-1901):**
-- Add pulsing gold border animation instead of static gradient
-- "Drop here" text: add `animate-pulse` with gold glow
+### 7. `src/components/design/DesignPropertiesPanel.tsx` — Gold refinements
 
-**Render dialog (line 2038-2094):**
-- Image container: add inner gold glow shadow
-- Buttons: use `luxury` variant for Download
+- Section header gold lines: Increase border-left to 3px
+- Add subtle gold inner glow to the panel background: `shadow-[inset_0_0_40px_hsl(38_60%_68%/0.03)]`
 
-### 3. `src/components/design/UnifiedLibrary.tsx` — Luxury items
+### 8. `src/components/ui/badge.tsx` — Luxury badge variant
 
-**Library items:**
-- Add `luxury-hover-glow` class for slow gold glow transition on hover
-- Item thumbnail border: animate to gold on hover with 0.4s transition
-- Active/selected items: persistent gold glow ring
-
-**Tab triggers:**
-- Add gold underline slide-in animation on active state (transform from left)
-
-### 4. `src/components/design/DesignPropertiesPanel.tsx` — Rich details
-
-**Selected item card:**
-- Add thin gold top accent line (2px `bg-primary/40`)
-- Dimension values: use `font-display` for numbers
-
-**Scene summary cards:**
-- Add `luxury-hover-glow` class
-- Badge counts: gold tinted background
+- Add a `luxury` variant: `border-primary/20 bg-primary/5 text-primary/80` for gold-tinted badges
+- Apply to count badges in the Design tab toolbar
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/index.css` | Shimmer border animation, vignette, gold particles, luxury hover glow, enhanced panel headers |
-| `src/components/tabs/DesignTab.tsx` | Vignette on canvas, gold particles, enhanced toolbar, richer overlays |
-| `src/components/design/UnifiedLibrary.tsx` | Luxury hover glow on items, animated tab underlines |
-| `src/components/design/DesignPropertiesPanel.tsx` | Gold accent lines, luxury hover cards, display font on values |
+| `src/components/ui/tabs.tsx` | Luxury uppercase typography on triggers, gold active border |
+| `src/pages/EndUserPlatform.tsx` | Second header orb, tab nav gold accent line + orb, luxury quote CTA |
+| `src/components/tabs/DesignTab.tsx` | Gold crosshair, toolbar accent line, luxury dialog, panel toggle border |
+| `src/components/tabs/FloorPlanTab.tsx` | Solid bg-card toolbar, gold gradient, border-t |
+| `src/components/tabs/TilesTab.tsx` | Same toolbar treatment as FloorPlan |
+| `src/index.css` | Gold accent line utility, luxury-search, dialog-luxury, gold scrollbars |
+| `src/components/design/UnifiedLibrary.tsx` | Thicker category borders, footer accent line, luxury search |
+| `src/components/design/DesignPropertiesPanel.tsx` | Thicker section borders, inner glow |
 
