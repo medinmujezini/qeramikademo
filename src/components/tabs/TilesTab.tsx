@@ -422,7 +422,14 @@ export const TilesTab: React.FC<TilesTabProps> = ({
 
       {/* Canvas area */}
       <div className="flex-1 relative overflow-hidden">
-
+        <TilesCanvas
+          selectedWallId={selectedWallId}
+          onWallSelect={setSelectedWallId}
+          selectedTile={selectedTile}
+          jointWidth={jointWidth}
+          showTilePreview={showTilePreview}
+          pendingWallId={pendingWallId}
+        />
       {/* LEFT PANEL - Tile Library */}
       {showTileLibrary ? (
         <div className="absolute top-4 left-6 z-20 w-52 max-h-[calc(100%-48px)]">
