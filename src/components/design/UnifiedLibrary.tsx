@@ -355,7 +355,7 @@ export const UnifiedLibrary: React.FC = () => {
                   if (items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground border-l-2 border-primary/30 pl-2">
                         {FIXTURE_CATEGORY_ICONS[category]}
                         <span>{category}</span>
                         <span className="text-[10px] opacity-60">({items.length})</span>
