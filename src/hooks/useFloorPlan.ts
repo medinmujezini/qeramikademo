@@ -4,7 +4,7 @@ import type {
   FloorPlan, Point, Wall, Door, Window, Fixture, Column,
   PlumbingRoute, ElectricalRoute, WallTileSection,
   WallMaterial, DoorType, WindowType, FixtureType, ColumnShape,
-  MainConnectionPoints, CeilingPlane, WallHeightMode, RoomLight
+  MainConnectionPoints, CeilingPlane, WallHeightMode, RoomLight, Curtain
 } from '@/types/floorPlan';
 import { createDefaultFloorPlan, DEFAULT_CEILING_PLANE } from '@/types/floorPlan';
 import { splitArc } from '@/utils/arcUtils';
