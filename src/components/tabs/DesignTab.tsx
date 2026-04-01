@@ -1831,6 +1831,18 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
               {/* Floor manager */}
               <FloorManager />
+              <div className="flex items-center gap-0.5">
+                <Button variant="ghost" size="icon" className="h-6 w-6"
+                  disabled={!building.floors.some(f => f.level > activeLevel)}
+                  onClick={() => setActiveLevel(activeLevel + 1)}>
+                  <ChevronUp className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6"
+                  disabled={!building.floors.some(f => f.level < activeLevel)}
+                  onClick={() => setActiveLevel(activeLevel - 1)}>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </div>
 
               {/* Ghost floors toggle */}
               <div className="flex items-center gap-1">
