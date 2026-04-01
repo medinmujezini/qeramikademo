@@ -980,43 +980,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
-      {/* Stairwell opening borders on active floor */}
-      {(() => {
-        const activeFloorObj = building.floors.find(f => f.level === activeLevel);
-        if (!activeFloorObj?.slab || activeFloorObj.slab.openings.length === 0 || activeLevel <= 0) return null;
-        return activeFloorObj.slab.openings.map(opening => {
-          const ox = opening.x * scale;
-          const oz = opening.y * scale;
-          const ow = opening.width * scale;
-          const od = opening.depth * scale;
-          const borderW = 0.03; // 3cm border
-          const borderH = 0.08; // 8cm tall rim
-          return (
-            <group key={`stairwell-border-${opening.id}`}>
-              {/* Front */}
-              <mesh position={[ox + ow / 2, borderH / 2, oz]} castShadow>
-                <boxGeometry args={[ow + borderW * 2, borderH, borderW]} />
-                <meshStandardMaterial color="#8a8078" roughness={0.8} />
-              </mesh>
-              {/* Back */}
-              <mesh position={[ox + ow / 2, borderH / 2, oz + od]} castShadow>
-                <boxGeometry args={[ow + borderW * 2, borderH, borderW]} />
-                <meshStandardMaterial color="#8a8078" roughness={0.8} />
-              </mesh>
-              {/* Left */}
-              <mesh position={[ox, borderH / 2, oz + od / 2]} castShadow>
-                <boxGeometry args={[borderW, borderH, od]} />
-                <meshStandardMaterial color="#8a8078" roughness={0.8} />
-              </mesh>
-              {/* Right */}
-              <mesh position={[ox + ow, borderH / 2, oz + od / 2]} castShadow>
-                <boxGeometry args={[borderW, borderH, od]} />
-                <meshStandardMaterial color="#8a8078" roughness={0.8} />
-              </mesh>
-            </group>
-          );
-        });
-      })()}
 
       {/* Staircases visible from the active floor (placed here OR arriving here) */}
       {staircases
