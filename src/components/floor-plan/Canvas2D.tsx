@@ -270,7 +270,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       const sin = Math.sin(rad);
       const dx = worldX - stair.x;
       const dy = worldY - stair.y;
-      // Inverse rotation to get local coordinates
       const localX = dx * cos + dy * sin;
       const localY = -dx * sin + dy * cos;
       if (
@@ -284,6 +283,28 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     }
     return null;
   }, [staircases, activeLevel, scale]);
+
+  const getRotatedStairBounds = useCallback((stair: { x: number; y: number; width: number; depth: number; rotation: number }) => {
+    const rad = (stair.rotation * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const corners = [
+      { x: 0, y: 0 },
+      { x: stair.width, y: 0 },
+      { x: stair.width, y: stair.depth },
+      { x: 0, y: stair.depth },
+    ].map(({ x, y }) => ({
+      x: stair.x + x * cos - y * sin,
+      y: stair.y + x * sin + y * cos,
+    }));
+
+    return {
+      minX: Math.min(...corners.map(p => p.x)),
+      maxX: Math.max(...corners.map(p => p.x)),
+      minY: Math.min(...corners.map(p => p.y)),
+      maxY: Math.max(...corners.map(p => p.y)),
+    };
+  }, []);
 
   // Find insertion point on wall - allows clicking ANYWHERE on wall to insert junction
   const findWallInsertionPoint = useCallback((worldX: number, worldY: number, threshold: number = 20): { wallId: string; x: number; y: number; position: number } | null => {
@@ -1465,7 +1486,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (draggedStaircase) {
       let newX = snapToGrid(world.x - staircaseOffset.x);
       let newY = snapToGrid(world.y - staircaseOffset.y);
-      // Clamp to room bounds
       const pts = floorPlan.points;
       if (pts.length > 0) {
         const minX = Math.min(...pts.map(p => p.x));
@@ -1474,8 +1494,20 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         const maxY = Math.max(...pts.map(p => p.y));
         const stair = staircases.find(s => s.id === draggedStaircase);
         if (stair) {
-          newX = Math.max(minX, Math.min(newX, maxX - stair.width));
-          newY = Math.max(minY, Math.min(newY, maxY - stair.depth));
+          const clamped = { ...stair, x: newX, y: newY };
+          let bounds = getRotatedStairBounds(clamped);
+
+          if (bounds.minX < minX) newX += minX - bounds.minX;
+          if (bounds.maxX > maxX) newX -= bounds.maxX - maxX;
+          if (bounds.minY < minY) newY += minY - bounds.minY;
+          if (bounds.maxY > maxY) newY -= bounds.maxY - maxY;
+
+          const corrected = { ...stair, x: newX, y: newY };
+          bounds = getRotatedStairBounds(corrected);
+          if (bounds.minX < minX) newX = stair.x;
+          if (bounds.maxX > maxX) newX = stair.x;
+          if (bounds.minY < minY) newY = stair.y;
+          if (bounds.maxY > maxY) newY = stair.y;
         }
       }
       updateStaircase(draggedStaircase, { x: newX, y: newY });
@@ -1561,7 +1593,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     } else {
       setDoorWindowPreview(null);
     }
-  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, findStaircaseAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, staircases, editRoutes]);
+  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, findStaircaseAt, getRotatedStairBounds, floorPlan.fixtures, floorPlan.points, floorPlan.walls, staircases, editRoutes]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
