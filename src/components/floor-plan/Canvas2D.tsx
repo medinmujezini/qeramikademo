@@ -266,14 +266,14 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     const thresholdWorld = thresholdPx / scale;
     for (const stair of staircases) {
       if (stair.fromLevel !== activeLevel) continue;
-      const rad = -(stair.rotation * Math.PI) / 180;
+      const rad = (stair.rotation * Math.PI) / 180;
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
       const dx = worldX - stair.x;
       const dy = worldY - stair.y;
-      // Transform to staircase local space (origin at stair.x, stair.y)
-      const localX = dx * cos - dy * sin;
-      const localY = dx * sin + dy * cos;
+      // Inverse rotation to get local coordinates
+      const localX = dx * cos + dy * sin;
+      const localY = -dx * sin + dy * cos;
       if (
         localX >= -thresholdWorld &&
         localX <= stair.width + thresholdWorld &&
