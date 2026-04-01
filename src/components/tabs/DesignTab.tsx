@@ -762,7 +762,41 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           document.body.style.cursor = 'default';
         }}
       >
-        <planeGeometry args={[floorWidth, floorDepth]} />
+        {(() => {
+          const activeFloorObj = building.floors.find(f => f.level === activeLevel);
+          const openings = (activeLevel > 0 && activeFloorObj?.slab?.openings) || [];
+          
+          if (openings.length === 0) {
+            return <planeGeometry args={[floorWidth, floorDepth]} />;
+          }
+          
+          // Build a shape with stairwell holes (in local coords centered at 0,0)
+          const shape = new THREE.Shape();
+          const hw = floorWidth / 2;
+          const hd = floorDepth / 2;
+          shape.moveTo(-hw, -hd);
+          shape.lineTo(hw, -hd);
+          shape.lineTo(hw, hd);
+          shape.lineTo(-hw, hd);
+          shape.closePath();
+          
+          // Cut holes for each opening (convert from world cm to local meters)
+          for (const op of openings) {
+            const lx = op.x * scale - floorCenterX;
+            const ly = op.y * scale - floorCenterZ;
+            const lw = op.width * scale;
+            const ld = op.depth * scale;
+            const hole = new THREE.Path();
+            hole.moveTo(lx, ly);
+            hole.lineTo(lx + lw, ly);
+            hole.lineTo(lx + lw, ly + ld);
+            hole.lineTo(lx, ly + ld);
+            hole.closePath();
+            shape.holes.push(hole);
+          }
+          
+          return <shapeGeometry args={[shape]} />;
+        })()}
         {floorPlan.floorFinish?.materialId ? (
           <Suspense fallback={<meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />}>
             <FloorWithTexture
