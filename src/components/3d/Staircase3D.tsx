@@ -165,6 +165,7 @@ const ProceduralStaircase3D: React.FC<{
             transparent={railMat.transparent}
             opacity={railMat.opacity}
             clippingPlanes={clippingPlanes}
+            emissiveIntensity={0.3 * emissiveBoost}
           />
         </mesh>
       ))}
@@ -179,6 +180,7 @@ const ProceduralStaircase3D: React.FC<{
           transparent={railMat.transparent}
           opacity={railMat.opacity}
           clippingPlanes={clippingPlanes}
+          emissiveIntensity={0.3 * emissiveBoost}
         />
       ))}
 
