@@ -1513,6 +1513,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   
   // Tile animation state
   const [tileAnimations, setTileAnimations] = useState<TileAnimationState>({});
+
+  // Curtain placement state
+  const [curtainDialogOpen, setCurtainDialogOpen] = useState(false);
+  const [curtainTargetWindow, setCurtainTargetWindow] = useState<{ window: FloorWindow; wall: Wall } | null>(null);
   
   const handlePipelineError = useCallback((error: Error) => {
     console.warn('[DesignTab] Pipeline error, falling back to basic lighting:', error);
