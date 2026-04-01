@@ -496,36 +496,49 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     });
     ctx.globalAlpha = 1;
 
-    // Render staircases (visual only, non-interactive)
+    // Render staircases (visual only, non-interactive) using the same anchor/rotation as Room Layout
     staircases.filter(s => s.fromLevel === activeLevel).forEach(stair => {
-      const sx = stair.x * scale + offset.x;
-      const sy = stair.y * scale + offset.y;
-      const sw = stair.width * scale;
-      const sd = stair.depth * scale;
-
       ctx.save();
-      ctx.translate(sx + sw / 2, sy + sd / 2);
+      const origin = worldToScreen(stair.x, stair.y);
+      ctx.translate(origin.x, origin.y);
       ctx.rotate((stair.rotation * Math.PI) / 180);
-      ctx.translate(-sw / 2, -sd / 2);
 
-      ctx.fillStyle = 'rgba(201, 169, 110, 0.15)';
-      ctx.fillRect(0, 0, sw, sd);
-      ctx.strokeStyle = '#C9A96E';
+      const w = stair.width * scale;
+      const d = stair.depth * scale;
+
+      ctx.fillStyle = 'hsla(38, 60%, 68%, 0.18)';
+      ctx.fillRect(0, 0, w, d);
+
+      const treadCount = stair.numTreads || 12;
+      const treadSpacing = d / treadCount;
+      ctx.strokeStyle = 'hsla(38, 60%, 68%, 0.45)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(0, 0, sw, sd);
-
-      // Tread lines
-      const treadCount = stair.numTreads || 10;
-      const treadSpacing = sd / treadCount;
-      ctx.strokeStyle = 'rgba(201, 169, 110, 0.4)';
-      ctx.lineWidth = 0.5;
       for (let i = 1; i < treadCount; i++) {
         const ty = i * treadSpacing;
         ctx.beginPath();
         ctx.moveTo(0, ty);
-        ctx.lineTo(sw, ty);
+        ctx.lineTo(w, ty);
         ctx.stroke();
       }
+
+      ctx.strokeStyle = 'hsla(38, 60%, 68%, 0.85)';
+      ctx.lineWidth = 2;
+      const arrowX = w / 2;
+      const arrowY1 = d * 0.75;
+      const arrowY2 = d * 0.25;
+      ctx.beginPath();
+      ctx.moveTo(arrowX, arrowY1);
+      ctx.lineTo(arrowX, arrowY2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(arrowX - 6, arrowY2 + 8);
+      ctx.lineTo(arrowX, arrowY2);
+      ctx.lineTo(arrowX + 6, arrowY2 + 8);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'hsla(38, 80%, 68%, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(0, 0, w, d);
 
       ctx.restore();
     });
