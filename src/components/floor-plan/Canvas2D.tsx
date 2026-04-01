@@ -1400,8 +1400,9 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     }
   }, [
     activeTool, offset, scale, wallStartPoint,
-    floorPlan, findPointAt, findWallAt, findFixtureAt, findDoorAt, findWindowAt, screenToWorld, snapToGrid,
-    addPoint, addWall, addDoor, addWindow, setSelectedElement
+    floorPlan, findPointAt, findWallAt, findFixtureAt, findDoorAt, findWindowAt, findColumnAt, findStaircaseAt, screenToWorld, snapToGrid,
+    addPoint, addWall, addDoor, addWindow, addColumn, addStaircase, setSelectedElement, setSelectedStaircaseId, building,
+    moveFixture, moveColumn, setActiveTool, isShiftHeld, wallChainLength, wallChain
   ]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
