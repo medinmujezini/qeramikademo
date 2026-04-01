@@ -1066,7 +1066,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           const stairYOffset = isArrivingFromBelow
             ? -((fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS)
             : 0;
-          const clipBelowY = isArrivingFromBelow ? 0 : undefined;
+          const clipBelowY = undefined; // Never clip — let full staircase render
 
           const stairCenterX = stair.x * CM_TO_METERS + stair.width * CM_TO_METERS / 2;
           const stairCenterZ = stair.y * CM_TO_METERS + stair.depth * CM_TO_METERS / 2;
