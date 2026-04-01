@@ -925,7 +925,71 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       ctx.restore();
     });
 
-    // Draw column placement preview (rectangle by default)
+    // Draw staircases on active floor
+    staircases.filter(s => s.fromLevel === activeLevel).forEach(stair => {
+      const isSelected = selectedStaircaseId === stair.id;
+      const isDragging = draggedStaircase === stair.id;
+      
+      ctx.save();
+      const origin = worldToScreen(stair.x, stair.y);
+      ctx.translate(origin.x, origin.y);
+      const rad = (stair.rotation * Math.PI) / 180;
+      ctx.rotate(rad);
+      
+      const w = stair.width * scale;
+      const d = stair.depth * scale;
+      
+      // Fill
+      ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' : 'hsla(38, 60%, 68%, 0.2)';
+      ctx.fillRect(0, 0, w, d);
+      
+      // Tread lines
+      const numTreads = stair.numTreads || 12;
+      const treadSpacing = d / numTreads;
+      ctx.strokeStyle = 'hsla(38, 60%, 68%, 0.4)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < numTreads; i++) {
+        const ty = i * treadSpacing;
+        ctx.beginPath();
+        ctx.moveTo(0, ty);
+        ctx.lineTo(w, ty);
+        ctx.stroke();
+      }
+      
+      // Direction arrow (pointing up/forward)
+      ctx.strokeStyle = 'hsla(38, 60%, 68%, 0.8)';
+      ctx.lineWidth = 2;
+      const arrowX = w / 2;
+      const arrowY1 = d * 0.75;
+      const arrowY2 = d * 0.25;
+      ctx.beginPath();
+      ctx.moveTo(arrowX, arrowY1);
+      ctx.lineTo(arrowX, arrowY2);
+      ctx.stroke();
+      // Arrowhead
+      ctx.beginPath();
+      ctx.moveTo(arrowX - 6, arrowY2 + 8);
+      ctx.lineTo(arrowX, arrowY2);
+      ctx.lineTo(arrowX + 6, arrowY2 + 8);
+      ctx.stroke();
+      
+      // Border
+      ctx.strokeStyle = isSelected ? 'hsla(38, 80%, 68%, 1)' : 'hsla(38, 60%, 68%, 0.7)';
+      ctx.lineWidth = isSelected ? 3 : 1.5;
+      ctx.strokeRect(0, 0, w, d);
+      
+      // Selection glow
+      if (isSelected) {
+        ctx.shadowColor = 'hsla(38, 80%, 68%, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.strokeRect(0, 0, w, d);
+        ctx.shadowBlur = 0;
+      }
+      
+      ctx.restore();
+    });
+
+
     if (columnPreview && activeTool === 'column') {
       const previewScreen = worldToScreen(columnPreview.x, columnPreview.y);
       ctx.globalAlpha = 0.5;
