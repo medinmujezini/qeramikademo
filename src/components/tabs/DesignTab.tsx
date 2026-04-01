@@ -1082,16 +1082,20 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           >
             <Staircase3D staircase={stair} yOffset={stairYOffset} clipBelowY={clipBelowY} />
 
-            {/* Stairwell lighting for upper floor view */}
-            {isArrivingFromBelow && (
-              <pointLight
-                position={[stairCenterX, -0.3, stairCenterZ]}
-                color="#fff5e6"
-                intensity={2}
-                distance={5}
-                decay={2}
-              />
-            )}
+            {/* Stairwell lighting for upper floor view — 3 lights distributed along shaft */}
+            {isArrivingFromBelow && (() => {
+              const h = (fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
+              return (
+                <>
+                  <pointLight position={[stairCenterX, -0.3, stairCenterZ]}
+                    color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
+                  <pointLight position={[stairCenterX, -(h * 0.5), stairCenterZ]}
+                    color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
+                  <pointLight position={[stairCenterX, -h + 0.3, stairCenterZ]}
+                    color="#fff5e6" intensity={2} distance={8} decay={1.5} castShadow={false} />
+                </>
+              );
+            })()}
 
             {/* Stairwell trim border around slab opening */}
             {isArrivingFromBelow && (
