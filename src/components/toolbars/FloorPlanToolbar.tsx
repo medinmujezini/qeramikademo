@@ -117,6 +117,16 @@ export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
         <Columns className="h-3.5 w-3.5" />
       </Button>
 
+      <Button
+        variant={activeTool === 'staircase' ? 'default' : 'ghost'}
+        size="sm"
+        className="h-7 w-7 p-0"
+        onClick={() => setActiveTool('staircase')}
+        title="Add Staircase"
+      >
+        <ArrowUpDown className="h-3.5 w-3.5" />
+      </Button>
+
       <div className="w-px h-4 bg-primary/15" />
 
       {/* Openings */}

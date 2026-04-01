@@ -48,6 +48,8 @@ export interface Staircase {
   centerRadius?: number;
   /** Material for treads */
   treadMaterial: 'wood' | 'concrete' | 'metal' | 'marble';
+  /** Optional custom GLB model URL (blob or remote) */
+  customGlbUrl?: string;
 }
 
 // =============================================================================
