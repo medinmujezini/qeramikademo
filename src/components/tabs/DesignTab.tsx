@@ -967,19 +967,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         ))
       }
 
-      {/* Floor slabs for upper floors */}
-      {building.floors
-        .filter(f => f.level > 0 && f.slab && (f.level === activeLevel || f.level === activeLevel + 1))
-        .map(floor => (
-          <FloorSlab3D
-            key={`slab-${floor.level}`}
-            slab={floor.slab!}
-            roomWidth={floorPlan.roomWidth || 800}
-            roomHeight={floorPlan.roomHeight || 600}
-            yPosition={floor.floorToFloorHeight * CM_TO_METERS * floor.level}
-          />
-        ))
-      }
 
       {/* Ghost floors — adjacent floors rendered as transparent wireframes */}
       {showAdjacentFloors && (() => {
