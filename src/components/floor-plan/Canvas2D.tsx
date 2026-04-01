@@ -1080,6 +1080,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       ctx.restore();
     }
 
+    if (columnPreview && activeTool === 'column') {
       const previewScreen = worldToScreen(columnPreview.x, columnPreview.y);
       ctx.globalAlpha = 0.5;
       ctx.fillStyle = 'hsl(var(--primary))';
