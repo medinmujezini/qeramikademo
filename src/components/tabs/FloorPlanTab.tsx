@@ -10,6 +10,7 @@ import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { BlueprintImportWizard, FloorPlanAnalysis } from '@/components/blueprint/BlueprintImportWizard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NewFloorDialog } from '@/components/floor-plan/NewFloorDialog';
 import { toast } from 'sonner';
 import { generateRectangleRoom, generateLShapeRoom } from '@/utils/roomTemplates';
 
@@ -22,6 +23,7 @@ export const FloorPlanTab: React.FC = () => {
   const [wallChainLength, setWallChainLength] = useState(0);
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [showNewRoomDialog, setShowNewRoomDialog] = useState(false);
+  const [showNewFloorDialog, setShowNewFloorDialog] = useState(false);
   const [rectWidth, setRectWidth] = useState('300');
   const [rectHeight, setRectHeight] = useState('250');
   const [lWidth, setLWidth] = useState('400');
@@ -52,6 +54,8 @@ export const FloorPlanTab: React.FC = () => {
     selectedStaircaseId,
     setSelectedStaircaseId,
     removeStaircase,
+    addFloor,
+    building,
   } = useFloorPlanContext();
 
   const handleCancelDrawing = useCallback(() => {
@@ -188,6 +192,7 @@ export const FloorPlanTab: React.FC = () => {
           onToggleDimensions={() => toggleLayer('dimensions')}
           onNewRoom={() => setShowNewRoomDialog(true)}
           onFromImage={() => setShowImportWizard(true)}
+          onNewFloor={() => setShowNewFloorDialog(true)}
         />
       </div>
 
@@ -282,6 +287,17 @@ export const FloorPlanTab: React.FC = () => {
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      <NewFloorDialog
+        open={showNewFloorDialog}
+        onOpenChange={setShowNewFloorDialog}
+        onCreateFloor={(opts) => {
+          addFloor(opts);
+          toast.success(`${opts.name} created`);
+        }}
+        nextLevel={Math.max(...building.floors.map(f => f.level), -1) + 1}
+        hasFloorBelow={building.floors.length > 0}
+      />
     </div>
   );
 };
