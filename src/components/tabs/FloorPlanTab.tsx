@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { generateRectangleRoom, generateLShapeRoom } from '@/utils/roomTemplates';
 
-type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
+type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column' | 'staircase';
 
 export const FloorPlanTab: React.FC = () => {
   const [activeTool, setActiveTool] = useState<Tool>('select');
