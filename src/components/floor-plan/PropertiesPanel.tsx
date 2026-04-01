@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
+import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
 import { Label } from '@/components/ui/label';
