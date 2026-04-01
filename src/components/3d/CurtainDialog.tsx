@@ -92,8 +92,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
                       type === ct.value
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-border/50 hover:border-primary/30'
-                    } ${ct.value === 'roman' || ct.value === 'roller' || ct.value === 'pleated' ? 'opacity-50' : ''}`}
-                    disabled={ct.value === 'roman' || ct.value === 'roller' || ct.value === 'pleated'}
+                    }`}
                   >
                     {ct.icon}
                     <span className="text-[10px]">{ct.label}</span>
