@@ -41,7 +41,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun, ChevronUp, ChevronDown } from 'lucide-react';
 import { FloorManager } from '@/components/floor-plan/FloorManager';
 
 import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
@@ -1003,10 +1003,28 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                     rotation={[0, -angle, 0]}
                   >
                     <boxGeometry args={[length, wallHeight, thickness]} />
-                    <meshBasicMaterial color="#888" transparent opacity={ghostOpacity} wireframe />
+                    <meshStandardMaterial color="#999" transparent opacity={0.25} depthWrite={false} />
                   </mesh>
                 );
               })}
+              {/* Floor slab between levels */}
+              {floor.slab && (() => {
+                const pts = ghostPlan.points;
+                if (pts.length < 2) return null;
+                const xs = pts.map(p => p.x);
+                const ys = pts.map(p => p.y);
+                const slabW = (Math.max(...xs) - Math.min(...xs)) * scale;
+                const slabD = (Math.max(...ys) - Math.min(...ys)) * scale;
+                const slabH = (floor.slab!.thickness || 20) * scale;
+                const slabCx = ((Math.min(...xs) + Math.max(...xs)) / 2) * scale;
+                const slabCz = ((Math.min(...ys) + Math.max(...ys)) / 2) * scale;
+                return (
+                  <mesh position={[slabCx, yOffset - slabH / 2, slabCz]}>
+                    <boxGeometry args={[slabW, slabH, slabD]} />
+                    <meshStandardMaterial color="#aaa" transparent opacity={0.3} depthWrite={false} />
+                  </mesh>
+                );
+              })()}
             </group>
           );
         });
@@ -1831,6 +1849,18 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
               {/* Floor manager */}
               <FloorManager />
+              <div className="flex items-center gap-0.5">
+                <Button variant="ghost" size="icon" className="h-6 w-6"
+                  disabled={!building.floors.some(f => f.level > activeLevel)}
+                  onClick={() => setActiveLevel(activeLevel + 1)}>
+                  <ChevronUp className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6"
+                  disabled={!building.floors.some(f => f.level < activeLevel)}
+                  onClick={() => setActiveLevel(activeLevel - 1)}>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </div>
 
               {/* Ghost floors toggle */}
               <div className="flex items-center gap-1">
