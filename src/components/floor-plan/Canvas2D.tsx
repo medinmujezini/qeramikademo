@@ -270,7 +270,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       const sin = Math.sin(rad);
       const dx = worldX - stair.x;
       const dy = worldY - stair.y;
-      // Inverse rotation to get local coordinates
       const localX = dx * cos + dy * sin;
       const localY = -dx * sin + dy * cos;
       if (
@@ -284,6 +283,28 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     }
     return null;
   }, [staircases, activeLevel, scale]);
+
+  const getRotatedStairBounds = useCallback((stair: { x: number; y: number; width: number; depth: number; rotation: number }) => {
+    const rad = (stair.rotation * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const corners = [
+      { x: 0, y: 0 },
+      { x: stair.width, y: 0 },
+      { x: stair.width, y: stair.depth },
+      { x: 0, y: stair.depth },
+    ].map(({ x, y }) => ({
+      x: stair.x + x * cos - y * sin,
+      y: stair.y + x * sin + y * cos,
+    }));
+
+    return {
+      minX: Math.min(...corners.map(p => p.x)),
+      maxX: Math.max(...corners.map(p => p.x)),
+      minY: Math.min(...corners.map(p => p.y)),
+      maxY: Math.max(...corners.map(p => p.y)),
+    };
+  }, []);
 
   // Find insertion point on wall - allows clicking ANYWHERE on wall to insert junction
   const findWallInsertionPoint = useCallback((worldX: number, worldY: number, threshold: number = 20): { wallId: string; x: number; y: number; position: number } | null => {
