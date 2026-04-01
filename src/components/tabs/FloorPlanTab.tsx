@@ -287,6 +287,17 @@ export const FloorPlanTab: React.FC = () => {
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      <NewFloorDialog
+        open={showNewFloorDialog}
+        onOpenChange={setShowNewFloorDialog}
+        onCreateFloor={(opts) => {
+          addFloor(opts);
+          toast.success(`${opts.name} created`);
+        }}
+        nextLevel={Math.max(...building.floors.map(f => f.level), -1) + 1}
+        hasFloorBelow={building.floors.length > 0}
+      />
     </div>
   );
 };
