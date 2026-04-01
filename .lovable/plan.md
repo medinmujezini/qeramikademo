@@ -1,37 +1,45 @@
 
 
-# Remove Floor Slab + Fix Ghost Floor Height
+# Fix: Wall Heights Must Match Floor-to-Floor Height
 
-## Changes
+## Problem
 
-### 1. Remove FloorSlab3D import
-**File: `src/components/tabs/DesignTab.tsx`** (line 32)
+When creating a new floor with a custom height (e.g., 500cm), `addFloor()` sets `newFloor.floorToFloorHeight = 500` but the **cloned structural walls** retain their original `height` property (e.g., 280cm from the source floor). Result: the gap between floors grows but the actual wall meshes stay short.
 
-Delete the `import { FloorSlab3D }` line.
+## Root Cause
 
-### 2. Remove floor slab rendering block
-**File: `src/components/tabs/DesignTab.tsx`** (lines 970-982)
-
-Delete the entire `{/* Floor slabs for upper floors */}` block including the `.filter().map()` that renders `<FloorSlab3D>`.
-
-### 3. Fix ghost floor yOffset calculation
-**File: `src/components/tabs/DesignTab.tsx`** (line 993)
-
-Replace:
+In `src/contexts/FloorPlanContext.tsx` line 187-188:
 ```ts
-const yOffset = (level - activeLevel) * floor.floorToFloorHeight * CM_TO_METERS;
+if (options?.height) {
+  newFloor.floorToFloorHeight = options.height;
+}
 ```
-With:
+This only sets the floor metadata. The cloned walls (lines 206-212) copy the source wall's `height` as-is. No code updates wall heights to match.
+
+## Fix
+
+**File: `src/contexts/FloorPlanContext.tsx`**
+
+After setting `floorToFloorHeight`, also update all walls in the new floor's plan to use the new height:
+
 ```ts
-const activeFloor = building.floors.find(f => f.level === activeLevel);
-const yOffset = (level - activeLevel) * (activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
+if (options?.height) {
+  newFloor.floorToFloorHeight = options.height;
+  // Sync wall heights to match floor height
+  newFloor.floorPlan = {
+    ...newFloor.floorPlan,
+    walls: newFloor.floorPlan.walls.map(w => ({ ...w, height: options.height })),
+  };
+}
 ```
 
-This uses the **active floor's** height for consistent vertical spacing instead of each ghost floor's own height.
+Move this block **after** the wall cloning section (after line 218) so it also catches cloned structural walls.
+
+Also fix the runtime error: `DesignScene` calls `useFloorPlanContext()` but renders inside the R3F `<Canvas>` which is outside `FloorPlanProvider`. Need to pass context values as props or move the provider wrapping.
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/tabs/DesignTab.tsx` | Remove FloorSlab3D import, delete slab rendering block, fix ghost yOffset |
+| `src/contexts/FloorPlanContext.tsx` | Move height-to-wall sync after wall cloning, update all walls in new floor |
 
