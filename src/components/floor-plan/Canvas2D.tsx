@@ -1463,8 +1463,21 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
     // Staircase drag
     if (draggedStaircase) {
-      const newX = snapToGrid(world.x - staircaseOffset.x);
-      const newY = snapToGrid(world.y - staircaseOffset.y);
+      let newX = snapToGrid(world.x - staircaseOffset.x);
+      let newY = snapToGrid(world.y - staircaseOffset.y);
+      // Clamp to room bounds
+      const pts = floorPlan.points;
+      if (pts.length > 0) {
+        const minX = Math.min(...pts.map(p => p.x));
+        const minY = Math.min(...pts.map(p => p.y));
+        const maxX = Math.max(...pts.map(p => p.x));
+        const maxY = Math.max(...pts.map(p => p.y));
+        const stair = staircases.find(s => s.id === draggedStaircase);
+        if (stair) {
+          newX = Math.max(minX, Math.min(newX, maxX - stair.width));
+          newY = Math.max(minY, Math.min(newY, maxY - stair.depth));
+        }
+      }
       updateStaircase(draggedStaircase, { x: newX, y: newY });
     }
 
