@@ -32,6 +32,7 @@ interface Canvas2DProps {
 
 export const Canvas2D: React.FC<Canvas2DProps> = ({ 
   activeTool, 
+  setActiveTool,
   showGrid, 
   gridSize,
   showTiles = true,
