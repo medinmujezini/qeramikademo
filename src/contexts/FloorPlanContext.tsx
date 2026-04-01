@@ -50,7 +50,7 @@ type FloorPlanContextType = ReturnType<typeof useFloorPlan> & {
   building: Building;
   activeLevel: number;
   setActiveLevel: (level: number) => void;
-  addFloor: () => void;
+  addFloor: (options?: { name?: string; height?: number; copyOuterWalls?: boolean }) => void;
   removeFloor: (level: number) => void;
   renameFloor: (level: number, name: string) => void;
   duplicateFloor: (level: number) => void;
