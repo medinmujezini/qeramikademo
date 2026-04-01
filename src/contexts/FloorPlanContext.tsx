@@ -91,10 +91,10 @@ function syncSlabOpenings(building: Building): Building {
     const staircaseOpenings: SlabOpening[] = stairsToThisFloor.map(stair => ({
       id: `slab-opening-${stair.id}`,
       staircaseId: stair.id,
-      x: stair.x - 10, // 10cm clearance margin
-      y: stair.y - 10,
-      width: stair.width + 20,
-      depth: stair.depth + 20,
+      x: stair.x,
+      y: stair.y,
+      width: stair.width,
+      depth: stair.depth,
     }));
     
     return {
