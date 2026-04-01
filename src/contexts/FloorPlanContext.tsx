@@ -193,7 +193,6 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
         const sourceFloor = prev.floors.find(f => f.level === currentLevel);
         const sourcePlan = sourceFloor?.floorPlan || currentPlan;
         if (sourcePlan.walls.length > 0) {
-          // Clone points with new IDs, maintaining a mapping
           const pointIdMap = new Map<string, string>();
           const clonedPoints = sourcePlan.points
             .filter(p => sourcePlan.walls.some(w => w.startPointId === p.id || w.endPointId === p.id))
@@ -202,7 +201,6 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
               pointIdMap.set(p.id, newId);
               return { ...p, id: newId };
             });
-          // Clone walls with new IDs and mapped point IDs, marked structural
           const clonedWalls = sourcePlan.walls.map(w => ({
             ...w,
             id: uuidv4(),
@@ -216,6 +214,14 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
             walls: [...newFloor.floorPlan.walls, ...clonedWalls],
           };
         }
+      }
+
+      // Sync all wall heights to match floor-to-floor height (after cloning)
+      if (options?.height) {
+        newFloor.floorPlan = {
+          ...newFloor.floorPlan,
+          walls: newFloor.floorPlan.walls.map(w => ({ ...w, height: options.height })),
+        };
       }
 
       const updated = {
