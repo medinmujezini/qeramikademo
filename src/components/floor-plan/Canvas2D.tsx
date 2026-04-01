@@ -1152,7 +1152,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     floorPlan, offset, scale, showGrid, gridSize, showTiles, showRoutes, editRoutes,
     selectedElement, draggedPoint, draggedFixture, draggedColumn, wallStartPoint, tempEndPoint, hoverWallMidpoint, activeTool, hasCollision, doorWindowPreview, connectionStatus,
     snapToGrid, worldToScreen, screenToWorld, getConnectedWallCount, layerVisibility, hoverRoutePoint, hoverRouteSegment, snapIndicator, columnPreview,
-    staircases, activeLevel, selectedStaircaseId, draggedStaircase,
+    staircases, activeLevel, selectedStaircaseId, draggedStaircase, pendingStaircaseDrag,
   ]);
 
   // Handle resize
