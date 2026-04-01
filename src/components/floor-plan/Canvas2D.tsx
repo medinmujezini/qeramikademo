@@ -77,6 +77,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     setSelectedStaircaseId,
     updateStaircase,
     addStaircase,
+    showAdjacentFloors,
+    getFloorPlanForLevel,
   } = useFloorPlanContext();
 
   // Route editing removed - now handled in MEPTab
