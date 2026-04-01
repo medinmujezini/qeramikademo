@@ -52,7 +52,7 @@ import { CM_TO_METERS } from '@/constants/units';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY, DEFAULT_CEILING_EMITTER_CONFIG } from '@/types/floorPlan';
-import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity } from '@/types/floorPlan';
+import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity, Curtain, Window as FloorWindow } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
