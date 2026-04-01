@@ -1015,6 +1015,29 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         );
       })}
 
+      {/* Curtains */}
+      {(floorPlan.curtains ?? []).map(curtain => {
+        const wall = floorPlan.walls.find(w => w.id === curtain.wallId);
+        if (!wall) return null;
+        const start = floorPlan.points.find(p => p.id === wall.startPointId);
+        const end = floorPlan.points.find(p => p.id === wall.endPointId);
+        if (!start || !end) return null;
+        const angle = Math.atan2(end.y - start.y, end.x - start.x);
+        return (
+          <Curtain3D
+            key={curtain.id}
+            curtain={curtain}
+            wallAngle={angle}
+            wallStartX={start.x}
+            wallStartY={start.y}
+            wallEndX={end.x}
+            wallEndY={end.y}
+            wallThickness={wall.thickness}
+            wallHeight={wall.height}
+          />
+        );
+      })}
+
       {/* Fixture Scene with all interaction - mirrors FurnitureScene */}
       <FixtureScene 
         enableDrag={true} 
