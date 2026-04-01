@@ -763,7 +763,18 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       >
         {(() => {
           const activeFloorObj = building.floors.find(f => f.level === activeLevel);
-          const openings = (activeLevel > 0 && activeFloorObj?.slab?.openings) || [];
+          const manualOpenings = activeFloorObj?.slab?.openings?.filter(op => !op.staircaseId) ?? [];
+          const stairOpenings = staircases
+            .filter(stair => stair.toLevel === activeLevel)
+            .map(stair => ({
+              id: `derived-opening-${stair.id}`,
+              staircaseId: stair.id,
+              x: stair.x,
+              y: stair.y,
+              width: stair.width,
+              depth: stair.depth,
+            }));
+          const openings = activeLevel > 0 ? [...manualOpenings, ...stairOpenings] : [];
 
           if (openings.length === 0) {
             return <planeGeometry args={[floorWidth, floorDepth]} />;
