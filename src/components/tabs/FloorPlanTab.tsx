@@ -48,7 +48,10 @@ export const FloorPlanTab: React.FC = () => {
     addPoint,
     addWall,
     addDoor,
-    addWindow
+    addWindow,
+    selectedStaircaseId,
+    setSelectedStaircaseId,
+    removeStaircase,
   } = useFloorPlanContext();
 
   const handleCancelDrawing = useCallback(() => {
