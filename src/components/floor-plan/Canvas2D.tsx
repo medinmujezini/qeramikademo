@@ -104,6 +104,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const [columnPreview, setColumnPreview] = useState<{ x: number; y: number } | null>(null);
   const [draggedStaircase, setDraggedStaircase] = useState<string | null>(null);
   const [staircaseOffset, setStaircaseOffset] = useState({ x: 0, y: 0 });
+  const [pendingStaircaseDrag, setPendingStaircaseDrag] = useState<{ id: string; startX: number; startY: number; offsetX: number; offsetY: number } | null>(null);
 
   const connectionStatus = useConnectionStatus(floorPlan);
 
