@@ -1,132 +1,92 @@
 
 
-# Robust Second Floor & High-Quality Staircase System — Enhanced Plan
+# Improve Staircase 3D Realism & Multi-Floor Visibility
 
-## Issues Found Beyond Original Analysis
+## Problems
 
-### Bug A: Rotation hit-test sign mismatch (confirmed still present)
-Line 267: `const rad = -(stair.rotation * Math.PI) / 180` (negative)
-Line 978: `ctx.rotate((stair.rotation * Math.PI) / 180)` (positive)
-The inverse rotation for hit-testing uses the wrong formula. After positive rotation, the inverse transform should be:
-```
-localX = dx * cos + dy * sin
-localY = -dx * sin + dy * cos
-```
-Currently it uses `dx * cos - dy * sin` / `dx * sin + dy * cos` which is wrong for the sign.
+1. **3D geometry doesn't match 2D footprint** — The geometry generator uses `stairWidth` and `treadDepth × numTreads` independently, ignoring the `width`/`depth` properties from the Staircase interface. So a staircase sized 200×100cm in the 2D canvas renders as a completely different size in 3D.
 
-### Bug B: Width/depth sliders don't recalculate tread geometry
-Lines 122-127 in PropertiesPanel set `width` and `depth` directly without calling `calculateStaircaseGeometry`. The `StaircasePropertiesPanel` component (already exists) handles this correctly via `handleWidthChange`/`handleTreadDepthChange`. The inline panel should be replaced.
+2. **Staircase not visible from second floor** — Currently only `fromLevel === activeLevel` staircases render. When viewing the second floor, the top of the staircase (which arrives at that floor) is invisible. The staircase should also render when `toLevel === activeLevel`, showing the top portion poking through the floor.
 
-### Bug C: No keyboard delete/rotate for staircases
-Lines 1699-1749: The Delete handler only checks `selectedElement`, never `selectedStaircaseId`. The R-key handler also ignores staircases.
-
-### Bug D: Duplicate `break` statement
-Line 1714-1715: There's a double `break` after the wall delete case — harmless but sloppy.
-
-### Bug E: No hover highlight for staircases
-The draw code has no visual distinction when hovering over a staircase in select mode — unlike walls/fixtures which change cursor. No fill change on hover.
-
-### Bug F: Staircase drag has no room boundary clamping
-Line 1463-1465: Drag updates position without constraining to room bounds. Stairs can be dragged outside walls.
-
-### Missing: `hoveredStaircaseId` state doesn't exist
-Need to add state tracking + mousemove detection for hover.
+3. **Geometry is crude** — Thin floating boxes with needle-thin stringers. Missing: solid closed risers (vertical faces between treads), a solid underside/soffit, proper handrail bars connecting posts, and nosing overhang.
 
 ## Plan
 
-### 1. Replace inline staircase panel with StaircasePropertiesPanel
-**File: `src/components/floor-plan/PropertiesPanel.tsx`** (lines 91-189)
+### 1. Scale geometry to match `width`/`depth` — `src/utils/staircaseGeometry.ts`
 
-Replace the entire inline staircase block with:
-```tsx
-import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
+The `generateStraight` function currently uses `stairWidth` for tread width and `treadDepth × numTreads` for total run, ignoring the `width`/`depth` properties. Fix by:
 
-if (selectedStaircaseId && !selectedElement) {
-  return (
-    <Card className="h-full border-border overflow-auto">
-      <StaircasePropertiesPanel />
-    </Card>
-  );
-}
-```
-This uses the existing component that correctly calls `calculateStaircaseGeometry` on dimension changes and includes GLB upload support.
+- Computing `totalRun = stair.numTreads * stair.treadDepth * CM_TO_M` as before
+- Computing `actualDepth = stair.depth * CM_TO_M`
+- If they differ, scale Z positions by `actualDepth / totalRun` so treads fit within the declared depth
+- Use `stair.width * CM_TO_M` for tread width (it should equal `stairWidth` but use the bounding `width` as the authority)
+- Apply same logic to L-shaped, U-shaped, spiral
 
-### 2. Fix rotation hit-test
-**File: `src/components/floor-plan/Canvas2D.tsx`** (lines 267-274)
+### 2. Add risers (vertical faces) — `src/utils/staircaseGeometry.ts`
 
-Change the inverse rotation math:
-```tsx
-const rad = (stair.rotation * Math.PI) / 180; // positive, matching draw
-const cos = Math.cos(rad);
-const sin = Math.sin(rad);
-const dx = worldX - stair.x;
-const dy = worldY - stair.y;
-const localX = dx * cos + dy * sin;   // correct inverse
-const localY = -dx * sin + dy * cos;  // correct inverse
+Add a new output array to `StaircaseGeometryResult`:
+```ts
+risers: TreadGeometry[]; // vertical boards between treads
 ```
 
-### 3. Add keyboard shortcuts for staircases
-**File: `src/components/floor-plan/Canvas2D.tsx`** (lines 1699-1749)
+In `generateStraight`, for each tread `i > 0`, add a riser:
+```ts
+risers.push({
+  position: [0, y - riserH / 2, z - treadD / 2],
+  size: [treadW, riserH, 0.02], // 2cm thick vertical board
+  rotation: 0,
+});
+```
+This closes the gaps between treads for a solid look.
 
-In the Delete/Backspace handler (after the `selectedElement` block), add:
-```tsx
-if (selectedStaircaseId) {
-  removeStaircase(selectedStaircaseId);
-  setSelectedStaircaseId(null);
-}
+### 3. Add solid soffit (underside) — `src/utils/staircaseGeometry.ts`
+
+Add to the result:
+```ts
+soffit: { points: [number,number,number][]; width: number; thickness: number; }
+```
+This is a single angled slab under the full staircase run. In `Staircase3D.tsx`, render it as a rotated box matching the stringer angle but wider (full tread width) and thinner (3cm).
+
+### 4. Add handrail bars — `src/utils/staircaseGeometry.ts` + `src/components/3d/Staircase3D.tsx`
+
+Add to the result:
+```ts
+handrails: { start: [number,number,number]; end: [number,number,number]; }[]
+```
+Connect consecutive railing post tops with horizontal cylinder segments. Render in `Staircase3D.tsx` as thin cylinders (radius 0.025m) oriented between posts.
+
+### 5. Render in `Staircase3D.tsx` — `src/components/3d/Staircase3D.tsx`
+
+Add rendering for:
+- **Risers**: Same material as treads, rendered as `<boxGeometry>` meshes
+- **Soffit**: Single angled box under the staircase, slightly darker shade
+- **Handrails**: Cylinders connecting post tops using `lookAt`-style rotation
+- **Tread nosing**: Add 1cm overhang to tread depth for realism (just increase tread `size[2]` by 0.01)
+
+### 6. Show staircase from second floor — `src/components/tabs/DesignTab.tsx`
+
+Change the filter on line 949 from:
+```ts
+.filter(s => s.fromLevel === activeLevel)
+```
+to:
+```ts
+.filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
 ```
 
-In the R-key handler, add:
-```tsx
-if (selectedStaircaseId) {
-  const stair = staircases.find(s => s.id === selectedStaircaseId);
-  if (stair) updateStaircase(selectedStaircaseId, { rotation: (stair.rotation + 90) % 360 });
-}
+When `s.toLevel === activeLevel`, compute yOffset as negative (the staircase starts one floor below):
+```ts
+const activeFloor = building.floors.find(f => f.level === activeLevel);
+const yOffset = s.fromLevel === activeLevel ? 0 : -(activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
 ```
 
-Add `removeStaircase`, `selectedStaircaseId`, `setSelectedStaircaseId`, `updateStaircase`, `staircases` to the `useCallback` deps array (line 1749).
-
-### 4. Add hover highlight for staircases
-**File: `src/components/floor-plan/Canvas2D.tsx`**
-
-Add `hoveredStaircaseId` state. In `handleMouseMove`, when `activeTool === 'select'` and not dragging, call `findStaircaseAt` and set `hoveredStaircaseId`.
-
-In the staircase draw block (line 985), use a brighter fill when hovered:
-```tsx
-const isHovered = hoveredStaircaseId === stair.id;
-ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' 
-  : isHovered ? 'hsla(38, 60%, 68%, 0.3)' 
-  : 'hsla(38, 60%, 68%, 0.2)';
-```
-
-### 5. Clamp staircase drag to room bounds
-**File: `src/components/floor-plan/Canvas2D.tsx`** (lines 1461-1466)
-
-After computing `newX`/`newY`, clamp to room bounding box:
-```tsx
-const pts = floorPlan.points;
-if (pts.length > 0) {
-  const minX = Math.min(...pts.map(p => p.x));
-  const minY = Math.min(...pts.map(p => p.y));
-  const maxX = Math.max(...pts.map(p => p.x));
-  const maxY = Math.max(...pts.map(p => p.y));
-  const stair = staircases.find(s => s.id === draggedStaircase);
-  if (stair) {
-    newX = Math.max(minX, Math.min(newX, maxX - stair.width));
-    newY = Math.max(minY, Math.min(newY, maxY - stair.depth));
-  }
-}
-```
-
-### 6. Fix duplicate break statement
-**File: `src/components/floor-plan/Canvas2D.tsx`** (line 1715)
-
-Remove the extra `break;` after the wall delete case.
+This makes the top of the staircase visible when viewing the upper floor.
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/floor-plan/PropertiesPanel.tsx` | Replace inline staircase section with `StaircasePropertiesPanel` |
-| `src/components/floor-plan/Canvas2D.tsx` | Fix rotation hit-test, add Delete/R keyboard shortcuts, hover highlight, room bounds clamping, remove duplicate break |
+| `src/utils/staircaseGeometry.ts` | Scale geometry to width/depth, add risers array, soffit data, handrail connections |
+| `src/components/3d/Staircase3D.tsx` | Render risers, soffit, handrails, tread nosing |
+| `src/components/tabs/DesignTab.tsx` | Show staircase on both fromLevel and toLevel floors |
 
