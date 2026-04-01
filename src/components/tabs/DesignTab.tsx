@@ -1967,14 +1967,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           <div className="w-px h-4 bg-primary/15" />
 
           <Button
-            variant={viewMode === 'walkthrough' || unrealActive ? 'default' : 'ghost'}
+            variant={viewMode === 'walkthrough' ? 'default' : 'ghost'}
             size="sm"
             className="h-7 gap-1 text-xs"
-            onClick={unrealActive ? exitWalkthrough : viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
+            onClick={viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
             disabled={isPreparingWalkthrough}
           >
             {isPreparingWalkthrough ? <Loader2 className="h-3 w-3 animate-spin" /> : <PersonStanding className="h-3 w-3" />}
-            {isPreparingWalkthrough ? 'Preparing...' : unrealActive ? 'Exit UE' : viewMode === 'walkthrough' ? 'Exit Walk' : 'Walk'}
+            {isPreparingWalkthrough ? 'Preparing...' : viewMode === 'walkthrough' ? 'Exit Walk' : 'Walk'}
           </Button>
 
           {isDragging && (
