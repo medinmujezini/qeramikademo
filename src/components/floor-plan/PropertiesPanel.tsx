@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
+import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
 import { Label } from '@/components/ui/label';
@@ -88,103 +89,11 @@ export const PropertiesPanel: React.FC = () => {
     building,
   } = useFloorPlanContext();
 
-  // Staircase properties panel
+  // Staircase properties panel — uses the dedicated component with calculateStaircaseGeometry
   if (selectedStaircaseId && !selectedElement) {
-    const stair = staircases.find(s => s.id === selectedStaircaseId);
-    if (!stair) return null;
-
-    const floorHeight = building.floors.find(f => f.level === stair.fromLevel)?.floorToFloorHeight ?? 300;
-
     return (
       <Card className="h-full border-border overflow-auto">
-        <CardHeader className="py-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm">Staircase Properties</CardTitle>
-          <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => { removeStaircase(stair.id); setSelectedStaircaseId(null); }}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">Type</Label>
-            <Select value={stair.type} onValueChange={(v) => updateStaircase(stair.id, { type: v as any })}>
-              <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="straight">Straight</SelectItem>
-                <SelectItem value="l-shaped">L-Shaped</SelectItem>
-                <SelectItem value="u-shaped">U-Shaped</SelectItem>
-                <SelectItem value="spiral">Spiral</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Overall Width (cm): {stair.width}</Label>
-            <Slider min={60} max={400} step={5} value={[stair.width]} onValueChange={([v]) => updateStaircase(stair.id, { width: v })} />
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Overall Depth (cm): {stair.depth}</Label>
-            <Slider min={100} max={800} step={5} value={[stair.depth]} onValueChange={([v]) => updateStaircase(stair.id, { depth: v })} />
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Stair Width (cm): {stair.stairWidth}</Label>
-            <Slider min={60} max={150} step={5} value={[stair.stairWidth]} onValueChange={([v]) => updateStaircase(stair.id, { stairWidth: v })} />
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Tread Depth (cm): {stair.treadDepth}</Label>
-            <Slider min={20} max={35} step={1} value={[stair.treadDepth]} onValueChange={([v]) => updateStaircase(stair.id, { treadDepth: v })} />
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Rotation (°): {stair.rotation}</Label>
-            <Slider min={0} max={360} step={5} value={[stair.rotation]} onValueChange={([v]) => updateStaircase(stair.id, { rotation: v })} />
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Material</Label>
-            <Select value={stair.treadMaterial} onValueChange={(v) => updateStaircase(stair.id, { treadMaterial: v as any })}>
-              <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="wood">Wood</SelectItem>
-                <SelectItem value="concrete">Concrete</SelectItem>
-                <SelectItem value="metal">Metal</SelectItem>
-                <SelectItem value="marble">Marble</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground">Railing</Label>
-            <Select value={stair.railing} onValueChange={(v) => updateStaircase(stair.id, { railing: v as any })}>
-              <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="simple">Simple</SelectItem>
-                <SelectItem value="glass">Glass</SelectItem>
-                <SelectItem value="metal">Metal</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs text-muted-foreground">X (cm)</Label>
-              <Input type="number" className="h-8" value={stair.x} onChange={(e) => updateStaircase(stair.id, { x: Number(e.target.value) })} />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Y (cm)</Label>
-              <Input type="number" className="h-8" value={stair.y} onChange={(e) => updateStaircase(stair.id, { y: Number(e.target.value) })} />
-            </div>
-          </div>
-
-          <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border">
-            <p>Floor height: {floorHeight} cm</p>
-            <p>Treads: {stair.numTreads} × Riser: {stair.riserHeight.toFixed(1)} cm</p>
-            <p>From level {stair.fromLevel} → {stair.toLevel}</p>
-          </div>
-        </CardContent>
+        <StaircasePropertiesPanel />
       </Card>
     );
   }

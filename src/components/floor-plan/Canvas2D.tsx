@@ -77,6 +77,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     setSelectedStaircaseId,
     updateStaircase,
     addStaircase,
+    removeStaircase,
     showAdjacentFloors,
     getFloorPlanForLevel,
   } = useFloorPlanContext();
@@ -264,14 +265,14 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     const thresholdWorld = thresholdPx / scale;
     for (const stair of staircases) {
       if (stair.fromLevel !== activeLevel) continue;
-      const rad = -(stair.rotation * Math.PI) / 180;
+      const rad = (stair.rotation * Math.PI) / 180;
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
       const dx = worldX - stair.x;
       const dy = worldY - stair.y;
-      // Transform to staircase local space (origin at stair.x, stair.y)
-      const localX = dx * cos - dy * sin;
-      const localY = dx * sin + dy * cos;
+      // Inverse rotation to get local coordinates
+      const localX = dx * cos + dy * sin;
+      const localY = -dx * sin + dy * cos;
       if (
         localX >= -thresholdWorld &&
         localX <= stair.width + thresholdWorld &&
@@ -982,7 +983,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       const d = stair.depth * scale;
       
       // Fill
-      ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' : 'hsla(38, 60%, 68%, 0.2)';
+      const isHovered = hoveredStaircaseId === stair.id;
+      ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' : isHovered ? 'hsla(38, 60%, 68%, 0.3)' : 'hsla(38, 60%, 68%, 0.2)';
       ctx.fillRect(0, 0, w, d);
       
       // Tread lines
@@ -1460,9 +1462,28 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
     // Staircase drag
     if (draggedStaircase) {
-      const newX = snapToGrid(world.x - staircaseOffset.x);
-      const newY = snapToGrid(world.y - staircaseOffset.y);
+      let newX = snapToGrid(world.x - staircaseOffset.x);
+      let newY = snapToGrid(world.y - staircaseOffset.y);
+      // Clamp to room bounds
+      const pts = floorPlan.points;
+      if (pts.length > 0) {
+        const minX = Math.min(...pts.map(p => p.x));
+        const minY = Math.min(...pts.map(p => p.y));
+        const maxX = Math.max(...pts.map(p => p.x));
+        const maxY = Math.max(...pts.map(p => p.y));
+        const stair = staircases.find(s => s.id === draggedStaircase);
+        if (stair) {
+          newX = Math.max(minX, Math.min(newX, maxX - stair.width));
+          newY = Math.max(minY, Math.min(newY, maxY - stair.depth));
+        }
+      }
       updateStaircase(draggedStaircase, { x: newX, y: newY });
+    }
+
+    // Hover detection for staircases
+    if (activeTool === 'select' && !draggedStaircase && !draggedFixture && !draggedColumn && !draggedPoint) {
+      const hovered = findStaircaseAt(world.x, world.y);
+      setHoveredStaircaseId(hovered?.id ?? null);
     }
 
     // Column preview
@@ -1539,7 +1560,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     } else {
       setDoorWindowPreview(null);
     }
-  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
+  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, findStaircaseAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, staircases, editRoutes]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -1712,7 +1733,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
             deleteWall(selectedElement.id);
             break;
           }
-            break;
           case 'door':
             deleteDoor(selectedElement.id);
             break;
@@ -1727,9 +1747,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
             break;
         }
         setSelectedElement(null);
+      } else if (selectedStaircaseId) {
+        removeStaircase(selectedStaircaseId);
+        setSelectedStaircaseId(null);
       }
     }
-    // Rotate fixture or column with R key
+    // Rotate fixture, column, or staircase with R key
     if (e.key === 'r' || e.key === 'R') {
       if (selectedElement?.type === 'fixture') {
         const fixture = floorPlan.fixtures.find(f => f.id === selectedElement.id);
@@ -1740,13 +1763,18 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       if (selectedElement?.type === 'column') {
         const column = floorPlan.columns?.find(c => c.id === selectedElement.id);
         if (column && column.shape === 'rectangle') {
-          // Rotate column 45 degrees
           const newRotation = (column.rotation + 45) % 360;
-          // Use updateColumn from context - but it's not imported, so we'll skip for now
+          // updateColumn handled elsewhere
+        }
+      }
+      if (selectedStaircaseId) {
+        const stair = staircases.find(s => s.id === selectedStaircaseId);
+        if (stair) {
+          updateStaircase(selectedStaircaseId, { rotation: (stair.rotation + 90) % 360 });
         }
       }
     }
-  }, [selectedElement, deletePoint, deleteWall, deleteDoor, deleteWindow, deleteFixture, deleteColumn, rotateFixture, floorPlan.fixtures, floorPlan.columns, floorPlan.walls, setSelectedElement, setIsDrawingWall, wallStartPoint, wallChain, activeTool, wallChainLength, setWallChainLength]);
+  }, [selectedElement, deletePoint, deleteWall, deleteDoor, deleteWindow, deleteFixture, deleteColumn, rotateFixture, floorPlan.fixtures, floorPlan.columns, floorPlan.walls, setSelectedElement, setIsDrawingWall, wallStartPoint, wallChain, activeTool, wallChainLength, setWallChainLength, selectedStaircaseId, removeStaircase, setSelectedStaircaseId, updateStaircase, staircases]);
 
   const handleKeyUp = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Shift') {
