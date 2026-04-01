@@ -945,15 +945,20 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
-      {/* Staircases on the active floor */}
+      {/* Staircases visible from the active floor (placed here OR arriving here) */}
       {staircases
-        .filter(s => s.fromLevel === activeLevel)
-        .map(stair => (
+        .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
+        .map(stair => {
+          const activeFloor = building.floors.find(f => f.level === activeLevel);
+          const stairYOffset = stair.fromLevel === activeLevel
+            ? 0
+            : -((activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS);
+          return (
           <group
             key={stair.id}
             onClick={(e) => { e.stopPropagation(); setSelectedStaircaseId(stair.id); }}
           >
-            <Staircase3D staircase={stair} yOffset={0} />
+            <Staircase3D staircase={stair} yOffset={stairYOffset} />
             {/* Selection outline */}
             {selectedStaircaseId === stair.id && (
               <mesh
