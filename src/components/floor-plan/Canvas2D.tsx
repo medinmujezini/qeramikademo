@@ -1733,7 +1733,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
             deleteWall(selectedElement.id);
             break;
           }
-            break;
           case 'door':
             deleteDoor(selectedElement.id);
             break;
@@ -1748,9 +1747,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
             break;
         }
         setSelectedElement(null);
+      } else if (selectedStaircaseId) {
+        removeStaircase(selectedStaircaseId);
+        setSelectedStaircaseId(null);
       }
     }
-    // Rotate fixture or column with R key
+    // Rotate fixture, column, or staircase with R key
     if (e.key === 'r' || e.key === 'R') {
       if (selectedElement?.type === 'fixture') {
         const fixture = floorPlan.fixtures.find(f => f.id === selectedElement.id);
@@ -1761,13 +1763,18 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       if (selectedElement?.type === 'column') {
         const column = floorPlan.columns?.find(c => c.id === selectedElement.id);
         if (column && column.shape === 'rectangle') {
-          // Rotate column 45 degrees
           const newRotation = (column.rotation + 45) % 360;
-          // Use updateColumn from context - but it's not imported, so we'll skip for now
+          // updateColumn handled elsewhere
+        }
+      }
+      if (selectedStaircaseId) {
+        const stair = staircases.find(s => s.id === selectedStaircaseId);
+        if (stair) {
+          updateStaircase(selectedStaircaseId, { rotation: (stair.rotation + 90) % 360 });
         }
       }
     }
-  }, [selectedElement, deletePoint, deleteWall, deleteDoor, deleteWindow, deleteFixture, deleteColumn, rotateFixture, floorPlan.fixtures, floorPlan.columns, floorPlan.walls, setSelectedElement, setIsDrawingWall, wallStartPoint, wallChain, activeTool, wallChainLength, setWallChainLength]);
+  }, [selectedElement, deletePoint, deleteWall, deleteDoor, deleteWindow, deleteFixture, deleteColumn, rotateFixture, floorPlan.fixtures, floorPlan.columns, floorPlan.walls, setSelectedElement, setIsDrawingWall, wallStartPoint, wallChain, activeTool, wallChainLength, setWallChainLength, selectedStaircaseId, removeStaircase, setSelectedStaircaseId, updateStaircase, staircases]);
 
   const handleKeyUp = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Shift') {
