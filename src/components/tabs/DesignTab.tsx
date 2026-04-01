@@ -799,7 +799,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
               const localW = linkedStair.width * scale;
               const localD = linkedStair.depth * scale;
               const centerX = linkedStair.x * scale - floorCenterX;
-              const centerY = linkedStair.y * scale - floorCenterZ;
+              const centerY = -(linkedStair.y * scale - floorCenterZ);
               const rotation = -(linkedStair.rotation * Math.PI) / 180;
               const turnRatio = linkedStair.type === 'u-shaped' ? 0.5 : 0.55;
               const sideRun = linkedStair.type === 'u-shaped' ? localW * 0.47 : localW * 0.5;
