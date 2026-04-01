@@ -66,7 +66,15 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     deleteColumn,
     selectedElement, 
     setSelectedElement,
-    layerVisibility
+    layerVisibility,
+    // Staircase support
+    staircases,
+    activeLevel,
+    building,
+    selectedStaircaseId,
+    setSelectedStaircaseId,
+    updateStaircase,
+    addStaircase,
   } = useFloorPlanContext();
 
   // Route editing removed - now handled in MEPTab
