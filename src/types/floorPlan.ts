@@ -34,6 +34,8 @@ export interface Wall {
   // Optional: lock individual endpoints
   lockStartHeight?: boolean;
   lockEndHeight?: boolean;
+  // Structural wall — copied from floor below, cannot be moved/deleted
+  isStructural?: boolean;
 }
 
 export type WallMaterial = 'concrete' | 'brick' | 'drywall' | 'wood';
