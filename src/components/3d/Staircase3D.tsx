@@ -15,6 +15,7 @@ import { CM_TO_METERS } from '@/constants/units';
 interface Staircase3DProps {
   staircase: Staircase;
   yOffset?: number;
+  clipBelowY?: number;
 }
 
 const TREAD_MATERIALS: Record<string, { color: string; roughness: number; metalness: number }> = {
@@ -30,9 +31,32 @@ function darkenColor(hex: string, factor: number = 0.7): string {
   return '#' + c.getHexString();
 }
 
-const CustomStaircase3D: React.FC<{ url: string; posX: number; posZ: number; rotY: number; yOffset: number }> = ({
-  url, posX, posZ, rotY, yOffset,
-}) => {
+const StairMaterial: React.FC<{
+  color: string;
+  roughness: number;
+  metalness: number;
+  transparent?: boolean;
+  opacity?: number;
+  clippingPlanes?: THREE.Plane[];
+}> = ({ color, roughness, metalness, transparent = false, opacity = 1, clippingPlanes = [] }) => (
+  <meshStandardMaterial
+    color={color}
+    roughness={roughness}
+    metalness={metalness}
+    transparent={transparent}
+    opacity={opacity}
+    clippingPlanes={clippingPlanes}
+    clipShadows
+  />
+);
+
+const CustomStaircase3D: React.FC<{
+  url: string;
+  posX: number;
+  posZ: number;
+  rotY: number;
+  yOffset: number;
+}> = ({ url, posX, posZ, rotY, yOffset }) => {
   const { scene } = useGLTF(url);
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
   return (
@@ -43,9 +67,15 @@ const CustomStaircase3D: React.FC<{ url: string; posX: number; posZ: number; rot
 };
 
 /** Cylinder oriented between two 3D points */
-const HandrailBar: React.FC<{ seg: HandrailSegment; color: string; roughness: number; metalness: number }> = ({
-  seg, color, roughness, metalness,
-}) => {
+const HandrailBar: React.FC<{
+  seg: HandrailSegment;
+  color: string;
+  roughness: number;
+  metalness: number;
+  transparent?: boolean;
+  opacity?: number;
+  clippingPlanes?: THREE.Plane[];
+}> = ({ seg, color, roughness, metalness, transparent = false, opacity = 1, clippingPlanes = [] }) => {
   const data = useMemo(() => {
     const [sx, sy, sz] = seg.start;
     const [ex, ey, ez] = seg.end;
@@ -66,7 +96,14 @@ const HandrailBar: React.FC<{ seg: HandrailSegment; color: string; roughness: nu
   return (
     <mesh position={data.pos} rotation={data.rot} castShadow>
       <cylinderGeometry args={[0.02, 0.02, data.len, 8]} />
-      <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} />
+      <StairMaterial
+        color={color}
+        roughness={roughness}
+        metalness={metalness}
+        transparent={transparent}
+        opacity={opacity}
+        clippingPlanes={clippingPlanes}
+      />
     </mesh>
   );
 };
@@ -77,7 +114,8 @@ const ProceduralStaircase3D: React.FC<{
   posZ: number;
   rotY: number;
   yOffset: number;
-}> = ({ staircase, posX, posZ, rotY, yOffset }) => {
+  clippingPlanes?: THREE.Plane[];
+}> = ({ staircase, posX, posZ, rotY, yOffset, clippingPlanes = [] }) => {
   const geo = useMemo(() => generateStaircaseGeometry(staircase), [staircase]);
   const mat = TREAD_MATERIALS[staircase.treadMaterial] || TREAD_MATERIALS.wood;
   const riserColor = darkenColor(mat.color, 0.85);
@@ -91,47 +129,54 @@ const ProceduralStaircase3D: React.FC<{
 
   return (
     <group position={[posX, yOffset, posZ]} rotation={[0, rotY, 0]}>
-      {/* Treads */}
       {geo.treads.map((t, i) => (
         <mesh key={`t${i}`} position={t.position} rotation={[0, t.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={t.size} />
-          <meshStandardMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} />
+          <StairMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} clippingPlanes={clippingPlanes} />
         </mesh>
       ))}
 
-      {/* Risers */}
       {geo.risers.map((r, i) => (
         <mesh key={`r${i}`} position={r.position} rotation={[0, r.rotation, 0]} receiveShadow>
           <boxGeometry args={r.size} />
-          <meshStandardMaterial color={riserColor} roughness={mat.roughness + 0.1} metalness={mat.metalness} />
+          <StairMaterial color={riserColor} roughness={mat.roughness + 0.1} metalness={mat.metalness} clippingPlanes={clippingPlanes} />
         </mesh>
       ))}
 
-      {/* Landings */}
       {geo.landingPlatforms.map((p, i) => (
         <mesh key={`l${i}`} position={p.position} rotation={[0, p.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={p.size} />
-          <meshStandardMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} />
+          <StairMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} clippingPlanes={clippingPlanes} />
         </mesh>
       ))}
 
-      {/* Railing posts */}
       {staircase.railing !== 'none' && geo.railingPosts.map((post, i) => (
         <mesh key={`p${i}`} position={[post.position[0], post.position[1] + post.height / 2, post.position[2]]} castShadow>
           <cylinderGeometry args={[0.015, 0.015, post.height, 8]} />
-          <meshStandardMaterial
-            color={railMat.color} roughness={railMat.roughness} metalness={railMat.metalness}
-            transparent={railMat.transparent} opacity={railMat.opacity}
+          <StairMaterial
+            color={railMat.color}
+            roughness={railMat.roughness}
+            metalness={railMat.metalness}
+            transparent={railMat.transparent}
+            opacity={railMat.opacity}
+            clippingPlanes={clippingPlanes}
           />
         </mesh>
       ))}
 
-      {/* Handrail bars */}
       {staircase.railing !== 'none' && geo.handrails.map((seg, i) => (
-        <HandrailBar key={`h${i}`} seg={seg} color={railMat.color} roughness={railMat.roughness} metalness={railMat.metalness} />
+        <HandrailBar
+          key={`h${i}`}
+          seg={seg}
+          color={railMat.color}
+          roughness={railMat.roughness}
+          metalness={railMat.metalness}
+          transparent={railMat.transparent}
+          opacity={railMat.opacity}
+          clippingPlanes={clippingPlanes}
+        />
       ))}
 
-      {/* Soffit (underside) */}
       {geo.soffits.map((soffit, i) => {
         const dx = soffit.end[0] - soffit.start[0];
         const dy = soffit.end[1] - soffit.start[1];
@@ -148,7 +193,7 @@ const ProceduralStaircase3D: React.FC<{
         return (
           <mesh key={`s${i}`} position={[mx, my, mz]} rotation={[pitch, yaw, 0]} receiveShadow>
             <boxGeometry args={[soffit.width, soffit.thickness, len]} />
-            <meshStandardMaterial color={soffitColor} roughness={0.9} metalness={0} />
+            <StairMaterial color={soffitColor} roughness={0.9} metalness={0} clippingPlanes={clippingPlanes} />
           </mesh>
         );
       })}
@@ -156,16 +201,29 @@ const ProceduralStaircase3D: React.FC<{
   );
 };
 
-export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0 }) => {
+export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0, clipBelowY }) => {
   const posX = staircase.x * CM_TO_METERS;
   const posZ = staircase.y * CM_TO_METERS;
   const rotY = -(staircase.rotation * Math.PI) / 180;
+  const clippingPlanes = useMemo(
+    () => clipBelowY === undefined ? [] : [new THREE.Plane(new THREE.Vector3(0, -1, 0), clipBelowY)],
+    [clipBelowY],
+  );
 
   if (staircase.customGlbUrl) {
     return <CustomStaircase3D url={staircase.customGlbUrl} posX={posX} posZ={posZ} rotY={rotY} yOffset={yOffset} />;
   }
 
-  return <ProceduralStaircase3D staircase={staircase} posX={posX} posZ={posZ} rotY={rotY} yOffset={yOffset} />;
+  return (
+    <ProceduralStaircase3D
+      staircase={staircase}
+      posX={posX}
+      posZ={posZ}
+      rotY={rotY}
+      yOffset={yOffset}
+      clippingPlanes={clippingPlanes}
+    />
+  );
 };
 
 export default Staircase3D;
