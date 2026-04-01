@@ -1,92 +1,35 @@
 
 
-# Improve Staircase 3D Realism & Multi-Floor Visibility
+# Fix: Stairs Visibility from Upper Floor — Analysis & Revisions
 
-## Problems
+## Verdict: Approve with revisions
 
-1. **3D geometry doesn't match 2D footprint** — The geometry generator uses `stairWidth` and `treadDepth × numTreads` independently, ignoring the `width`/`depth` properties from the Staircase interface. So a staircase sized 200×100cm in the 2D canvas renders as a completely different size in 3D.
+### (1) yOffset calculation — **Approve with minor fix**
 
-2. **Staircase not visible from second floor** — Currently only `fromLevel === activeLevel` staircases render. When viewing the second floor, the top of the staircase (which arrives at that floor) is invisible. The staircase should also render when `toLevel === activeLevel`, showing the top portion poking through the floor.
+The prompt is correct. Line 1067 uses `activeFloor?.floorToFloorHeight` which is the *current* floor's height, but the staircase rises from `stair.fromLevel`, so we need that floor's height. The suggested fix is accurate.
 
-3. **Geometry is crude** — Thin floating boxes with needle-thin stringers. Missing: solid closed risers (vertical faces between treads), a solid underside/soffit, proper handrail bars connecting posts, and nosing overhang.
+However, remove the `- 0.02` offset currently on line 1067 — it was a hack to push stairs down slightly. The corrected fromFloor height should be sufficient.
 
-## Plan
+### (2) Stairwell lighting — **Approve with revision**
 
-### 1. Scale geometry to match `width`/`depth` — `src/utils/staircaseGeometry.ts`
+Good idea, but revise:
+- Y position should be `-0.3` not `-0.5` — half a meter below is too deep and may light the wrong area
+- Add `decay={2}` for realistic falloff
+- Use a warm color (`#fff5e6`) instead of default white to match the room's ambient tone
+- Keep intensity at ~2 and distance at ~5 as suggested
 
-The `generateStraight` function currently uses `stairWidth` for tread width and `treadDepth × numTreads` for total run, ignoring the `width`/`depth` properties. Fix by:
+### (3) Stairwell walls — **Revise significantly**
 
-- Computing `totalRun = stair.numTreads * stair.treadDepth * CM_TO_M` as before
-- Computing `actualDepth = stair.depth * CM_TO_M`
-- If they differ, scale Z positions by `actualDepth / totalRun` so treads fit within the declared depth
-- Use `stair.width * CM_TO_M` for tread width (it should equal `stairWidth` but use the bounding `width` as the authority)
-- Apply same logic to L-shaped, U-shaped, spiral
+The concept is sound but needs adjustment:
+- **Height**: Should NOT be `fromFloor.floorToFloorHeight`. The shaft walls should only extend from the floor surface downward to the slab thickness + a small amount (~1m) — just enough to give visual context. Full floor-height walls would block the view of the stairs entirely, defeating the purpose.
+- **Wall count**: Only render 3 walls (skip the side where stairs enter from), or render all 4 but make them short (~1m tall parapet walls around the opening edge). A full shaft would make the stairwell a dark box.
+- **Alternative**: Render a thin border/trim (10cm tall, 2cm thick) around the opening perimeter instead of full walls. This gives the "finished stairwell" look without blocking visibility.
 
-### 2. Add risers (vertical faces) — `src/utils/staircaseGeometry.ts`
+### Revised Plan
 
-Add a new output array to `StaircaseGeometryResult`:
-```ts
-risers: TreadGeometry[]; // vertical boards between treads
-```
-
-In `generateStraight`, for each tread `i > 0`, add a riser:
-```ts
-risers.push({
-  position: [0, y - riserH / 2, z - treadD / 2],
-  size: [treadW, riserH, 0.02], // 2cm thick vertical board
-  rotation: 0,
-});
-```
-This closes the gaps between treads for a solid look.
-
-### 3. Add solid soffit (underside) — `src/utils/staircaseGeometry.ts`
-
-Add to the result:
-```ts
-soffit: { points: [number,number,number][]; width: number; thickness: number; }
-```
-This is a single angled slab under the full staircase run. In `Staircase3D.tsx`, render it as a rotated box matching the stringer angle but wider (full tread width) and thinner (3cm).
-
-### 4. Add handrail bars — `src/utils/staircaseGeometry.ts` + `src/components/3d/Staircase3D.tsx`
-
-Add to the result:
-```ts
-handrails: { start: [number,number,number]; end: [number,number,number]; }[]
-```
-Connect consecutive railing post tops with horizontal cylinder segments. Render in `Staircase3D.tsx` as thin cylinders (radius 0.025m) oriented between posts.
-
-### 5. Render in `Staircase3D.tsx` — `src/components/3d/Staircase3D.tsx`
-
-Add rendering for:
-- **Risers**: Same material as treads, rendered as `<boxGeometry>` meshes
-- **Soffit**: Single angled box under the staircase, slightly darker shade
-- **Handrails**: Cylinders connecting post tops using `lookAt`-style rotation
-- **Tread nosing**: Add 1cm overhang to tread depth for realism (just increase tread `size[2]` by 0.01)
-
-### 6. Show staircase from second floor — `src/components/tabs/DesignTab.tsx`
-
-Change the filter on line 949 from:
-```ts
-.filter(s => s.fromLevel === activeLevel)
-```
-to:
-```ts
-.filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
-```
-
-When `s.toLevel === activeLevel`, compute yOffset as negative (the staircase starts one floor below):
-```ts
-const activeFloor = building.floors.find(f => f.level === activeLevel);
-const yOffset = s.fromLevel === activeLevel ? 0 : -(activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
-```
-
-This makes the top of the staircase visible when viewing the upper floor.
-
-## Files Modified
-
-| File | Change |
+| Item | Change |
 |---|---|
-| `src/utils/staircaseGeometry.ts` | Scale geometry to width/depth, add risers array, soffit data, handrail connections |
-| `src/components/3d/Staircase3D.tsx` | Render risers, soffit, handrails, tread nosing |
-| `src/components/tabs/DesignTab.tsx` | Show staircase on both fromLevel and toLevel floors |
+| `src/components/tabs/DesignTab.tsx` ~line 1064 | Use `fromFloor.floorToFloorHeight` for yOffset; remove `-0.02` hack |
+| `src/components/tabs/DesignTab.tsx` after Staircase3D | Add warm PointLight at stair center, Y=-0.3, intensity 2, distance 5, decay 2 |
+| `src/components/tabs/DesignTab.tsx` after light | Add 10cm-tall trim border (4 thin boxes) around slab opening perimeter using `#e5e5e5` material |
 
