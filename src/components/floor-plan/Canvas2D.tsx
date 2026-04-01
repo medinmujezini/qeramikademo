@@ -1406,6 +1406,18 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       moveColumn(draggedColumn, newX, newY);
     }
 
+    // Promote pending staircase click to drag if moved > 5px
+    if (pendingStaircaseDrag && !draggedStaircase) {
+      const dx = e.clientX - pendingStaircaseDrag.startX;
+      const dy = e.clientY - pendingStaircaseDrag.startY;
+      if (Math.sqrt(dx * dx + dy * dy) > 5) {
+        setDraggedStaircase(pendingStaircaseDrag.id);
+        setStaircaseOffset({ x: pendingStaircaseDrag.offsetX, y: pendingStaircaseDrag.offsetY });
+        setSelectedStaircaseId(pendingStaircaseDrag.id);
+        setPendingStaircaseDrag(null);
+      }
+    }
+
     // Staircase drag
     if (draggedStaircase) {
       const newX = snapToGrid(world.x - staircaseOffset.x);
