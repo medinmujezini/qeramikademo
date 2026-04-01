@@ -2232,7 +2232,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {!unrealActive && viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
+      {viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
         <>
           {/* Crosshair */}
           <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
