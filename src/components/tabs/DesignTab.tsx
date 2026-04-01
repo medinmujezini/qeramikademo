@@ -972,7 +972,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           );
         })
       }
-      }
 
 
       {/* Ghost floors — adjacent floors rendered as transparent wireframes */}
