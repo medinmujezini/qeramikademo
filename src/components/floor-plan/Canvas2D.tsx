@@ -349,6 +349,37 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       }
     }
 
+    // Draw ghost walls from adjacent floors
+    if (showAdjacentFloors) {
+      const ghostLevels: { level: number; color: string }[] = [
+        { level: activeLevel - 1, color: 'rgba(59, 130, 246, 0.20)' },
+        { level: activeLevel + 1, color: 'rgba(249, 115, 22, 0.15)' },
+      ];
+      for (const { level, color } of ghostLevels) {
+        const ghostPlan = getFloorPlanForLevel(level);
+        if (!ghostPlan || ghostPlan.walls.length === 0) continue;
+        ghostPlan.walls.forEach(wall => {
+          const sp = ghostPlan.points.find(p => p.id === wall.startPointId);
+          const ep = ghostPlan.points.find(p => p.id === wall.endPointId);
+          if (!sp || !ep) return;
+          const s = worldToScreen(sp.x, sp.y);
+          const e = worldToScreen(ep.x, ep.y);
+          const dx = e.x - s.x;
+          const dy = e.y - s.y;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          if (len < 1) return;
+          const angle = Math.atan2(dy, dx);
+          const thick = (wall.thickness ?? 15) * scale;
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.rotate(angle);
+          ctx.fillStyle = color;
+          ctx.fillRect(0, -thick / 2, len, thick);
+          ctx.restore();
+        });
+      }
+    }
+
     // Draw walls with dimension labels and tile patterns (supports curved walls)
     floorPlan.walls.forEach(wall => {
       const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);

@@ -1003,10 +1003,28 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                     rotation={[0, -angle, 0]}
                   >
                     <boxGeometry args={[length, wallHeight, thickness]} />
-                    <meshBasicMaterial color="#888" transparent opacity={ghostOpacity} wireframe />
+                    <meshStandardMaterial color="#999" transparent opacity={0.25} depthWrite={false} />
                   </mesh>
                 );
               })}
+              {/* Floor slab between levels */}
+              {floor.slab && (() => {
+                const pts = ghostPlan.points;
+                if (pts.length < 2) return null;
+                const xs = pts.map(p => p.x);
+                const ys = pts.map(p => p.y);
+                const slabW = (Math.max(...xs) - Math.min(...xs)) * scale;
+                const slabD = (Math.max(...ys) - Math.min(...ys)) * scale;
+                const slabH = (floor.slab!.thickness || 20) * scale;
+                const slabCx = ((Math.min(...xs) + Math.max(...xs)) / 2) * scale;
+                const slabCz = ((Math.min(...ys) + Math.max(...ys)) / 2) * scale;
+                return (
+                  <mesh position={[slabCx, yOffset - slabH / 2, slabCz]}>
+                    <boxGeometry args={[slabW, slabH, slabD]} />
+                    <meshStandardMaterial color="#aaa" transparent opacity={0.3} depthWrite={false} />
+                  </mesh>
+                );
+              })()}
             </group>
           );
         });
