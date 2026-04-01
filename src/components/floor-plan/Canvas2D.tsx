@@ -89,7 +89,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [draggedPoint, setDraggedPoint] = useState<string | null>(null);
-  const [hoveredStaircaseId, setHoveredStaircaseId] = useState<string | null>(null);
   const [draggedFixture, setDraggedFixture] = useState<string | null>(null);
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [fixtureOffset, setFixtureOffset] = useState({ x: 0, y: 0 });
