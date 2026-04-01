@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Cornell from "./pages/Cornell";
 import Raytracing from "./pages/Raytracing";
 import ProductView from "./pages/ProductView";
+import WalkthroughPage from "./pages/WalkthroughPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
@@ -55,6 +56,7 @@ const App = () => (
                     <Route path="/cornell" element={<Cornell />} />
                     <Route path="/raytracing" element={<Raytracing />} />
                     <Route path="/product-view" element={<ProductView />} />
+                    <Route path="/walkthrough" element={<WalkthroughPage />} />
                     
                     {/* Admin Routes */}
                     <Route path="/admin" element={
