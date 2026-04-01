@@ -180,7 +180,7 @@ export const FloorPlanTab: React.FC = () => {
           setShowGrid={setShowGrid}
           isDrawingWall={isDrawingWall}
           onCancelDrawing={handleCancelDrawing}
-          hasSelection={!!selectedElement}
+          hasSelection={!!selectedElement || !!selectedStaircaseId}
           onDeleteSelected={handleDeleteSelected}
           onResetCanvas={handleResetCanvas}
           wallChainLength={wallChainLength}
