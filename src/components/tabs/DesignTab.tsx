@@ -946,6 +946,33 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
+      {/* Active floor slab with stairwell openings */}
+      {(() => {
+        const activeFloorObj = building.floors.find(f => f.level === activeLevel);
+        if (!activeFloorObj?.slab || activeFloorObj.slab.openings.length === 0) return null;
+        const pts = floorPlan.points;
+        if (pts.length < 2) return null;
+        const xs = pts.map(p => p.x);
+        const ys = pts.map(p => p.y);
+        const roomW = Math.max(...xs) - Math.min(...xs);
+        const roomH = Math.max(...ys) - Math.min(...ys);
+        const cxRoom = (Math.min(...xs) + Math.max(...xs)) / 2;
+        const cyRoom = (Math.min(...ys) + Math.max(...ys)) / 2;
+        const floorHeight = (activeFloorObj.floorToFloorHeight ?? 300) * CM_TO_METERS;
+        // Slab sits at the top of this floor (ceiling level) — only for floors above ground
+        if (activeLevel <= 0) return null;
+        return (
+          <FloorSlab3D
+            slab={activeFloorObj.slab}
+            roomWidth={roomW}
+            roomHeight={roomH}
+            yPosition={0}
+            centerX={cxRoom}
+            centerY={cyRoom}
+          />
+        );
+      })()}
+
       {/* Staircases visible from the active floor (placed here OR arriving here) */}
       {staircases
         .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
