@@ -307,11 +307,34 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
   }, [floorPlanState]);
 
   const updateFloorHeight = useCallback((level: number, height: number) => {
-    setBuilding(prev => ({
-      ...prev,
-      floors: prev.floors.map(f => f.level === level ? { ...f, floorToFloorHeight: height } : f),
-    }));
-  }, []);
+    // Also save current floor plan if we're updating the active level
+    const currentPlan = floorPlanState.floorPlan;
+    const currentLevel = loadedLevelRef.current;
+
+    setBuilding(prev => {
+      const updated = {
+        ...prev,
+        floors: prev.floors.map(f => {
+          if (f.level !== level) return f;
+          // Use live plan for the currently loaded level
+          const plan = f.level === currentLevel ? currentPlan : f.floorPlan;
+          const updatedPlan = {
+            ...plan,
+            walls: plan.walls.map(w => ({ ...w, height })),
+          };
+          return { ...f, floorToFloorHeight: height, floorPlan: updatedPlan };
+        }),
+      };
+      // If updating the active level, reload the plan so useFloorPlan picks up new wall heights
+      if (level === currentLevel) {
+        setTimeout(() => {
+          const floor = updated.floors.find(f => f.level === level);
+          if (floor) floorPlanState.loadFloorPlan(floor.floorPlan);
+        }, 0);
+      }
+      return updated;
+    });
+  }, [floorPlanState]);
 
   const addStaircase = useCallback((type: StaircaseType, x: number, y: number) => {
     const currentPlan = floorPlanState.floorPlan;
