@@ -48,7 +48,10 @@ export const FloorPlanTab: React.FC = () => {
     addPoint,
     addWall,
     addDoor,
-    addWindow
+    addWindow,
+    selectedStaircaseId,
+    setSelectedStaircaseId,
+    removeStaircase,
   } = useFloorPlanContext();
 
   const handleCancelDrawing = useCallback(() => {
@@ -57,6 +60,11 @@ export const FloorPlanTab: React.FC = () => {
   }, []);
 
   const handleDeleteSelected = useCallback(() => {
+    if (selectedStaircaseId) {
+      removeStaircase(selectedStaircaseId);
+      setSelectedStaircaseId(null);
+      return;
+    }
     if (!selectedElement) return;
     switch (selectedElement.type) {
       case 'wall': deleteWall(selectedElement.id); break;
@@ -66,7 +74,7 @@ export const FloorPlanTab: React.FC = () => {
       case 'fixture': deleteFixture(selectedElement.id); break;
     }
     setSelectedElement(null);
-  }, [selectedElement, deleteWall, deletePoint, deleteDoor, deleteWindow, deleteFixture, setSelectedElement]);
+  }, [selectedElement, selectedStaircaseId, deleteWall, deletePoint, deleteDoor, deleteWindow, deleteFixture, setSelectedElement, removeStaircase, setSelectedStaircaseId]);
 
   const handleResetCanvas = useCallback(() => {
     resetFloorPlan();
@@ -172,7 +180,7 @@ export const FloorPlanTab: React.FC = () => {
           setShowGrid={setShowGrid}
           isDrawingWall={isDrawingWall}
           onCancelDrawing={handleCancelDrawing}
-          hasSelection={!!selectedElement}
+          hasSelection={!!selectedElement || !!selectedStaircaseId}
           onDeleteSelected={handleDeleteSelected}
           onResetCanvas={handleResetCanvas}
           wallChainLength={wallChainLength}
