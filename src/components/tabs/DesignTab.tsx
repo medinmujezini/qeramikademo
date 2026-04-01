@@ -29,6 +29,7 @@ import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
+import { FloorSlab3D } from '@/components/3d/FloorSlab3D';
 
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
@@ -945,6 +946,33 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
+      {/* Active floor slab with stairwell openings */}
+      {(() => {
+        const activeFloorObj = building.floors.find(f => f.level === activeLevel);
+        if (!activeFloorObj?.slab || activeFloorObj.slab.openings.length === 0) return null;
+        const pts = floorPlan.points;
+        if (pts.length < 2) return null;
+        const xs = pts.map(p => p.x);
+        const ys = pts.map(p => p.y);
+        const roomW = Math.max(...xs) - Math.min(...xs);
+        const roomH = Math.max(...ys) - Math.min(...ys);
+        const cxRoom = (Math.min(...xs) + Math.max(...xs)) / 2;
+        const cyRoom = (Math.min(...ys) + Math.max(...ys)) / 2;
+        const floorHeight = (activeFloorObj.floorToFloorHeight ?? 300) * CM_TO_METERS;
+        // Slab sits at the top of this floor (ceiling level) — only for floors above ground
+        if (activeLevel <= 0) return null;
+        return (
+          <FloorSlab3D
+            slab={activeFloorObj.slab}
+            roomWidth={roomW}
+            roomHeight={roomH}
+            yPosition={0}
+            centerX={cxRoom}
+            centerY={cyRoom}
+          />
+        );
+      })()}
+
       {/* Staircases visible from the active floor (placed here OR arriving here) */}
       {staircases
         .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
@@ -1013,22 +1041,28 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                   </mesh>
                 );
               })}
-              {/* Floor slab between levels */}
+              {/* Floor slab between levels — with stairwell openings */}
               {floor.slab && (() => {
                 const pts = ghostPlan.points;
                 if (pts.length < 2) return null;
                 const xs = pts.map(p => p.x);
                 const ys = pts.map(p => p.y);
-                const slabW = (Math.max(...xs) - Math.min(...xs)) * scale;
-                const slabD = (Math.max(...ys) - Math.min(...ys)) * scale;
+                const roomW = Math.max(...xs) - Math.min(...xs);
+                const roomH = Math.max(...ys) - Math.min(...ys);
+                const cxRoom = (Math.min(...xs) + Math.max(...xs)) / 2;
+                const cyRoom = (Math.min(...ys) + Math.max(...ys)) / 2;
                 const slabH = (floor.slab!.thickness || 20) * scale;
-                const slabCx = ((Math.min(...xs) + Math.max(...xs)) / 2) * scale;
-                const slabCz = ((Math.min(...ys) + Math.max(...ys)) / 2) * scale;
                 return (
-                  <mesh position={[slabCx, yOffset - slabH / 2, slabCz]}>
-                    <boxGeometry args={[slabW, slabH, slabD]} />
-                    <meshStandardMaterial color="#aaa" transparent opacity={0.3} depthWrite={false} />
-                  </mesh>
+                  <group position={[0, yOffset - slabH, 0]}>
+                    <FloorSlab3D
+                      slab={floor.slab!}
+                      roomWidth={roomW}
+                      roomHeight={roomH}
+                      yPosition={0}
+                      centerX={cxRoom}
+                      centerY={cyRoom}
+                    />
+                  </group>
                 );
               })()}
             </group>
