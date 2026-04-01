@@ -2260,7 +2260,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* Mobile joystick zones */}
-      {!unrealActive && viewMode === 'walkthrough' && isTouchDevice && (
+      {viewMode === 'walkthrough' && isTouchDevice && (
         <>
           <div id="left-joystick-zone" className="absolute bottom-0 left-0 w-44 h-44 z-40 pointer-events-auto" />
           <div id="right-joystick-zone" className="absolute bottom-0 right-0 w-44 h-44 z-40 pointer-events-auto" />
