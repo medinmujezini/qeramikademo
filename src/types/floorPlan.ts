@@ -458,6 +458,8 @@ export interface FloorPlan {
   savedCameraViews?: SavedCameraView[];
   // Ceiling emissive lighting config
   ceilingEmitterConfig?: CeilingEmitterConfig;
+  // Curtains
+  curtains?: Curtain[];
 }
 
 export type CeilingEmitterDensity = 'sparse' | 'normal' | 'dense';
