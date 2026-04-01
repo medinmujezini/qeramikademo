@@ -769,7 +769,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             return <planeGeometry args={[floorWidth, floorDepth]} />;
           }
 
-          // Build a shape with stairwell holes (in local coords centered at 0,0)
           const shape = new THREE.Shape();
           const hw = floorWidth / 2;
           const hd = floorDepth / 2;
@@ -779,11 +778,61 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           shape.lineTo(-hw, hd);
           shape.closePath();
 
-          // Cut holes for each opening, matching the actual 3D stair rotation when linked
           for (const op of openings) {
             const linkedStair = op.staircaseId
               ? staircases.find(stair => stair.id === op.staircaseId)
               : null;
+
+            if (linkedStair && (linkedStair.type === 'l-shaped' || linkedStair.type === 'u-shaped')) {
+              const localW = linkedStair.width * scale;
+              const localD = linkedStair.depth * scale;
+              const centerX = linkedStair.x * scale - floorCenterX;
+              const centerY = linkedStair.y * scale - floorCenterZ;
+              const rotation = -(linkedStair.rotation * Math.PI) / 180;
+              const turnRatio = linkedStair.type === 'u-shaped' ? 0.5 : 0.55;
+              const sideRun = linkedStair.type === 'u-shaped' ? localW * 0.47 : localW * 0.5;
+              const landingDepth = linkedStair.type === 'u-shaped' ? localW * 0.47 : localW * 0.5;
+              const turnDepth = localD * turnRatio;
+              const path = new THREE.Path();
+
+              const points = linkedStair.type === 'l-shaped'
+                ? [
+                    { x: 0, y: 0 },
+                    { x: sideRun, y: 0 },
+                    { x: sideRun, y: turnDepth },
+                    { x: localW, y: turnDepth },
+                    { x: localW, y: localD },
+                    { x: 0, y: localD },
+                  ]
+                : [
+                    { x: 0, y: 0 },
+                    { x: sideRun, y: 0 },
+                    { x: sideRun, y: turnDepth },
+                    { x: localW, y: turnDepth },
+                    { x: localW, y: turnDepth + landingDepth },
+                    { x: sideRun, y: turnDepth + landingDepth },
+                    { x: sideRun, y: localD },
+                    { x: 0, y: localD },
+                  ];
+
+              const rotated = points.map(({ x, y }) => {
+                const px = x - localW / 2;
+                const py = y - localD / 2;
+                return {
+                  x: centerX + px * Math.cos(rotation) - py * Math.sin(rotation),
+                  y: centerY + px * Math.sin(rotation) + py * Math.cos(rotation),
+                };
+              });
+
+              path.moveTo(rotated[0].x, rotated[0].y);
+              for (let i = 1; i < rotated.length; i++) {
+                path.lineTo(rotated[i].x, rotated[i].y);
+              }
+              path.closePath();
+              shape.holes.push(path);
+              continue;
+            }
+
             const rotation = linkedStair ? -(linkedStair.rotation * Math.PI) / 180 : 0;
             const cos = Math.cos(rotation);
             const sin = Math.sin(rotation);
@@ -1002,15 +1051,17 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
         .map(stair => {
           const activeFloor = building.floors.find(f => f.level === activeLevel);
-          const stairYOffset = stair.fromLevel === activeLevel
-            ? 0
-            : -((activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS) - 0.02;
+          const isArrivingFromBelow = stair.toLevel === activeLevel;
+          const stairYOffset = isArrivingFromBelow
+            ? -((activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS) - 0.02
+            : 0;
+          const clipBelowY = isArrivingFromBelow ? 0 : undefined;
           return (
           <group
             key={stair.id}
             onClick={(e) => { e.stopPropagation(); setSelectedStaircaseId(stair.id); }}
           >
-            <Staircase3D staircase={stair} yOffset={stairYOffset} />
+            <Staircase3D staircase={stair} yOffset={stairYOffset} clipBelowY={clipBelowY} />
             {/* Selection outline */}
             {selectedStaircaseId === stair.id && (
               <mesh
