@@ -191,7 +191,8 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
       // Copy walls from the floor below as structural walls
       if (options?.copyOuterWalls) {
         const sourceFloor = prev.floors.find(f => f.level === currentLevel);
-        const sourcePlan = sourceFloor?.floorPlan || currentPlan;
+        // Use the live floor plan for the active level, not the stale one in building state
+        const sourcePlan = (sourceFloor && sourceFloor.level === currentLevel) ? currentPlan : (sourceFloor?.floorPlan || currentPlan);
         if (sourcePlan.walls.length > 0) {
           const pointIdMap = new Map<string, string>();
           const clonedPoints = sourcePlan.points
