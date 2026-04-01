@@ -55,6 +55,7 @@ interface FloorPlanToolbarProps {
   onToggleDimensions?: () => void;
   onNewRoom?: () => void;
   onFromImage?: () => void;
+  onNewFloor?: () => void;
 }
 
 export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
