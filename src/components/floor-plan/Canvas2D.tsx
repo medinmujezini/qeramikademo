@@ -1737,9 +1737,9 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const getCursor = () => {
     if (activeTool === 'pan') return isPanning ? 'grabbing' : 'grab';
     if (isPanning) return 'grabbing';
-    if (draggedPoint || draggedFixture) return 'move';
+    if (draggedPoint || draggedFixture || draggedStaircase) return 'move';
     if (hoverWallMidpoint) return 'pointer';
-    if (activeTool === 'wall' || activeTool === 'door' || activeTool === 'window') return 'crosshair';
+    if (activeTool === 'wall' || activeTool === 'door' || activeTool === 'window' || activeTool === 'staircase') return 'crosshair';
     return 'default';
   };
 
