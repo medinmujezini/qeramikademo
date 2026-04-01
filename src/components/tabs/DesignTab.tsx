@@ -969,7 +969,9 @@ const DesignScene: React.FC<DesignSceneProps> = ({
               </mesh>
             )}
           </group>
-        ))
+          );
+        })
+      }
       }
 
 
