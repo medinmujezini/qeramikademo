@@ -2,19 +2,20 @@
  * StaircasePropertiesPanel — Step 4: Edit staircase properties when selected
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Upload, X } from 'lucide-react';
 import { calculateStaircaseGeometry } from '@/types/multiFloor';
 import type { StaircaseType, RailingStyle } from '@/types/multiFloor';
 
 export const StaircasePropertiesPanel: React.FC = () => {
   const { selectedStaircaseId, setSelectedStaircaseId, staircases, updateStaircase, removeStaircase, building } = useFloorPlanContext();
+  const glbInputRef = useRef<HTMLInputElement>(null);
 
   const stair = staircases.find(s => s.id === selectedStaircaseId);
   if (!stair) return null;
@@ -35,6 +36,20 @@ export const StaircasePropertiesPanel: React.FC = () => {
   const handleTreadDepthChange = (treadDepth: number) => {
     const geo = calculateStaircaseGeometry(floorHeight, stair.type, stair.stairWidth, treadDepth);
     updateStaircase(stair.id, { treadDepth, ...geo });
+  };
+
+  const handleGlbUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    updateStaircase(stair.id, { customGlbUrl: url });
+  };
+
+  const handleRemoveGlb = () => {
+    if (stair.customGlbUrl) {
+      URL.revokeObjectURL(stair.customGlbUrl);
+    }
+    updateStaircase(stair.id, { customGlbUrl: undefined });
   };
 
   return (
@@ -151,6 +166,38 @@ export const StaircasePropertiesPanel: React.FC = () => {
         <p>Treads: {stair.numTreads} × Riser: {stair.riserHeight.toFixed(1)} cm</p>
         <p>Footprint: {stair.width} × {stair.depth} cm</p>
         <p>Connects: Level {stair.fromLevel} → Level {stair.toLevel}</p>
+      </div>
+
+      {/* Custom GLB Upload */}
+      <div className="space-y-1 border-t border-primary/10 pt-2">
+        <Label className="text-[10px] uppercase tracking-wider">Custom 3D Model</Label>
+        {stair.customGlbUrl ? (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground truncate flex-1">Custom model loaded</span>
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={handleRemoveGlb}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        ) : (
+          <>
+            <input
+              ref={glbInputRef}
+              type="file"
+              accept=".glb,.gltf"
+              className="hidden"
+              onChange={handleGlbUpload}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-7 text-xs gap-1"
+              onClick={() => glbInputRef.current?.click()}
+            >
+              <Upload className="h-3 w-3" />
+              Upload Custom Model (.glb)
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

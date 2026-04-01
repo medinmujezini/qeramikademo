@@ -1,9 +1,11 @@
 /**
  * Staircase3D — Renders 3D staircase geometry (treads, railings, landings).
  * Supports straight, L-shaped, U-shaped, and spiral types.
+ * When customGlbUrl is set, loads and renders a custom GLB model instead.
  */
 
 import React, { useMemo } from 'react';
+import { useGLTF } from '@react-three/drei';
 import type { Staircase } from '@/types/multiFloor';
 import { generateStaircaseGeometry } from '@/utils/staircaseGeometry';
 import { CM_TO_METERS } from '@/constants/units';
@@ -21,13 +23,30 @@ const TREAD_MATERIALS: Record<string, { color: string; roughness: number; metaln
   marble: { color: '#e8e0d4', roughness: 0.2, metalness: 0.05 },
 };
 
-export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0 }) => {
+/** Renders a custom GLB model for the staircase */
+const CustomStaircase3D: React.FC<{ url: string; posX: number; posZ: number; rotY: number; yOffset: number }> = ({
+  url, posX, posZ, rotY, yOffset,
+}) => {
+  const { scene } = useGLTF(url);
+  const clonedScene = useMemo(() => scene.clone(true), [scene]);
+
+  return (
+    <group position={[posX, yOffset, posZ]} rotation={[0, rotY, 0]}>
+      <primitive object={clonedScene} />
+    </group>
+  );
+};
+
+/** Renders procedural geometry for the staircase */
+const ProceduralStaircase3D: React.FC<{
+  staircase: Staircase;
+  posX: number;
+  posZ: number;
+  rotY: number;
+  yOffset: number;
+}> = ({ staircase, posX, posZ, rotY, yOffset }) => {
   const geometry = useMemo(() => generateStaircaseGeometry(staircase), [staircase]);
   const mat = TREAD_MATERIALS[staircase.treadMaterial] || TREAD_MATERIALS.wood;
-
-  const posX = staircase.x * CM_TO_METERS;
-  const posZ = staircase.y * CM_TO_METERS;
-  const rotY = -(staircase.rotation * Math.PI) / 180;
 
   return (
     <group position={[posX, yOffset, posZ]} rotation={[0, rotY, 0]}>
@@ -111,6 +130,34 @@ export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0
         );
       })}
     </group>
+  );
+};
+
+export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0 }) => {
+  const posX = staircase.x * CM_TO_METERS;
+  const posZ = staircase.y * CM_TO_METERS;
+  const rotY = -(staircase.rotation * Math.PI) / 180;
+
+  if (staircase.customGlbUrl) {
+    return (
+      <CustomStaircase3D
+        url={staircase.customGlbUrl}
+        posX={posX}
+        posZ={posZ}
+        rotY={rotY}
+        yOffset={yOffset}
+      />
+    );
+  }
+
+  return (
+    <ProceduralStaircase3D
+      staircase={staircase}
+      posX={posX}
+      posZ={posZ}
+      rotY={rotY}
+      yOffset={yOffset}
+    />
   );
 };
 

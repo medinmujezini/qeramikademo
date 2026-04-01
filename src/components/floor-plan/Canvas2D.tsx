@@ -14,7 +14,7 @@ import {
   ContextMenuSeparator,
 } from '@/components/ui/context-menu';
 
-type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
+type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column' | 'staircase';
 
 interface Canvas2DProps {
   activeTool: Tool;
@@ -66,7 +66,15 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     deleteColumn,
     selectedElement, 
     setSelectedElement,
-    layerVisibility
+    layerVisibility,
+    // Staircase support
+    staircases,
+    activeLevel,
+    building,
+    selectedStaircaseId,
+    setSelectedStaircaseId,
+    updateStaircase,
+    addStaircase,
   } = useFloorPlanContext();
 
   // Route editing removed - now handled in MEPTab
@@ -92,6 +100,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const [isShiftHeld, setIsShiftHeld] = useState(false);
   const [snapIndicator, setSnapIndicator] = useState<{ x: number; y: number; isCloseLoop: boolean } | null>(null);
   const [columnPreview, setColumnPreview] = useState<{ x: number; y: number } | null>(null);
+  const [draggedStaircase, setDraggedStaircase] = useState<string | null>(null);
+  const [staircaseOffset, setStaircaseOffset] = useState({ x: 0, y: 0 });
 
   const connectionStatus = useConnectionStatus(floorPlan);
 
@@ -242,6 +252,26 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     }
     return null;
   }, [floorPlan.columns]);
+
+  // Find staircase at world position (only active level)
+  const findStaircaseAt = useCallback((worldX: number, worldY: number) => {
+    for (const stair of staircases) {
+      if (stair.fromLevel !== activeLevel) continue;
+      // Simple axis-aligned hit test (rotation not applied for simplicity)
+      const rad = -(stair.rotation * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+      const dx = worldX - stair.x;
+      const dy = worldY - stair.y;
+      // Transform to staircase local space (origin at stair.x, stair.y)
+      const localX = dx * cos + dy * sin;
+      const localY = -dx * sin + dy * cos;
+      if (localX >= 0 && localX <= stair.width && localY >= 0 && localY <= stair.depth) {
+        return stair;
+      }
+    }
+    return null;
+  }, [staircases, activeLevel]);
 
   // Find insertion point on wall - allows clicking ANYWHERE on wall to insert junction
   const findWallInsertionPoint = useCallback((worldX: number, worldY: number, threshold: number = 20): { wallId: string; x: number; y: number; position: number } | null => {
@@ -895,7 +925,71 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       ctx.restore();
     });
 
-    // Draw column placement preview (rectangle by default)
+    // Draw staircases on active floor
+    staircases.filter(s => s.fromLevel === activeLevel).forEach(stair => {
+      const isSelected = selectedStaircaseId === stair.id;
+      const isDragging = draggedStaircase === stair.id;
+      
+      ctx.save();
+      const origin = worldToScreen(stair.x, stair.y);
+      ctx.translate(origin.x, origin.y);
+      const rad = (stair.rotation * Math.PI) / 180;
+      ctx.rotate(rad);
+      
+      const w = stair.width * scale;
+      const d = stair.depth * scale;
+      
+      // Fill
+      ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' : 'hsla(38, 60%, 68%, 0.2)';
+      ctx.fillRect(0, 0, w, d);
+      
+      // Tread lines
+      const numTreads = stair.numTreads || 12;
+      const treadSpacing = d / numTreads;
+      ctx.strokeStyle = 'hsla(38, 60%, 68%, 0.4)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < numTreads; i++) {
+        const ty = i * treadSpacing;
+        ctx.beginPath();
+        ctx.moveTo(0, ty);
+        ctx.lineTo(w, ty);
+        ctx.stroke();
+      }
+      
+      // Direction arrow (pointing up/forward)
+      ctx.strokeStyle = 'hsla(38, 60%, 68%, 0.8)';
+      ctx.lineWidth = 2;
+      const arrowX = w / 2;
+      const arrowY1 = d * 0.75;
+      const arrowY2 = d * 0.25;
+      ctx.beginPath();
+      ctx.moveTo(arrowX, arrowY1);
+      ctx.lineTo(arrowX, arrowY2);
+      ctx.stroke();
+      // Arrowhead
+      ctx.beginPath();
+      ctx.moveTo(arrowX - 6, arrowY2 + 8);
+      ctx.lineTo(arrowX, arrowY2);
+      ctx.lineTo(arrowX + 6, arrowY2 + 8);
+      ctx.stroke();
+      
+      // Border
+      ctx.strokeStyle = isSelected ? 'hsla(38, 80%, 68%, 1)' : 'hsla(38, 60%, 68%, 0.7)';
+      ctx.lineWidth = isSelected ? 3 : 1.5;
+      ctx.strokeRect(0, 0, w, d);
+      
+      // Selection glow
+      if (isSelected) {
+        ctx.shadowColor = 'hsla(38, 80%, 68%, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.strokeRect(0, 0, w, d);
+        ctx.shadowBlur = 0;
+      }
+      
+      ctx.restore();
+    });
+
+
     if (columnPreview && activeTool === 'column') {
       const previewScreen = worldToScreen(columnPreview.x, columnPreview.y);
       ctx.globalAlpha = 0.5;
@@ -1054,7 +1148,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   }, [
     floorPlan, offset, scale, showGrid, gridSize, showTiles, showRoutes, editRoutes,
     selectedElement, draggedPoint, draggedFixture, draggedColumn, wallStartPoint, tempEndPoint, hoverWallMidpoint, activeTool, hasCollision, doorWindowPreview, connectionStatus,
-    snapToGrid, worldToScreen, screenToWorld, getConnectedWallCount, layerVisibility, hoverRoutePoint, hoverRouteSegment, snapIndicator, columnPreview
+    snapToGrid, worldToScreen, screenToWorld, getConnectedWallCount, layerVisibility, hoverRoutePoint, hoverRouteSegment, snapIndicator, columnPreview,
+    staircases, activeLevel, selectedStaircaseId, draggedStaircase,
   ]);
 
   // Handle resize
@@ -1097,10 +1192,21 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'select') {
       // Route editing removed - now handled in MEP tab
 
+      // Check staircase first (before other elements)
+      const stairHit = findStaircaseAt(world.x, world.y);
+      if (stairHit) {
+        setDraggedStaircase(stairHit.id);
+        setStaircaseOffset({ x: world.x - stairHit.x, y: world.y - stairHit.y });
+        setSelectedStaircaseId(stairHit.id);
+        setSelectedElement(null);
+        return;
+      }
+
       const point = findPointAt(world.x, world.y);
       if (point) {
         setDraggedPoint(point.id);
         setSelectedElement({ type: 'point', id: point.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
@@ -1109,6 +1215,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         setDraggedColumn(column.id);
         setColumnOffset({ x: world.x - column.x, y: world.y - column.y });
         setSelectedElement({ type: 'column', id: column.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
@@ -1117,33 +1224,49 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         setDraggedFixture(fixture.id);
         setFixtureOffset({ x: world.x - fixture.cx, y: world.y - fixture.cy });
         setSelectedElement({ type: 'fixture', id: fixture.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       const door = findDoorAt(world.x, world.y);
       if (door) {
         setSelectedElement({ type: 'door', id: door.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       const window = findWindowAt(world.x, world.y);
       if (window) {
         setSelectedElement({ type: 'window', id: window.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       const wall = findWallAt(world.x, world.y);
       if (wall) {
         setSelectedElement({ type: 'wall', id: wall.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       setSelectedElement(null);
+      setSelectedStaircaseId(null);
     }
 
     if (activeTool === 'column') {
       // Place a new column at clicked position
       addColumn(snappedWorld.x, snappedWorld.y);
+    }
+
+    if (activeTool === 'staircase') {
+      if (building.floors.length < 2) {
+        toast('Add a floor above first');
+      } else {
+        addStaircase('straight', snappedWorld.x, snappedWorld.y);
+        // Find the newly added staircase (last one)
+        // We can't access updated state here directly, so just switch tool
+        // The staircase will be auto-selected after re-render
+      }
     }
 
     if (activeTool === 'wall') {
@@ -1277,6 +1400,13 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       moveColumn(draggedColumn, newX, newY);
     }
 
+    // Staircase drag
+    if (draggedStaircase) {
+      const newX = snapToGrid(world.x - staircaseOffset.x);
+      const newY = snapToGrid(world.y - staircaseOffset.y);
+      updateStaircase(draggedStaircase, { x: newX, y: newY });
+    }
+
     // Column preview
     if (activeTool === 'column') {
       setColumnPreview(snappedWorld);
@@ -1347,7 +1477,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     } else {
       setDoorWindowPreview(null);
     }
-  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, fixtureOffset, columnOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
+  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -1360,7 +1490,10 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (draggedColumn) {
       setDraggedColumn(null);
     }
-  }, [draggedFixture, draggedColumn]);
+    if (draggedStaircase) {
+      setDraggedStaircase(null);
+    }
+  }, [draggedFixture, draggedColumn, draggedStaircase]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -1604,9 +1737,9 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const getCursor = () => {
     if (activeTool === 'pan') return isPanning ? 'grabbing' : 'grab';
     if (isPanning) return 'grabbing';
-    if (draggedPoint || draggedFixture) return 'move';
+    if (draggedPoint || draggedFixture || draggedStaircase) return 'move';
     if (hoverWallMidpoint) return 'pointer';
-    if (activeTool === 'wall' || activeTool === 'door' || activeTool === 'window') return 'crosshair';
+    if (activeTool === 'wall' || activeTool === 'door' || activeTool === 'window' || activeTool === 'staircase') return 'crosshair';
     return 'default';
   };
 

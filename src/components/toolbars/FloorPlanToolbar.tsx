@@ -19,6 +19,7 @@ import {
   Ruler,
   LayoutTemplate,
   ImagePlus,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import {
@@ -33,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
+type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column' | 'staircase';
 
 interface FloorPlanToolbarProps {
   activeTool: Tool;
@@ -114,6 +115,16 @@ export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
         title="Add Column (C)"
       >
         <Columns className="h-3.5 w-3.5" />
+      </Button>
+
+      <Button
+        variant={activeTool === 'staircase' ? 'default' : 'ghost'}
+        size="sm"
+        className="h-7 w-7 p-0"
+        onClick={() => setActiveTool('staircase')}
+        title="Add Staircase"
+      >
+        <ArrowUpDown className="h-3.5 w-3.5" />
       </Button>
 
       <div className="w-px h-4 bg-primary/15" />
