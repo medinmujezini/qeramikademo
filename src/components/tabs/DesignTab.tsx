@@ -2129,7 +2129,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* LEFT PANEL - Library */}
-      {viewMode === 'design' && !unrealActive && (
+      {viewMode === 'design' && (
         <div 
           className="absolute top-4 left-6 z-20 w-72 max-h-[calc(100%-48px)]"
         >
