@@ -363,25 +363,57 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
       const targetFloor = updated.floors.find(f => f.level === nextLevel);
       if (!targetFloor) return prev;
 
+      const defaultStairWidth = 100;
+      const defaultTreadDepth = 28;
       const geo = calculateStaircaseGeometry(
         currentFloor.floorToFloorHeight,
         type,
+        defaultStairWidth,
+        defaultTreadDepth,
       );
+
+      let fittedX = x;
+      let fittedY = y;
+      let fittedWidth = geo.width;
+      let fittedDepth = geo.depth;
+      let fittedStairWidth = defaultStairWidth;
+      let fittedTreadDepth = defaultTreadDepth;
+
+      const planPoints = currentFloor.floorPlan.points;
+      if (planPoints.length > 0) {
+        const margin = 20;
+        const xs = planPoints.map(p => p.x);
+        const ys = planPoints.map(p => p.y);
+        const minX = Math.min(...xs) + margin;
+        const maxX = Math.max(...xs) - margin;
+        const minY = Math.min(...ys) + margin;
+        const maxY = Math.max(...ys) - margin;
+        const availableWidth = Math.max(maxX - minX, 60);
+        const availableDepth = Math.max(maxY - minY, 60);
+        const scaleFactor = Math.min(1, availableWidth / geo.width, availableDepth / geo.depth);
+
+        fittedWidth = geo.width * scaleFactor;
+        fittedDepth = geo.depth * scaleFactor;
+        fittedStairWidth = defaultStairWidth * scaleFactor;
+        fittedTreadDepth = defaultTreadDepth * scaleFactor;
+        fittedX = Math.min(Math.max(x, minX), Math.max(minX, maxX - fittedWidth));
+        fittedY = Math.min(Math.max(y, minY), Math.max(minY, maxY - fittedDepth));
+      }
 
       const staircase: Staircase = {
         id: uuidv4(),
         type,
         fromLevel: updated.activeLevel,
         toLevel: nextLevel,
-        x,
-        y,
-        width: geo.width,
-        depth: geo.depth,
+        x: fittedX,
+        y: fittedY,
+        width: fittedWidth,
+        depth: fittedDepth,
         rotation: 0,
-        treadDepth: 28,
+        treadDepth: fittedTreadDepth,
         riserHeight: geo.riserHeight,
         numTreads: geo.numTreads,
-        stairWidth: 100,
+        stairWidth: fittedStairWidth,
         railing: 'simple',
         landingPosition: 0.5,
         treadMaterial: 'wood',
