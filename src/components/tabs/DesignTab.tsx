@@ -1425,30 +1425,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     }
   }, []);
 
-  // Listen for Unreal exit walkthrough callback
-  useEffect(() => {
-    if (!isInsideUnreal()) return;
-    return onExitWalkthrough(() => {
-      setUnrealActive(false);
-      setShowCeiling(ceilingBeforeWalkRef.current);
-      setShowSpawnMarker(true);
-    });
-  }, []);
-
-  // Toggle transparent mode for WebUI plugin when Unreal walkthrough is active
-  useEffect(() => {
-    if (unrealActive) {
-      document.documentElement.classList.add('unreal-transparent');
-      document.body.classList.add('unreal-transparent');
-    } else {
-      document.documentElement.classList.remove('unreal-transparent');
-      document.body.classList.remove('unreal-transparent');
-    }
-    return () => {
-      document.documentElement.classList.remove('unreal-transparent');
-      document.body.classList.remove('unreal-transparent');
-    };
-  }, [unrealActive]);
+  // Listen for Unreal exit walkthrough callback — navigates back handled by WalkthroughPage
 
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
