@@ -79,7 +79,8 @@ const HandrailBar: React.FC<{
   transparent?: boolean;
   opacity?: number;
   clippingPlanes?: THREE.Plane[];
-}> = ({ seg, color, roughness, metalness, transparent = false, opacity = 1, clippingPlanes = [] }) => {
+  emissiveIntensity?: number;
+}> = ({ seg, color, roughness, metalness, transparent = false, opacity = 1, clippingPlanes = [], emissiveIntensity = 0 }) => {
   const data = useMemo(() => {
     const [sx, sy, sz] = seg.start;
     const [ex, ey, ez] = seg.end;
