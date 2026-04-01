@@ -977,7 +977,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           const ghostPlan = getFloorPlanForLevel(level);
           if (!ghostPlan || ghostPlan.walls.length === 0) return null;
           const floor = building.floors.find(f => f.level === level)!;
-          const yOffset = (level - activeLevel) * floor.floorToFloorHeight * CM_TO_METERS;
+          const activeFloor = building.floors.find(f => f.level === activeLevel);
+          const yOffset = (level - activeLevel) * (activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
           const ghostOpacity = level > activeLevel ? 0.12 : 0.08;
           
           return (
