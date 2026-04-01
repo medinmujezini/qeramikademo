@@ -14,7 +14,7 @@ import {
   ContextMenuSeparator,
 } from '@/components/ui/context-menu';
 
-type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
+type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column' | 'staircase';
 
 interface Canvas2DProps {
   activeTool: Tool;
