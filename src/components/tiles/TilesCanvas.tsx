@@ -26,7 +26,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { floorPlan } = useFloorPlanContext();
+  const { floorPlan, staircases, activeLevel } = useFloorPlanContext();
 
   const [offset, setOffset] = useState({ x: 50, y: 50 });
   const [scale, setScale] = useState(1);
@@ -496,6 +496,40 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
     });
     ctx.globalAlpha = 1;
 
+    // Render staircases (visual only, non-interactive)
+    staircases.filter(s => s.fromLevel === activeLevel).forEach(stair => {
+      const sx = stair.x * scale + offset.x;
+      const sy = stair.y * scale + offset.y;
+      const sw = stair.width * scale;
+      const sd = stair.depth * scale;
+
+      ctx.save();
+      ctx.translate(sx + sw / 2, sy + sd / 2);
+      ctx.rotate((stair.rotation * Math.PI) / 180);
+      ctx.translate(-sw / 2, -sd / 2);
+
+      ctx.fillStyle = 'rgba(201, 169, 110, 0.15)';
+      ctx.fillRect(0, 0, sw, sd);
+      ctx.strokeStyle = '#C9A96E';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, sw, sd);
+
+      // Tread lines
+      const treadCount = stair.numTreads || 10;
+      const treadSpacing = sd / treadCount;
+      ctx.strokeStyle = 'rgba(201, 169, 110, 0.4)';
+      ctx.lineWidth = 0.5;
+      for (let i = 1; i < treadCount; i++) {
+        const ty = i * treadSpacing;
+        ctx.beginPath();
+        ctx.moveTo(0, ty);
+        ctx.lineTo(sw, ty);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    });
+
     // Instructions
     if (floorPlan.walls.length === 0) {
       ctx.fillStyle = 'hsl(var(--muted-foreground))';
@@ -509,7 +543,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       ctx.textAlign = 'center';
       ctx.fillText('Click on a wall to select it for tiling', width / 2, 30);
     }
-  }, [floorPlan, offset, scale, selectedWallId, pendingWallId, selectedTile, hoveredWallId, jointWidth, showTilePreview, screenToWorld, worldToScreen, externalTiles]);
+  }, [floorPlan, offset, scale, selectedWallId, pendingWallId, selectedTile, hoveredWallId, jointWidth, showTilePreview, screenToWorld, worldToScreen, externalTiles, staircases, activeLevel]);
 
   // Resize handling
   useEffect(() => {
