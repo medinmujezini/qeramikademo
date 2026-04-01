@@ -1061,24 +1061,70 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {staircases
         .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
         .map(stair => {
-          const activeFloor = building.floors.find(f => f.level === activeLevel);
+          const fromFloor = building.floors.find(f => f.level === stair.fromLevel);
           const isArrivingFromBelow = stair.toLevel === activeLevel;
           const stairYOffset = isArrivingFromBelow
-            ? -((activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS) - 0.02
+            ? -((fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS)
             : 0;
           const clipBelowY = isArrivingFromBelow ? 0 : undefined;
+
+          const stairCenterX = stair.x * CM_TO_METERS + stair.width * CM_TO_METERS / 2;
+          const stairCenterZ = stair.y * CM_TO_METERS + stair.depth * CM_TO_METERS / 2;
+          const stairW = stair.width * CM_TO_METERS;
+          const stairD = stair.depth * CM_TO_METERS;
+          const trimH = 0.10; // 10cm tall trim
+          const trimT = 0.02; // 2cm thick
+
           return (
           <group
             key={stair.id}
             onClick={(e) => { e.stopPropagation(); setSelectedStaircaseId(stair.id); }}
           >
             <Staircase3D staircase={stair} yOffset={stairYOffset} clipBelowY={clipBelowY} />
+
+            {/* Stairwell lighting for upper floor view */}
+            {isArrivingFromBelow && (
+              <pointLight
+                position={[stairCenterX, -0.3, stairCenterZ]}
+                color="#fff5e6"
+                intensity={2}
+                distance={5}
+                decay={2}
+              />
+            )}
+
+            {/* Stairwell trim border around slab opening */}
+            {isArrivingFromBelow && (
+              <group position={[stairCenterX, -trimH / 2, stairCenterZ]}>
+                {/* Front trim */}
+                <mesh position={[0, 0, -stairD / 2]} castShadow>
+                  <boxGeometry args={[stairW + trimT * 2, trimH, trimT]} />
+                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                </mesh>
+                {/* Back trim */}
+                <mesh position={[0, 0, stairD / 2]} castShadow>
+                  <boxGeometry args={[stairW + trimT * 2, trimH, trimT]} />
+                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                </mesh>
+                {/* Left trim */}
+                <mesh position={[-stairW / 2, 0, 0]} castShadow>
+                  <boxGeometry args={[trimT, trimH, stairD]} />
+                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                </mesh>
+                {/* Right trim */}
+                <mesh position={[stairW / 2, 0, 0]} castShadow>
+                  <boxGeometry args={[trimT, trimH, stairD]} />
+                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                </mesh>
+              </group>
+            )}
+
             {/* Selection outline */}
             {selectedStaircaseId === stair.id && (
               <mesh
-                position={[stair.x * CM_TO_METERS + stair.width * CM_TO_METERS / 2, 0.01, stair.y * CM_TO_METERS + stair.depth * CM_TO_METERS / 2]}
+                position={[stairCenterX, 0.01, stairCenterZ]}
               >
-                <boxGeometry args={[stair.width * CM_TO_METERS, 0.02, stair.depth * CM_TO_METERS]} />
+                <boxGeometry args={[stairW, 0.02, stairD]} />
                 <meshBasicMaterial color="#C9A96E" transparent opacity={0.3} />
               </mesh>
             )}
