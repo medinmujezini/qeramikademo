@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column';
+type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column' | 'staircase';
 
 interface FloorPlanToolbarProps {
   activeTool: Tool;
