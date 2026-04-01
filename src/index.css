@@ -1018,13 +1018,14 @@
 }
 
 /* WebUI Transparency Mode — makes everything transparent for Unreal Engine overlay */
-.unreal-transparent {
-  background: transparent !important;
-  background-color: transparent !important;
-}
+.unreal-transparent,
+.unreal-transparent body,
 .unreal-transparent #root {
   background: transparent !important;
   background-color: transparent !important;
+}
+.unreal-transparent canvas {
+  background: transparent !important;
 }
 .unreal-transparent .canvas-vignette {
   background: transparent !important;

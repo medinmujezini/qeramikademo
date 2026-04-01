@@ -59,7 +59,7 @@ import { createWallShapeWithOpenings } from '@/utils/wallOpeningGeometry';
 import { exportSceneToGLBBlob } from '@/utils/glbExporter';
 import { generateRoomManifest } from '@/utils/roomManifest';
 import { analyzeWallJunctions, getWallExtension } from '@/utils/wallJunctionGeometry';
-import { isInsideUnreal, sendToUnreal, startUnrealWalkthrough, onExitWalkthrough, arrayBufferToBase64 } from '@/utils/unrealBridge';
+import { isInsideUnreal, startUnrealWalkthrough, arrayBufferToBase64 } from '@/utils/unrealBridge';
 import { toast } from 'sonner';
 import type { FurnitureTemplate } from '@/data/furnitureLibrary';
 import type { FixtureTemplate } from '@/data/fixtureLibrary';
@@ -1116,7 +1116,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
-  const [unrealActive, setUnrealActive] = useState(false);
+  
   const ceilingBeforeWalkRef = useRef(false);
   const [showSpawnMarker, setShowSpawnMarker] = useState(true);
   const [spawnPoint, setSpawnPoint] = useState<SpawnPoint>(() => {
@@ -1242,9 +1242,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           startUnrealWalkthrough(glbBase64, manifest as unknown as Record<string, unknown>);
           toast.success('Walkthrough started in Unreal Engine');
           setIsPreparingWalkthrough(false);
-          setUnrealActive(true);
           setShowSpawnMarker(false);
-          // Don't enter browser walkthrough — Unreal handles it
+          // Navigate to dedicated transparent walkthrough page
+          window.location.href = '/walkthrough';
           return;
         }
       }
@@ -1275,13 +1275,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   }, [floorPlan, spawnPoint, isAnimatingCamera, showCeiling]);
 
   const exitWalkthrough = useCallback(() => {
-    if (unrealActive) {
-      sendToUnreal('exitWalkthrough');
-      setUnrealActive(false);
-      setShowCeiling(ceilingBeforeWalkRef.current);
-      setShowSpawnMarker(true);
-      return;
-    }
     document.exitPointerLock();
     setViewMode('design');
     setShowCeiling(ceilingBeforeWalkRef.current);
@@ -1432,30 +1425,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     }
   }, []);
 
-  // Listen for Unreal exit walkthrough callback
-  useEffect(() => {
-    if (!isInsideUnreal()) return;
-    return onExitWalkthrough(() => {
-      setUnrealActive(false);
-      setShowCeiling(ceilingBeforeWalkRef.current);
-      setShowSpawnMarker(true);
-    });
-  }, []);
-
-  // Toggle transparent mode for WebUI plugin when Unreal walkthrough is active
-  useEffect(() => {
-    if (unrealActive) {
-      document.documentElement.classList.add('unreal-transparent');
-      document.body.classList.add('unreal-transparent');
-    } else {
-      document.documentElement.classList.remove('unreal-transparent');
-      document.body.classList.remove('unreal-transparent');
-    }
-    return () => {
-      document.documentElement.classList.remove('unreal-transparent');
-      document.body.classList.remove('unreal-transparent');
-    };
-  }, [unrealActive]);
+  // Listen for Unreal exit walkthrough callback — navigates back handled by WalkthroughPage
 
   const handleDownloadRender = useCallback(() => {
     const imageUrl = enhancedRender || originalRender;
@@ -1743,9 +1713,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const fixtureCount = fixtures.length;
 
   return (
-    <div className={`h-full flex flex-col ${unrealActive ? 'bg-transparent' : ''}`}>
-      {/* Layer 3 — contextual toolbar (hidden in Unreal mode) */}
-      {!unrealActive && (
+    <div className="h-full flex flex-col">
+      {/* Layer 3 — contextual toolbar */}
+      {(
       <div className="h-11 border-b px-4 flex flex-col items-center justify-center shrink-0 overflow-x-auto relative shimmer-border-top" style={{ borderColor: 'hsl(var(--primary) / 0.10)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
         <div className="gold-accent-line w-full absolute bottom-0 left-0" />
         <div className="pointer-events-none absolute -top-10 right-1/4 w-[250px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
@@ -1997,14 +1967,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           <div className="w-px h-4 bg-primary/15" />
 
           <Button
-            variant={viewMode === 'walkthrough' || unrealActive ? 'default' : 'ghost'}
+            variant={viewMode === 'walkthrough' ? 'default' : 'ghost'}
             size="sm"
             className="h-7 gap-1 text-xs"
-            onClick={unrealActive ? exitWalkthrough : viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
+            onClick={viewMode === 'design' ? enterWalkthrough : exitWalkthrough}
             disabled={isPreparingWalkthrough}
           >
             {isPreparingWalkthrough ? <Loader2 className="h-3 w-3 animate-spin" /> : <PersonStanding className="h-3 w-3" />}
-            {isPreparingWalkthrough ? 'Preparing...' : unrealActive ? 'Exit UE' : viewMode === 'walkthrough' ? 'Exit Walk' : 'Walk'}
+            {isPreparingWalkthrough ? 'Preparing...' : viewMode === 'walkthrough' ? 'Exit Walk' : 'Walk'}
           </Button>
 
           {isDragging && (
@@ -2018,9 +1988,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* Canvas area */}
-      <div className={`flex-1 relative overflow-hidden ${unrealActive ? 'bg-transparent' : 'canvas-vignette'}`}>
-      {/* Gold dust particles — hidden in Unreal mode */}
-      {!unrealActive && (
+      <div className="flex-1 relative overflow-hidden canvas-vignette">
+      {/* Gold dust particles */}
+      {(
         <>
           <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
           <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
@@ -2031,8 +2001,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </>
       )}
       
-      {/* FULL-SCREEN 3D CANVAS — hidden in Unreal mode */}
-      {!unrealActive && (
+      {/* FULL-SCREEN 3D CANVAS */}
+      {(
       <div 
         ref={canvasContainerRef}
         className={`absolute inset-0 ${isDraggingFromLibrary ? 'drop-zone-pulse' : ''}`}
@@ -2159,7 +2129,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* LEFT PANEL - Library */}
-      {viewMode === 'design' && !unrealActive && (
+      {viewMode === 'design' && (
         <div 
           className="absolute top-4 left-6 z-20 w-72 max-h-[calc(100%-48px)]"
         >
@@ -2177,7 +2147,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
       
       {/* RIGHT PANEL - Properties */}
-      {viewMode === 'design' && isPanelOpen && !unrealActive && (
+      {viewMode === 'design' && isPanelOpen && (
         <div className="absolute top-4 right-6 z-20 w-64 max-h-[calc(100%-48px)]">
           <div className="glass-floating overflow-hidden flex flex-col h-full relative">
             <div className="pointer-events-none absolute -bottom-12 -right-12 w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
@@ -2237,22 +2207,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {/* UNREAL ACTIVE INDICATOR */}
-      {unrealActive && (
-        <div className="absolute top-4 right-4 z-50">
-          <div className="flex items-center gap-2 bg-card/80 backdrop-blur-sm border border-primary/20 rounded-lg px-3 py-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-display text-foreground/80 uppercase tracking-wider">Running in Unreal Engine</span>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={exitWalkthrough}>
-              <X className="h-3 w-3 mr-1" />
-              Exit
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* WALKTHROUGH OVERLAYS — browser only */}
-      {!unrealActive && viewMode === 'walkthrough' && !isPointerLocked && !isTouchDevice && (
+      {viewMode === 'walkthrough' && !isPointerLocked && !isTouchDevice && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-center">
             <PersonStanding className="h-12 w-12 text-primary" />
@@ -2276,7 +2232,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         </div>
       )}
 
-      {!unrealActive && viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
+      {viewMode === 'walkthrough' && (isPointerLocked || isTouchDevice) && (
         <>
           {/* Crosshair */}
           <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center">
@@ -2304,7 +2260,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* Mobile joystick zones */}
-      {!unrealActive && viewMode === 'walkthrough' && isTouchDevice && (
+      {viewMode === 'walkthrough' && isTouchDevice && (
         <>
           <div id="left-joystick-zone" className="absolute bottom-0 left-0 w-44 h-44 z-40 pointer-events-auto" />
           <div id="right-joystick-zone" className="absolute bottom-0 right-0 w-44 h-44 z-40 pointer-events-auto" />
