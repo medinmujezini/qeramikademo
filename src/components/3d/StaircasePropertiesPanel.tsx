@@ -2,14 +2,14 @@
  * StaircasePropertiesPanel — Step 4: Edit staircase properties when selected
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Upload, X } from 'lucide-react';
 import { calculateStaircaseGeometry } from '@/types/multiFloor';
 import type { StaircaseType, RailingStyle } from '@/types/multiFloor';
 
