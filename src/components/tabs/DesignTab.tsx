@@ -2563,6 +2563,33 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         onRemoveFinish={handleRemoveFloorFinish}
         currentFinish={floorPlan.floorFinish}
       />
+
+      {/* Curtain Dialog */}
+      <CurtainDialog
+        open={curtainDialogOpen}
+        onOpenChange={setCurtainDialogOpen}
+        window={curtainTargetWindow?.window ?? null}
+        wallHeight={curtainTargetWindow?.wall.height ?? 280}
+        onConfirm={(config) => {
+          if (!curtainTargetWindow) return;
+          const { window: win, wall } = curtainTargetWindow;
+          addCurtain({
+            wallId: wall.id,
+            windowId: win.id,
+            position: win.position,
+            width: config.width,
+            height: config.height,
+            type: config.type,
+            fabricColor: config.fabricColor,
+            fabricMaterial: config.fabricMaterial,
+            opacity: config.opacity,
+            openAmount: 0,
+            mountHeight: config.mountHeight,
+            rodVisible: config.rodVisible,
+          });
+          toast.success('Curtain placed');
+        }}
+      />
       </div>{/* end flex-1 canvas area */}
     </div>
   );
