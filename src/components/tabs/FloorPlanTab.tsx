@@ -188,6 +188,7 @@ export const FloorPlanTab: React.FC = () => {
         <div className="absolute inset-0 z-0">
           <Canvas2D 
             activeTool={activeTool}
+            setActiveTool={setActiveTool}
             showGrid={showGrid}
             gridSize={gridSize}
             showTiles={layerVisibility.tiles}
