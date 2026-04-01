@@ -208,7 +208,7 @@ const ProceduralStaircase3D: React.FC<{
   );
 };
 
-export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0, clipBelowY }) => {
+export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0, clipBelowY, emissiveBoost = 0 }) => {
   const posX = staircase.x * CM_TO_METERS;
   const posZ = staircase.y * CM_TO_METERS;
   const rotY = -(staircase.rotation * Math.PI) / 180;
