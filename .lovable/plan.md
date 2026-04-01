@@ -1,53 +1,45 @@
+# Verdict: Approve with revisions
 
+## What's good
+- Clean interface design with sensible defaults
+- Following existing patterns (room lights) for CRUD
+- 5 distinct curtain types with unique 3D geometry
+- Fabric material affecting roughness is a nice touch
 
-# Verdict: Approve with minor revisions
+## Revisions needed
 
-## Root Cause Assessment
+### (1) Type definition — Minor fix
+- Add `mountHeight?: number` (cm from floor, default = wall height) — curtains aren't always ceiling-mounted
+- Add `rodVisible?: boolean` (default true) — curtain rod/track visibility
+- `openAmount` should only apply to panel/sheer types (roman/roller/pleated have different open mechanics). Consider renaming to `openPercent` and documenting per-type behavior
 
-**The diagnosis is correct.** `meshStandardMaterial` relies on scene lighting, and point lights 3 meters below a floor slab with a clipping plane at Y=0 simply cannot illuminate geometry effectively. Emissive materials are the right solution — they render at a constant brightness regardless of scene lighting.
+### (2) CRUD — Approve as-is
+Pattern matches room lights exactly. No issues.
 
-## Revisions
+### (3) CurtainDialog — Minor revision
+- 20 color presets is excessive for a dialog. Use 12 presets (neutrals + key accents) plus a custom hex input — same pattern as `ColorPickerField.tsx` already in the project
+- Add a small preview swatch showing fabric color + opacity together
 
-### Emissive values — **Reduce slightly**
+### (4) Placement mode — Revision needed
+- Don't just "click a wall" — curtains should only be placeable on walls that have **windows**. Auto-detect windows on the clicked wall and pre-fill width to match window width. Allow override.
+- If wall has no windows, show a toast: "Curtains can only be placed on walls with windows"
 
-The proposed values (0.4 treads, 0.3 risers, 0.2 soffits, 0.35 railings) are reasonable but may look slightly "glowy" in scenes with ambient light. Revise to:
-- Treads/landings: **0.35**
-- Risers: **0.25**
-- Soffits: **0.15**
-- Railings/posts/handrails: **0.3**
+### (5) Curtain3D — Approve with scope note
+- The 5 geometry types are well-specified. However, this is the most complex part. Suggest implementing **panel and sheer first** (they share similar geometry — flat plane with folds), then roman/roller/pleated as a follow-up. This keeps the first PR reviewable.
+- Sine wave folds on panel: use a simple `PlaneGeometry` with vertex displacement along X. Don't overcomplicate with cloth simulation.
+- Sheer: same as panel but with `transparent: true, opacity: fabricOpacity`
 
-These are subtle enough to not look radioactive while still being clearly visible. Easy to tweak later.
+### (6) Properties panel — Minor revision  
+- Reuse the existing properties panel pattern from `PropertiesPanel.tsx` rather than creating a standalone panel. Add a "Curtain" section that appears when a curtain is selected, same as wall/door/window sections.
 
-### StairMaterial emissive implementation — **Small clarification**
+## Recommended implementation order
+1. Types + CRUD (steps 1-2)
+2. Panel + Sheer 3D geometry (step 5 partial)
+3. Placement mode + dialog (steps 3-4)
+4. Properties panel (step 6)
+5. Roman/Roller/Pleated geometry (step 5 remainder)
 
-The emissive color should be the **same as the diffuse color** (already stated in the prompt as `emissive={color}`). This is correct — it makes the material self-illuminate with its own hue rather than a foreign glow.
-
-### Keep the 3 PointLights — **Revise: remove only 2**
-
-Keep **one** dim point light at the top (Y=-0.3, intensity=1.5) as a fill. Emissive materials don't cast light onto surrounding geometry (trim border, slab edges). A single weak fill light ensures the trim border and slab edges aren't pitch black. Remove the middle and bottom lights.
-
-### Everything else — **Approve as-is**
-
-- `emissiveBoost` prop approach: clean and non-breaking
-- Passing 0 on the from-floor: correct, normal lighting works there
-- Keeping trim border, clipping, yOffset: agreed
-
-## Final Plan
-
-### File 1: `src/components/3d/Staircase3D.tsx`
-
-1. Add `emissiveBoost?: number` to `Staircase3DProps` (default 0)
-2. Add `emissiveIntensity?: number` prop to `StairMaterial`, pass `emissive={color}` and `emissiveIntensity` to `meshStandardMaterial`
-3. Forward `emissiveBoost` into `ProceduralStaircase3D`
-4. Pass per-component emissive values: treads 0.35, risers 0.25, soffits 0.15, railings 0.3 — all multiplied by `emissiveBoost`
-
-### File 2: `src/components/tabs/DesignTab.tsx`
-
-1. Pass `emissiveBoost={isArrivingFromBelow ? 1 : 0}` to `Staircase3D` (line ~1083)
-2. Remove the middle and bottom `<pointLight>` (lines 1092-1095), keep top light but reduce intensity to 1.5
-
-| File | Change |
-|---|---|
-| `src/components/3d/Staircase3D.tsx` | Add emissiveBoost prop, update StairMaterial with emissive support |
-| `src/components/tabs/DesignTab.tsx` | Pass emissiveBoost, trim stairwell lights to one fill |
-
+## Scope concern
+This is a **large feature** (~500-700 lines across 4-5 files). Recommend splitting into 2 phases:
+- **Phase 1**: Types, CRUD, panel+sheer curtains, basic dialog, placement on windows
+- **Phase 2**: Roman/roller/pleated geometry, full properties panel, rod visibility toggle
