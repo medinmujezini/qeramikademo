@@ -175,7 +175,7 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
     return floor?.floorPlan || null;
   }, [building.floors, floorPlanState.floorPlan]);
 
-  const addFloor = useCallback(() => {
+  const addFloor = useCallback((options?: { name?: string; height?: number; copyOuterWalls?: boolean }) => {
     // Save current floor first
     const currentPlan = floorPlanState.floorPlan;
     const currentLevel = loadedLevelRef.current;
@@ -183,7 +183,41 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
     setBuilding(prev => {
       const maxLevel = Math.max(...prev.floors.map(f => f.level), -1);
       const newLevel = maxLevel + 1;
-      const newFloor = createDefaultFloor(newLevel);
+      const newFloor = createDefaultFloor(newLevel, options?.name);
+      if (options?.height) {
+        newFloor.floorToFloorHeight = options.height;
+      }
+
+      // Copy walls from the floor below as structural walls
+      if (options?.copyOuterWalls) {
+        const sourceFloor = prev.floors.find(f => f.level === currentLevel);
+        const sourcePlan = sourceFloor?.floorPlan || currentPlan;
+        if (sourcePlan.walls.length > 0) {
+          // Clone points with new IDs, maintaining a mapping
+          const pointIdMap = new Map<string, string>();
+          const clonedPoints = sourcePlan.points
+            .filter(p => sourcePlan.walls.some(w => w.startPointId === p.id || w.endPointId === p.id))
+            .map(p => {
+              const newId = uuidv4();
+              pointIdMap.set(p.id, newId);
+              return { ...p, id: newId };
+            });
+          // Clone walls with new IDs and mapped point IDs, marked structural
+          const clonedWalls = sourcePlan.walls.map(w => ({
+            ...w,
+            id: uuidv4(),
+            startPointId: pointIdMap.get(w.startPointId) || w.startPointId,
+            endPointId: pointIdMap.get(w.endPointId) || w.endPointId,
+            isStructural: true,
+          }));
+          newFloor.floorPlan = {
+            ...newFloor.floorPlan,
+            points: [...newFloor.floorPlan.points, ...clonedPoints],
+            walls: [...newFloor.floorPlan.walls, ...clonedWalls],
+          };
+        }
+      }
+
       const updated = {
         ...prev,
         floors: prev.floors.map(f =>
