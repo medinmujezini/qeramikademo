@@ -29,7 +29,6 @@ import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
-import { FloorSlab3D } from '@/components/3d/FloorSlab3D';
 
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
@@ -765,11 +764,11 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         {(() => {
           const activeFloorObj = building.floors.find(f => f.level === activeLevel);
           const openings = (activeLevel > 0 && activeFloorObj?.slab?.openings) || [];
-          
+
           if (openings.length === 0) {
             return <planeGeometry args={[floorWidth, floorDepth]} />;
           }
-          
+
           // Build a shape with stairwell holes (in local coords centered at 0,0)
           const shape = new THREE.Shape();
           const hw = floorWidth / 2;
@@ -779,22 +778,39 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           shape.lineTo(hw, hd);
           shape.lineTo(-hw, hd);
           shape.closePath();
-          
-          // Cut holes for each opening (convert from world cm to local meters)
+
+          // Cut holes for each opening, matching the actual 3D stair rotation when linked
           for (const op of openings) {
-            const lx = op.x * scale - floorCenterX;
-            const ly = op.y * scale - floorCenterZ;
-            const lw = op.width * scale;
-            const ld = op.depth * scale;
+            const linkedStair = op.staircaseId
+              ? staircases.find(stair => stair.id === op.staircaseId)
+              : null;
+            const rotation = linkedStair ? -(linkedStair.rotation * Math.PI) / 180 : 0;
+            const cos = Math.cos(rotation);
+            const sin = Math.sin(rotation);
+            const centerX = (op.x + op.width / 2) * scale - floorCenterX;
+            const centerY = (op.y + op.depth / 2) * scale - floorCenterZ;
+            const halfWidth = (op.width * scale) / 2;
+            const halfDepth = (op.depth * scale) / 2;
+
+            const corners = [
+              { x: -halfWidth, y: -halfDepth },
+              { x: halfWidth, y: -halfDepth },
+              { x: halfWidth, y: halfDepth },
+              { x: -halfWidth, y: halfDepth },
+            ].map(({ x, y }) => ({
+              x: centerX + x * cos - y * sin,
+              y: centerY + x * sin + y * cos,
+            }));
+
             const hole = new THREE.Path();
-            hole.moveTo(lx, ly);
-            hole.lineTo(lx + lw, ly);
-            hole.lineTo(lx + lw, ly + ld);
-            hole.lineTo(lx, ly + ld);
+            hole.moveTo(corners[0].x, corners[0].y);
+            hole.lineTo(corners[1].x, corners[1].y);
+            hole.lineTo(corners[2].x, corners[2].y);
+            hole.lineTo(corners[3].x, corners[3].y);
             hole.closePath();
             shape.holes.push(hole);
           }
-          
+
           return <shapeGeometry args={[shape]} />;
         })()}
         {floorPlan.floorFinish?.materialId ? (
@@ -988,7 +1004,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           const activeFloor = building.floors.find(f => f.level === activeLevel);
           const stairYOffset = stair.fromLevel === activeLevel
             ? 0
-            : -((activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS);
+            : -((activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS) - 0.02;
           return (
           <group
             key={stair.id}

@@ -85,7 +85,7 @@ const ProceduralStaircase3D: React.FC<{
 
   const railMat = useMemo(() => {
     if (staircase.railing === 'metal') return { color: '#666', roughness: 0.25, metalness: 0.85, transparent: false, opacity: 1 };
-    if (staircase.railing === 'glass') return { color: '#cde', roughness: 0.05, metalness: 0, transparent: true, opacity: 0.25 };
+    if (staircase.railing === 'glass') return { color: '#cde', roughness: 0.05, metalness: 0, transparent: true, opacity: 0.12 };
     return { color: '#5a4a38', roughness: 0.5, metalness: 0, transparent: false, opacity: 1 };
   }, [staircase.railing]);
 
