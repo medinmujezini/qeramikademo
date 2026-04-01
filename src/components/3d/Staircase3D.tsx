@@ -16,6 +16,7 @@ interface Staircase3DProps {
   staircase: Staircase;
   yOffset?: number;
   clipBelowY?: number;
+  emissiveBoost?: number;
 }
 
 const TREAD_MATERIALS: Record<string, { color: string; roughness: number; metalness: number }> = {
