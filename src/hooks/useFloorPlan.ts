@@ -1298,5 +1298,9 @@ export const useFloorPlan = () => {
     deleteRoomLight,
     // Ceiling emitters
     updateCeilingEmitterConfig,
+    // Curtains
+    addCurtain,
+    updateCurtain,
+    deleteCurtain,
   };
 };
