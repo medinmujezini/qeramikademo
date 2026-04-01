@@ -1,58 +1,53 @@
 
 
-# Verdict: Approve with minor revision
+# Verdict: Approve with minor revisions
 
 ## Root Cause Assessment
 
-**Partially correct.** The single weak light is a real problem, but the prompt overlooks another likely contributor: the `clipBelowY={0}` clipping plane on the Staircase3D component. If the clipping plane is cutting geometry at Y=0 (the floor surface), it may be hiding the upper portion of the staircase treads that should be visible through the opening. Worth verifying visually after the lighting fix — but the prompt says not to touch clipping, and it was intentionally set, so leave it for now.
+**The diagnosis is correct.** `meshStandardMaterial` relies on scene lighting, and point lights 3 meters below a floor slab with a clipping plane at Y=0 simply cannot illuminate geometry effectively. Emissive materials are the right solution — they render at a constant brightness regardless of scene lighting.
 
-## Revisions to the Prompt
+## Revisions
 
-### Decay value — **Revise to 1.5, not 1**
+### Emissive values — **Reduce slightly**
 
-`decay={1}` (linear falloff) looks unnatural. `decay={2}` (physically correct inverse-square) is too aggressive for this enclosed space. Use `decay={1.5}` as a compromise — enough to reach the bottom without looking flat.
+The proposed values (0.4 treads, 0.3 risers, 0.2 soffits, 0.35 railings) are reasonable but may look slightly "glowy" in scenes with ambient light. Revise to:
+- Treads/landings: **0.35**
+- Risers: **0.25**
+- Soffits: **0.15**
+- Railings/posts/handrails: **0.3**
 
-### Intensity values — **Reduce slightly**
+These are subtle enough to not look radioactive while still being clearly visible. Easy to tweak later.
 
-With 3 lights at intensities 5/4/3 and low decay, there's risk of overexposure at the top. Revise to:
-- Top: intensity **3**
-- Middle: intensity **3**
-- Bottom: intensity **2**
+### StairMaterial emissive implementation — **Small clarification**
 
-This gives even illumination without blowing out the area near the slab opening.
+The emissive color should be the **same as the diffuse color** (already stated in the prompt as `emissive={color}`). This is correct — it makes the material self-illuminate with its own hue rather than a foreign glow.
 
-### Distance — **Approve at 8**
+### Keep the 3 PointLights — **Revise: remove only 2**
 
-Correct — the current `distance={5}` barely covers a 3m shaft. 8 is appropriate.
+Keep **one** dim point light at the top (Y=-0.3, intensity=1.5) as a fill. Emissive materials don't cast light onto surrounding geometry (trim border, slab edges). A single weak fill light ensures the trim border and slab edges aren't pitch black. Remove the middle and bottom lights.
 
 ### Everything else — **Approve as-is**
 
-- 3 lights distributed vertically: good
-- Color `#fff5e6`: correct (matches existing warm tone)
-- `castShadow={false}`: correct optimization
-- No other changes: agreed
+- `emissiveBoost` prop approach: clean and non-breaking
+- Passing 0 on the from-floor: correct, normal lighting works there
+- Keeping trim border, clipping, yOffset: agreed
 
 ## Final Plan
 
-**File: `src/components/tabs/DesignTab.tsx`** — lines 1085-1094
+### File 1: `src/components/3d/Staircase3D.tsx`
 
-Replace the single `<pointLight>` block with:
+1. Add `emissiveBoost?: number` to `Staircase3DProps` (default 0)
+2. Add `emissiveIntensity?: number` prop to `StairMaterial`, pass `emissive={color}` and `emissiveIntensity` to `meshStandardMaterial`
+3. Forward `emissiveBoost` into `ProceduralStaircase3D`
+4. Pass per-component emissive values: treads 0.35, risers 0.25, soffits 0.15, railings 0.3 — all multiplied by `emissiveBoost`
 
-```tsx
-{isArrivingFromBelow && (() => {
-  const h = (fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
-  return (
-    <>
-      <pointLight position={[stairCenterX, -0.3, stairCenterZ]}
-        color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
-      <pointLight position={[stairCenterX, -(h * 0.5), stairCenterZ]}
-        color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
-      <pointLight position={[stairCenterX, -h + 0.3, stairCenterZ]}
-        color="#fff5e6" intensity={2} distance={8} decay={1.5} castShadow={false} />
-    </>
-  );
-})()}
-```
+### File 2: `src/components/tabs/DesignTab.tsx`
 
-No other files or systems are touched.
+1. Pass `emissiveBoost={isArrivingFromBelow ? 1 : 0}` to `Staircase3D` (line ~1083)
+2. Remove the middle and bottom `<pointLight>` (lines 1092-1095), keep top light but reduce intensity to 1.5
+
+| File | Change |
+|---|---|
+| `src/components/3d/Staircase3D.tsx` | Add emissiveBoost prop, update StairMaterial with emissive support |
+| `src/components/tabs/DesignTab.tsx` | Pass emissiveBoost, trim stairwell lights to one fill |
 
