@@ -1480,6 +1480,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       updateStaircase(draggedStaircase, { x: newX, y: newY });
     }
 
+    // Hover detection for staircases
+    if (activeTool === 'select' && !draggedStaircase && !draggedFixture && !draggedColumn && !draggedPoint) {
+      const hovered = findStaircaseAt(world.x, world.y);
+      setHoveredStaircaseId(hovered?.id ?? null);
+    }
+
     // Column preview
     if (activeTool === 'column') {
       setColumnPreview(snappedWorld);
