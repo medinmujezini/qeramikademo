@@ -1772,7 +1772,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'pan') return isPanning ? 'grabbing' : 'grab';
     if (isPanning) return 'grabbing';
     if (draggedPoint || draggedFixture || draggedStaircase) return 'move';
-    if (hoverWallMidpoint) return 'pointer';
+    if (hoveredStaircaseId || hoverWallMidpoint) return 'pointer';
     if (activeTool === 'wall' || activeTool === 'door' || activeTool === 'window' || activeTool === 'staircase') return 'crosshair';
     return 'default';
   };
