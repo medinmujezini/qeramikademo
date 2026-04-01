@@ -77,6 +77,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     setSelectedStaircaseId,
     updateStaircase,
     addStaircase,
+    removeStaircase,
     showAdjacentFloors,
     getFloorPlanForLevel,
   } = useFloorPlanContext();
