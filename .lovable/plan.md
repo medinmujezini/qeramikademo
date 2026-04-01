@@ -1,77 +1,67 @@
 
 
-# Stairs: 2D Canvas Rendering, Drag, Toolbar Tool, GLB Upload
+# Fix Staircase Issues: Selection, Resize, Finishes Tab, 3D Placement
 
-## Overview
+## Issues
 
-Add staircase visibility and interaction in the 2D floor plan canvas, a dedicated staircase tool in the toolbar, and custom GLB model upload support. Also fix the `DesignScene` runtime error (useFloorPlanContext outside provider).
+1. **Selection unresponsive in Room Layout** — clicking a staircase immediately starts dragging instead of just selecting. The `handleMouseDown` sets `draggedStaircase` on first click, making simple click-to-select impossible. Need to differentiate click vs drag (use mouseup without movement for selection).
+
+2. **No resize controls** — staircases have fixed width/depth from `calculateStaircaseGeometry`. The `StaircasePropertiesPanel` has width/depth sliders but the 2D canvas shows no resize handles. Need width/depth inputs in `PropertiesPanel` when a staircase is selected (similar to how wall properties show).
+
+3. **Stairs missing in Finishes tab** — `TilesCanvas.tsx` only draws walls, doors, and windows. It never reads `staircases` from context. Need to render the same gold staircase symbol there (non-interactive, just visual).
+
+4. **3D: stairs on both floors + sticking out** — In `DesignTab.tsx` line 950, the filter is `s.fromLevel === activeLevel || s.toLevel === activeLevel`, which renders the staircase on BOTH the ground and first floor. Should only render on `fromLevel === activeLevel`. Also the staircase position is absolute (`stair.x`, `stair.y`) but may be placed outside room bounds — the user needs resize to fix that.
 
 ## Technical Plan
 
-### 1. Fix runtime error: DesignScene uses useFloorPlanContext inside R3F Canvas
-**File: `src/components/tabs/DesignTab.tsx`** (~line 630)
-
-`DesignScene` calls `useFloorPlanContext()` but renders inside `<Canvas>` which is outside the React context tree. Fix: extract the needed values (`staircases`, `building`, `activeLevel`, `selectedStaircaseId`, `setSelectedStaircaseId`, `showAdjacentFloors`, `getFloorPlanForLevel`) in the parent `DesignTab` component and pass them as props to `DesignScene`.
-
-### 2. Add `customGlbUrl` to Staircase type
-**File: `src/types/multiFloor.ts`**
-
-Add `customGlbUrl?: string;` to the `Staircase` interface.
-
-### 3. Add `staircase` to Tool type + toolbar button
-**File: `src/components/toolbars/FloorPlanToolbar.tsx`**
-
-- Change Tool type to include `'staircase'`
-- Add `ArrowUpDown` icon button after the Column button
-- When active, show highlighted state
-
+### 1. Fix click-to-select vs drag in Canvas2D
 **File: `src/components/floor-plan/Canvas2D.tsx`**
 
-- Update local Tool type to include `'staircase'`
+- On mousedown with staircase hit: store the staircase ID and click position but do NOT set `draggedStaircase` yet. Set a `pendingStaircaseDrag` state.
+- On mousemove: if `pendingStaircaseDrag` and mouse moved > 5px, promote to `draggedStaircase`.
+- On mouseup: if `pendingStaircaseDrag` and mouse didn't move (no drag), just select via `setSelectedStaircaseId`. Show properties panel.
 
-**File: `src/components/tabs/FloorPlanTab.tsx`**
+### 2. Show staircase properties in PropertiesPanel
+**File: `src/components/floor-plan/PropertiesPanel.tsx`**
 
-- Update local Tool type to include `'staircase'`
+- Read `selectedStaircaseId`, `staircases`, `updateStaircase`, `removeStaircase`, `setSelectedStaircaseId` from context.
+- When `selectedStaircaseId` is set (and no wall/fixture selected), render a staircase properties card with:
+  - Type display (read-only label)
+  - Width slider (60-200 cm)
+  - Depth slider (100-600 cm)  
+  - Stair width slider (60-150 cm)
+  - Tread depth slider (20-35 cm)
+  - Rotation slider (0-360)
+  - Position X/Y inputs
+  - Delete button (calls `removeStaircase`)
+- Changing width/depth calls `updateStaircase` which updates both 2D and 3D.
 
-### 4. Canvas2D staircase rendering + selection + drag
-**File: `src/components/floor-plan/Canvas2D.tsx`**
+### 3. Render staircases in Finishes tab (TilesCanvas)
+**File: `src/components/tiles/TilesCanvas.tsx`**
 
-- Import `staircases`, `activeLevel`, `building`, `selectedStaircaseId`, `setSelectedStaircaseId`, `updateStaircase`, `addStaircase` from `useFloorPlanContext()`
-- **Draw function**: After existing elements, render each staircase where `fromLevel === activeLevel`:
-  - Gold semi-transparent filled rect at `(stair.x, stair.y)` sized `stair.width × stair.depth`
-  - Parallel horizontal lines inside for treads
-  - Arrow pointing up for direction
-  - Gold border, thicker if selected
-- **`findStaircaseAt(x, y)`**: Hit-test helper checking if point is inside staircase rect (accounting for rotation)
-- **Selection**: In `handleMouseDown` select tool section, check `findStaircaseAt` before the wall check. If found, call `setSelectedStaircaseId(stair.id)` and `setSelectedElement(null)` (staircase selection is separate)
-- **Drag state**: Add `draggedStaircase` + `staircaseOffset` state. On mousedown if staircase found, start drag. On mousemove, update position via `updateStaircase(id, { x, y })`. On mouseup, clear drag.
-- **Staircase tool click**: When `activeTool === 'staircase'` and clicked, check `building.floors.length >= 2`. If not, toast "Add a floor above first". Otherwise call `addStaircase('straight', snappedWorld.x, snappedWorld.y)`, then switch to select and select the new staircase.
-- **Cursor**: Show `move` cursor when hovering over a staircase in select mode.
+- Import `staircases`, `activeLevel` from `useFloorPlanContext()`.
+- In the draw function, after drawing walls/doors/windows, draw each staircase where `fromLevel === activeLevel` as a semi-transparent gold rectangle with tread lines (same visual as Canvas2D but non-interactive).
 
-### 5. GLB upload in StaircasePropertiesPanel
-**File: `src/components/3d/StaircasePropertiesPanel.tsx`**
+### 4. Fix 3D: only render staircase on fromLevel
+**File: `src/components/tabs/DesignTab.tsx`** (line 950)
 
-- Add a file input button labeled "Upload Custom Model (.glb)"
-- On file select: `URL.createObjectURL(file)` → `updateStaircase(stair.id, { customGlbUrl: url })`
-- When `stair.customGlbUrl` exists, show filename + "Remove Custom Model" button that sets `customGlbUrl` to `undefined`
+Change filter from:
+```ts
+.filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
+```
+To:
+```ts
+.filter(s => s.fromLevel === activeLevel)
+```
 
-### 6. Custom GLB rendering in Staircase3D
-**File: `src/components/3d/Staircase3D.tsx`**
-
-- When `staircase.customGlbUrl` exists, use `useGLTF(staircase.customGlbUrl)` to load the model
-- Render the loaded scene clone instead of procedural geometry
-- Keep procedural geometry as fallback when no custom URL
-- Use a conditional split: two sub-components (`CustomStaircase3D` and `ProceduralStaircase3D`) to avoid hook ordering issues with conditional `useGLTF`
+This ensures the staircase only appears once, on the floor where it starts.
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/types/multiFloor.ts` | Add `customGlbUrl?: string` to Staircase |
-| `src/components/toolbars/FloorPlanToolbar.tsx` | Add `staircase` to Tool type, add stairs button |
-| `src/components/tabs/FloorPlanTab.tsx` | Add `staircase` to Tool type |
-| `src/components/floor-plan/Canvas2D.tsx` | Add `staircase` to Tool type, render 2D symbols, selection, drag, staircase tool placement |
-| `src/components/3d/StaircasePropertiesPanel.tsx` | Add GLB upload/remove UI |
-| `src/components/3d/Staircase3D.tsx` | Add custom GLB rendering with useGLTF |
-| `src/components/tabs/DesignTab.tsx` | Fix DesignScene context error — pass context values as props |
+| `src/components/floor-plan/Canvas2D.tsx` | Click vs drag differentiation for staircases |
+| `src/components/floor-plan/PropertiesPanel.tsx` | Add staircase properties section with resize controls + delete |
+| `src/components/tiles/TilesCanvas.tsx` | Render staircase symbols on Finishes tab |
+| `src/components/tabs/DesignTab.tsx` | Fix filter to only show staircase on fromLevel |
 
