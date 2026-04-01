@@ -1466,9 +1466,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       setSnapIndicator(null);
     }
 
-    // Check for wall insertion point hover (for adding junction points)
-    if (activeTool === 'select' && !draggedPoint && !draggedFixture) {
-      const insertPoint = findWallInsertionPoint(world.x, world.y);
+    // Check hover targets for select mode
+    if (activeTool === 'select' && !draggedPoint && !draggedFixture && !draggedColumn && !draggedStaircase) {
+      const hoveredStair = findStaircaseAt(world.x, world.y);
+      setHoveredStaircaseId(hoveredStair?.id || null);
+
+      const insertPoint = hoveredStair ? null : findWallInsertionPoint(world.x, world.y);
       setHoverWallMidpoint(insertPoint);
       
       // Route hover removed - now handled in MEP tab
@@ -1477,6 +1480,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         setHoverRouteSegment(null);
       }
     } else {
+      setHoveredStaircaseId(null);
       setHoverWallMidpoint(null);
       setHoverRoutePoint(null);
       setHoverRouteSegment(null);
