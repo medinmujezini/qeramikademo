@@ -1,35 +1,58 @@
 
 
-# Fix: Stairs Visibility from Upper Floor — Analysis & Revisions
+# Verdict: Approve with minor revision
 
-## Verdict: Approve with revisions
+## Root Cause Assessment
 
-### (1) yOffset calculation — **Approve with minor fix**
+**Partially correct.** The single weak light is a real problem, but the prompt overlooks another likely contributor: the `clipBelowY={0}` clipping plane on the Staircase3D component. If the clipping plane is cutting geometry at Y=0 (the floor surface), it may be hiding the upper portion of the staircase treads that should be visible through the opening. Worth verifying visually after the lighting fix — but the prompt says not to touch clipping, and it was intentionally set, so leave it for now.
 
-The prompt is correct. Line 1067 uses `activeFloor?.floorToFloorHeight` which is the *current* floor's height, but the staircase rises from `stair.fromLevel`, so we need that floor's height. The suggested fix is accurate.
+## Revisions to the Prompt
 
-However, remove the `- 0.02` offset currently on line 1067 — it was a hack to push stairs down slightly. The corrected fromFloor height should be sufficient.
+### Decay value — **Revise to 1.5, not 1**
 
-### (2) Stairwell lighting — **Approve with revision**
+`decay={1}` (linear falloff) looks unnatural. `decay={2}` (physically correct inverse-square) is too aggressive for this enclosed space. Use `decay={1.5}` as a compromise — enough to reach the bottom without looking flat.
 
-Good idea, but revise:
-- Y position should be `-0.3` not `-0.5` — half a meter below is too deep and may light the wrong area
-- Add `decay={2}` for realistic falloff
-- Use a warm color (`#fff5e6`) instead of default white to match the room's ambient tone
-- Keep intensity at ~2 and distance at ~5 as suggested
+### Intensity values — **Reduce slightly**
 
-### (3) Stairwell walls — **Revise significantly**
+With 3 lights at intensities 5/4/3 and low decay, there's risk of overexposure at the top. Revise to:
+- Top: intensity **3**
+- Middle: intensity **3**
+- Bottom: intensity **2**
 
-The concept is sound but needs adjustment:
-- **Height**: Should NOT be `fromFloor.floorToFloorHeight`. The shaft walls should only extend from the floor surface downward to the slab thickness + a small amount (~1m) — just enough to give visual context. Full floor-height walls would block the view of the stairs entirely, defeating the purpose.
-- **Wall count**: Only render 3 walls (skip the side where stairs enter from), or render all 4 but make them short (~1m tall parapet walls around the opening edge). A full shaft would make the stairwell a dark box.
-- **Alternative**: Render a thin border/trim (10cm tall, 2cm thick) around the opening perimeter instead of full walls. This gives the "finished stairwell" look without blocking visibility.
+This gives even illumination without blowing out the area near the slab opening.
 
-### Revised Plan
+### Distance — **Approve at 8**
 
-| Item | Change |
-|---|---|
-| `src/components/tabs/DesignTab.tsx` ~line 1064 | Use `fromFloor.floorToFloorHeight` for yOffset; remove `-0.02` hack |
-| `src/components/tabs/DesignTab.tsx` after Staircase3D | Add warm PointLight at stair center, Y=-0.3, intensity 2, distance 5, decay 2 |
-| `src/components/tabs/DesignTab.tsx` after light | Add 10cm-tall trim border (4 thin boxes) around slab opening perimeter using `#e5e5e5` material |
+Correct — the current `distance={5}` barely covers a 3m shaft. 8 is appropriate.
+
+### Everything else — **Approve as-is**
+
+- 3 lights distributed vertically: good
+- Color `#fff5e6`: correct (matches existing warm tone)
+- `castShadow={false}`: correct optimization
+- No other changes: agreed
+
+## Final Plan
+
+**File: `src/components/tabs/DesignTab.tsx`** — lines 1085-1094
+
+Replace the single `<pointLight>` block with:
+
+```tsx
+{isArrivingFromBelow && (() => {
+  const h = (fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
+  return (
+    <>
+      <pointLight position={[stairCenterX, -0.3, stairCenterZ]}
+        color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
+      <pointLight position={[stairCenterX, -(h * 0.5), stairCenterZ]}
+        color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
+      <pointLight position={[stairCenterX, -h + 0.3, stairCenterZ]}
+        color="#fff5e6" intensity={2} distance={8} decay={1.5} castShadow={false} />
+    </>
+  );
+})()}
+```
+
+No other files or systems are touched.
 
