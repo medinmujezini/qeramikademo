@@ -20,6 +20,10 @@ import {
   LayoutTemplate,
   ImagePlus,
   ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  Plus,
+  Layers,
 } from 'lucide-react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import {
