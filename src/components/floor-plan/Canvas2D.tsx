@@ -121,6 +121,9 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
   const findWallAt = useCallback((worldX: number, worldY: number, threshold: number = 10): Wall | null => {
     for (const wall of floorPlan.walls) {
+      // Structural walls cannot be selected
+      if (wall.isStructural) continue;
+
       const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);
       const endPoint = floorPlan.points.find(p => p.id === wall.endPointId);
       if (!startPoint || !endPoint) continue;
