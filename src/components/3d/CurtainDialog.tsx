@@ -32,9 +32,9 @@ interface CurtainDialogProps {
 const CURTAIN_TYPES: { value: CurtainType; label: string; description: string; icon: React.ReactNode }[] = [
   { value: 'panel', label: 'Panel', description: 'Classic split curtains with folds', icon: <Blinds className="h-4 w-4" /> },
   { value: 'sheer', label: 'Sheer', description: 'Translucent light-filtering', icon: <Layers className="h-4 w-4" /> },
-  { value: 'roman', label: 'Roman', description: 'Horizontal fold layers (Phase 2)', icon: <SquareStack className="h-4 w-4" /> },
-  { value: 'roller', label: 'Roller', description: 'Roll-up shade (Phase 2)', icon: <ScrollText className="h-4 w-4" /> },
-  { value: 'pleated', label: 'Pleated', description: 'Accordion zigzag (Phase 2)', icon: <ChevronDown className="h-4 w-4" /> },
+  { value: 'roman', label: 'Roman', description: 'Horizontal fold layers', icon: <SquareStack className="h-4 w-4" /> },
+  { value: 'roller', label: 'Roller', description: 'Roll-up shade', icon: <ScrollText className="h-4 w-4" /> },
+  { value: 'pleated', label: 'Pleated', description: 'Accordion zigzag', icon: <ChevronDown className="h-4 w-4" /> },
 ];
 
 const FABRIC_MATERIALS: { value: CurtainFabric; label: string }[] = [
@@ -70,7 +70,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
     }
   }, [win, wallHeight]);
 
-  const isPhase2 = type === 'roman' || type === 'roller' || type === 'pleated';
+  const isPhase2 = false; // All types now implemented
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,8 +92,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
                       type === ct.value
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-border/50 hover:border-primary/30'
-                    } ${ct.value === 'roman' || ct.value === 'roller' || ct.value === 'pleated' ? 'opacity-50' : ''}`}
-                    disabled={ct.value === 'roman' || ct.value === 'roller' || ct.value === 'pleated'}
+                    }`}
                   >
                     {ct.icon}
                     <span className="text-[10px]">{ct.label}</span>
