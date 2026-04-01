@@ -19,6 +19,7 @@ import {
   Ruler,
   LayoutTemplate,
   ImagePlus,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import {
