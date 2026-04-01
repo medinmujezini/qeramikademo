@@ -82,30 +82,38 @@ function generateStraight(stair: Staircase): StaircaseGeometryResult {
   const rightPosts: RailingPost[] = [];
 
   for (let i = 0; i < numTreads; i++) {
-    const treadTopY = (i + 1) * riserH;
-    const treadCenterY = treadTopY - TREAD_H / 2;
+    const y = (i + 1) * riserH;
     const z = i * treadD + treadD / 2; // center of tread slot
 
-    // Tread top is flush with the step height, including the final floor level
+    // Tread
     result.treads.push({
-      position: [boundW / 2, treadCenterY, z],
+      position: [boundW / 2, y, z],
       size: [treadW, TREAD_H, treadD + NOSING],
       rotation: 0,
     });
 
-    // Riser fills the full rise below the tread without poking above it
+    // Riser (vertical face between this tread and the one above)
     result.risers.push({
-      position: [boundW / 2, treadTopY - riserH / 2, z - treadD / 2],
+      position: [boundW / 2, y - riserH / 2 + TREAD_H / 2, z - treadD / 2],
       size: [treadW, riserH, RISER_THICKNESS],
       rotation: 0,
     });
 
     // Railing posts — one on each side, every other tread + first + last
     if (i === 0 || i === numTreads - 1 || i % 2 === 0) {
-      leftPosts.push({ position: [0.03, treadCenterY, z], height: RAILING_HEIGHT });
-      rightPosts.push({ position: [boundW - 0.03, treadCenterY, z], height: RAILING_HEIGHT });
+      leftPosts.push({ position: [0.03, y, z], height: RAILING_HEIGHT });
+      rightPosts.push({ position: [boundW - 0.03, y, z], height: RAILING_HEIGHT });
     }
   }
+
+  // Final riser at the top
+  const topY = numTreads * riserH;
+  const topZ = (numTreads - 1) * treadD + treadD / 2 + treadD / 2;
+  result.risers.push({
+    position: [boundW / 2, topY + riserH / 2 - TREAD_H / 2, topZ],
+    size: [treadW, riserH, RISER_THICKNESS],
+    rotation: 0,
+  });
 
   // Soffit — single angled slab underneath
   result.soffits.push({
@@ -137,27 +145,25 @@ function generateLShaped(stair: Staircase): StaircaseGeometryResult {
   const firstRunDepth = boundD * 0.7;
   const treadD1 = landingStep > 0 ? firstRunDepth / landingStep : firstRunDepth;
   const landingSize = treadW;
-  const landingThickness = TREAD_H * 1.5;
   const landingY = landingStep * riserH;
 
   // First run (along Z)
   for (let i = 0; i < landingStep; i++) {
-    const treadTopY = (i + 1) * riserH;
-    const treadCenterY = treadTopY - TREAD_H / 2;
+    const y = (i + 1) * riserH;
     const z = i * treadD1 + treadD1 / 2;
-    result.treads.push({ position: [treadW / 2, treadCenterY, z], size: [treadW, TREAD_H, treadD1 + NOSING], rotation: 0 });
+    result.treads.push({ position: [treadW / 2, y, z], size: [treadW, TREAD_H, treadD1 + NOSING], rotation: 0 });
     result.risers.push({
-      position: [treadW / 2, treadTopY - riserH / 2, z - treadD1 / 2],
+      position: [treadW / 2, y - riserH / 2 + TREAD_H / 2, z - treadD1 / 2],
       size: [treadW, riserH, RISER_THICKNESS],
       rotation: 0,
     });
   }
 
-  // Landing platform with top surface flush at landingY
+  // Landing platform
   const landingZ = firstRunDepth;
   result.landingPlatforms.push({
-    position: [treadW / 2 + landingSize / 4, landingY - landingThickness / 2, landingZ + landingSize / 2],
-    size: [treadW + landingSize / 2, landingThickness, landingSize],
+    position: [treadW / 2 + landingSize / 4, landingY, landingZ + landingSize / 2],
+    size: [treadW + landingSize / 2, TREAD_H * 1.5, landingSize],
     rotation: 0,
   });
 
@@ -165,16 +171,15 @@ function generateLShaped(stair: Staircase): StaircaseGeometryResult {
   const secondRunWidth = boundW - treadW;
   const treadD2 = remainingTreads > 0 ? secondRunWidth / remainingTreads : secondRunWidth;
   for (let i = 0; i < remainingTreads; i++) {
-    const treadTopY = landingY + (i + 1) * riserH;
-    const treadCenterY = treadTopY - TREAD_H / 2;
+    const y = landingY + (i + 1) * riserH;
     const x = treadW + i * treadD2 + treadD2 / 2;
     result.treads.push({
-      position: [x, treadCenterY, landingZ + landingSize / 2],
+      position: [x, y, landingZ + landingSize / 2],
       size: [treadD2 + NOSING, TREAD_H, treadW],
       rotation: 0,
     });
     result.risers.push({
-      position: [x - treadD2 / 2, treadTopY - riserH / 2, landingZ + landingSize / 2],
+      position: [x - treadD2 / 2, y - riserH / 2 + TREAD_H / 2, landingZ + landingSize / 2],
       size: [RISER_THICKNESS, riserH, treadW],
       rotation: 0,
     });
@@ -204,43 +209,40 @@ function generateUShaped(stair: Staircase): StaircaseGeometryResult {
 
   const treadW = (boundW - gap) / 2;
   const treadD = halfTreads > 0 ? (boundD - treadW) / halfTreads : boundD;
-  const landingThickness = TREAD_H * 1.5;
   const landingY = halfTreads * riserH;
 
   // First run (going forward along Z)
   for (let i = 0; i < halfTreads; i++) {
-    const treadTopY = (i + 1) * riserH;
-    const treadCenterY = treadTopY - TREAD_H / 2;
+    const y = (i + 1) * riserH;
     const z = i * treadD + treadD / 2;
-    result.treads.push({ position: [treadW / 2, treadCenterY, z], size: [treadW, TREAD_H, treadD + NOSING], rotation: 0 });
+    result.treads.push({ position: [treadW / 2, y, z], size: [treadW, TREAD_H, treadD + NOSING], rotation: 0 });
     result.risers.push({
-      position: [treadW / 2, treadTopY - riserH / 2, z - treadD / 2],
+      position: [treadW / 2, y - riserH / 2 + TREAD_H / 2, z - treadD / 2],
       size: [treadW, riserH, RISER_THICKNESS],
       rotation: 0,
     });
   }
 
-  // Landing with top surface flush at landingY
+  // Landing
   const landingZ = halfTreads * treadD;
   result.landingPlatforms.push({
-    position: [boundW / 2, landingY - landingThickness / 2, landingZ + treadW / 2],
-    size: [boundW, landingThickness, treadW],
+    position: [boundW / 2, landingY, landingZ + treadW / 2],
+    size: [boundW, TREAD_H * 1.5, treadW],
     rotation: 0,
   });
 
   // Second run (coming back along -Z)
   const treadD2 = remainingTreads > 0 ? (boundD - treadW) / remainingTreads : treadD;
   for (let i = 0; i < remainingTreads; i++) {
-    const treadTopY = landingY + (i + 1) * riserH;
-    const treadCenterY = treadTopY - TREAD_H / 2;
+    const y = landingY + (i + 1) * riserH;
     const z = landingZ - (i + 1) * treadD2 + treadD2 / 2 + treadW;
     result.treads.push({
-      position: [treadW + gap + treadW / 2, treadCenterY, z],
+      position: [treadW + gap + treadW / 2, y, z],
       size: [treadW, TREAD_H, treadD2 + NOSING],
       rotation: 0,
     });
     result.risers.push({
-      position: [treadW + gap + treadW / 2, treadTopY - riserH / 2, z - treadD2 / 2],
+      position: [treadW + gap + treadW / 2, y - riserH / 2 + TREAD_H / 2, z - treadD2 / 2],
       size: [treadW, riserH, RISER_THICKNESS],
       rotation: 0,
     });
@@ -283,14 +285,13 @@ function generateSpiral(stair: Staircase): StaircaseGeometryResult {
 
   for (let i = 0; i < stair.numTreads; i++) {
     const angle = i * anglePerStep;
-    const treadTopY = (i + 1) * riserH;
-    const treadCenterY = treadTopY - TREAD_H / 2;
+    const y = (i + 1) * riserH;
     const midR = (centerR + outerR) / 2;
     const x = cx + Math.cos(angle) * midR;
     const z = cz + Math.sin(angle) * midR;
 
     result.treads.push({
-      position: [x, treadCenterY, z],
+      position: [x, y, z],
       size: [treadWidth, TREAD_H, 0.08],
       rotation: -angle,
     });
@@ -298,7 +299,7 @@ function generateSpiral(stair: Staircase): StaircaseGeometryResult {
     // Outer post every 3 steps
     if (i % 3 === 0 || i === stair.numTreads - 1) {
       const post: RailingPost = {
-        position: [cx + Math.cos(angle) * (outerR - 0.03), treadCenterY, cz + Math.sin(angle) * (outerR - 0.03)],
+        position: [cx + Math.cos(angle) * (outerR - 0.03), y, cz + Math.sin(angle) * (outerR - 0.03)],
         height: RAILING_HEIGHT,
       };
       outerPosts.push(post);
