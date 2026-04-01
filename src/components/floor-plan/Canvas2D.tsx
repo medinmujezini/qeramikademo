@@ -5,6 +5,7 @@ import { TILE_LIBRARY } from '@/types/floorPlan';
 import { checkFixtureCollisions, getClearanceZone, FIXTURE_CLEARANCES } from '@/utils/collisionDetection';
 import { useConnectionStatus, getOverallStatus, getConnectionStatusColor } from '@/hooks/useConnectionStatus';
 import { getArcPoints, getBulgeHandlePosition, arcLength } from '@/utils/arcUtils';
+import { toast } from 'sonner';
 import {
   ContextMenu,
   ContextMenuContent,
