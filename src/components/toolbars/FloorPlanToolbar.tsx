@@ -72,9 +72,15 @@ export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
   showDimensions = true,
   onToggleDimensions,
   onNewRoom,
-  onFromImage,
+  onNewFloor,
 }) => {
-  const { undo, redo, canUndo, canRedo } = useFloorPlanContext();
+  const { undo, redo, canUndo, canRedo, building, activeLevel, setActiveLevel } = useFloorPlanContext();
+
+  const sortedFloors = [...building.floors].sort((a, b) => a.level - b.level);
+  const currentIndex = sortedFloors.findIndex(f => f.level === activeLevel);
+  const currentFloorName = sortedFloors[currentIndex]?.name || 'Floor';
+  const canGoUp = currentIndex < sortedFloors.length - 1;
+  const canGoDown = currentIndex > 0;
 
   return (
     <div className="flex items-center gap-1 h-full">
