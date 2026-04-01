@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Cornell from "./pages/Cornell";
 import Raytracing from "./pages/Raytracing";
 import ProductView from "./pages/ProductView";
+import WalkthroughPage from "./pages/WalkthroughPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
