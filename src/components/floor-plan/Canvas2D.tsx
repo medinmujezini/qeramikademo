@@ -1055,8 +1055,31 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       ctx.restore();
     });
 
+    // Draw snap guides for staircase drag
+    if (stairSnapGuides.length > 0 && draggedStaircase) {
+      ctx.save();
+      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'hsla(38, 80%, 68%, 0.8)';
+      const canvasW = canvas.width / dpr;
+      const canvasH = canvas.height / dpr;
+      stairSnapGuides.forEach(guide => {
+        ctx.beginPath();
+        if (guide.axis === 'x') {
+          const sx = worldToScreen(guide.value, 0).x;
+          ctx.moveTo(sx, 0);
+          ctx.lineTo(sx, canvasH);
+        } else {
+          const sy = worldToScreen(0, guide.value).y;
+          ctx.moveTo(0, sy);
+          ctx.lineTo(canvasW, sy);
+        }
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
 
-    if (columnPreview && activeTool === 'column') {
       const previewScreen = worldToScreen(columnPreview.x, columnPreview.y);
       ctx.globalAlpha = 0.5;
       ctx.fillStyle = 'hsl(var(--primary))';
