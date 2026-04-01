@@ -1201,9 +1201,11 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'select') {
       // Route editing removed - now handled in MEP tab
 
-      // Check staircase first — use pending drag to differentiate click vs drag
+      // Check staircase first — immediate selection with forgiving hit area, drag starts on movement
       const stairHit = findStaircaseAt(world.x, world.y);
       if (stairHit) {
+        setSelectedStaircaseId(stairHit.id);
+        setSelectedElement(null);
         setPendingStaircaseDrag({
           id: stairHit.id,
           startX: e.clientX,
@@ -1211,7 +1213,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
           offsetX: world.x - stairHit.x,
           offsetY: world.y - stairHit.y,
         });
-        setSelectedElement(null);
         return;
       }
 
