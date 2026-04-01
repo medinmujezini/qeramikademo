@@ -32,9 +32,9 @@ interface CurtainDialogProps {
 const CURTAIN_TYPES: { value: CurtainType; label: string; description: string; icon: React.ReactNode }[] = [
   { value: 'panel', label: 'Panel', description: 'Classic split curtains with folds', icon: <Blinds className="h-4 w-4" /> },
   { value: 'sheer', label: 'Sheer', description: 'Translucent light-filtering', icon: <Layers className="h-4 w-4" /> },
-  { value: 'roman', label: 'Roman', description: 'Horizontal fold layers (Phase 2)', icon: <SquareStack className="h-4 w-4" /> },
-  { value: 'roller', label: 'Roller', description: 'Roll-up shade (Phase 2)', icon: <ScrollText className="h-4 w-4" /> },
-  { value: 'pleated', label: 'Pleated', description: 'Accordion zigzag (Phase 2)', icon: <ChevronDown className="h-4 w-4" /> },
+  { value: 'roman', label: 'Roman', description: 'Horizontal fold layers', icon: <SquareStack className="h-4 w-4" /> },
+  { value: 'roller', label: 'Roller', description: 'Roll-up shade', icon: <ScrollText className="h-4 w-4" /> },
+  { value: 'pleated', label: 'Pleated', description: 'Accordion zigzag', icon: <ChevronDown className="h-4 w-4" /> },
 ];
 
 const FABRIC_MATERIALS: { value: CurtainFabric; label: string }[] = [
