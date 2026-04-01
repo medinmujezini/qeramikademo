@@ -26,7 +26,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { floorPlan } = useFloorPlanContext();
+  const { floorPlan, staircases, activeLevel } = useFloorPlanContext();
 
   const [offset, setOffset] = useState({ x: 50, y: 50 });
   const [scale, setScale] = useState(1);
