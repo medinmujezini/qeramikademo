@@ -1935,6 +1935,25 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 Light
               </Button>
 
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
+                // Find walls with windows
+                const wallsWithWindows = floorPlan.walls.filter(w =>
+                  floorPlan.windows.some(win => win.wallId === w.id)
+                );
+                if (wallsWithWindows.length === 0) {
+                  toast.error('No windows found — curtains can only be placed on walls with windows');
+                  return;
+                }
+                // Use first wall with windows and first window on it
+                const wall = wallsWithWindows[0];
+                const win = floorPlan.windows.find(w => w.wallId === wall.id)!;
+                setCurtainTargetWindow({ window: win, wall });
+                setCurtainDialogOpen(true);
+              }}>
+                <Blinds className="h-3 w-3" />
+                Curtain
+              </Button>
+
               {/* Auto Emitter Controls */}
               <Popover>
                 <PopoverTrigger asChild>
