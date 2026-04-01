@@ -192,6 +192,7 @@ export const FloorPlanTab: React.FC = () => {
           onToggleDimensions={() => toggleLayer('dimensions')}
           onNewRoom={() => setShowNewRoomDialog(true)}
           onFromImage={() => setShowImportWizard(true)}
+          onNewFloor={() => setShowNewFloorDialog(true)}
         />
       </div>
 
