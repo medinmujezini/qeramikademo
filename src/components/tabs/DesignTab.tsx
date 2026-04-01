@@ -29,6 +29,8 @@ import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
+import { Curtain3D } from '@/components/3d/Curtain3D';
+import { CurtainDialog } from '@/components/3d/CurtainDialog';
 
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
@@ -41,7 +43,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun, ChevronUp, ChevronDown } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun, ChevronUp, ChevronDown, Blinds } from 'lucide-react';
 import { FloorManager } from '@/components/floor-plan/FloorManager';
 
 import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
@@ -50,7 +52,7 @@ import { CM_TO_METERS } from '@/constants/units';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY, DEFAULT_CEILING_EMITTER_CONFIG } from '@/types/floorPlan';
-import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity } from '@/types/floorPlan';
+import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity, Curtain, Window as FloorWindow } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
@@ -1013,6 +1015,29 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         );
       })}
 
+      {/* Curtains */}
+      {(floorPlan.curtains ?? []).map(curtain => {
+        const wall = floorPlan.walls.find(w => w.id === curtain.wallId);
+        if (!wall) return null;
+        const start = floorPlan.points.find(p => p.id === wall.startPointId);
+        const end = floorPlan.points.find(p => p.id === wall.endPointId);
+        if (!start || !end) return null;
+        const angle = Math.atan2(end.y - start.y, end.x - start.x);
+        return (
+          <Curtain3D
+            key={curtain.id}
+            curtain={curtain}
+            wallAngle={angle}
+            wallStartX={start.x}
+            wallStartY={start.y}
+            wallEndX={end.x}
+            wallEndY={end.y}
+            wallThickness={wall.thickness}
+            wallHeight={wall.height}
+          />
+        );
+      })}
+
       {/* Fixture Scene with all interaction - mirrors FurnitureScene */}
       <FixtureScene 
         enableDrag={true} 
@@ -1195,7 +1220,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel, updateCeilingEmitterConfig } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel, updateCeilingEmitterConfig, addCurtain, updateCurtain, deleteCurtain } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -1511,6 +1536,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   
   // Tile animation state
   const [tileAnimations, setTileAnimations] = useState<TileAnimationState>({});
+
+  // Curtain placement state
+  const [curtainDialogOpen, setCurtainDialogOpen] = useState(false);
+  const [curtainTargetWindow, setCurtainTargetWindow] = useState<{ window: FloorWindow; wall: Wall } | null>(null);
   
   const handlePipelineError = useCallback((error: Error) => {
     console.warn('[DesignTab] Pipeline error, falling back to basic lighting:', error);
@@ -1927,6 +1956,25 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               }}>
                 <Lightbulb className="h-3 w-3" />
                 Light
+              </Button>
+
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
+                // Find walls with windows
+                const wallsWithWindows = floorPlan.walls.filter(w =>
+                  floorPlan.windows.some(win => win.wallId === w.id)
+                );
+                if (wallsWithWindows.length === 0) {
+                  toast.error('No windows found — curtains can only be placed on walls with windows');
+                  return;
+                }
+                // Use first wall with windows and first window on it
+                const wall = wallsWithWindows[0];
+                const win = floorPlan.windows.find(w => w.wallId === wall.id)!;
+                setCurtainTargetWindow({ window: win, wall });
+                setCurtainDialogOpen(true);
+              }}>
+                <Blinds className="h-3 w-3" />
+                Curtain
               </Button>
 
               {/* Auto Emitter Controls */}
@@ -2514,6 +2562,33 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         onApplyTiles={handleApplyFloorTiles}
         onRemoveFinish={handleRemoveFloorFinish}
         currentFinish={floorPlan.floorFinish}
+      />
+
+      {/* Curtain Dialog */}
+      <CurtainDialog
+        open={curtainDialogOpen}
+        onOpenChange={setCurtainDialogOpen}
+        window={curtainTargetWindow?.window ?? null}
+        wallHeight={curtainTargetWindow?.wall.height ?? 280}
+        onConfirm={(config) => {
+          if (!curtainTargetWindow) return;
+          const { window: win, wall } = curtainTargetWindow;
+          addCurtain({
+            wallId: wall.id,
+            windowId: win.id,
+            position: win.position,
+            width: config.width,
+            height: config.height,
+            type: config.type,
+            fabricColor: config.fabricColor,
+            fabricMaterial: config.fabricMaterial,
+            opacity: config.opacity,
+            openAmount: 0,
+            mountHeight: config.mountHeight,
+            rodVisible: config.rodVisible,
+          });
+          toast.success('Curtain placed');
+        }}
       />
       </div>{/* end flex-1 canvas area */}
     </div>
