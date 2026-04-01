@@ -762,7 +762,41 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           document.body.style.cursor = 'default';
         }}
       >
-        <planeGeometry args={[floorWidth, floorDepth]} />
+        {(() => {
+          const activeFloorObj = building.floors.find(f => f.level === activeLevel);
+          const openings = (activeLevel > 0 && activeFloorObj?.slab?.openings) || [];
+          
+          if (openings.length === 0) {
+            return <planeGeometry args={[floorWidth, floorDepth]} />;
+          }
+          
+          // Build a shape with stairwell holes (in local coords centered at 0,0)
+          const shape = new THREE.Shape();
+          const hw = floorWidth / 2;
+          const hd = floorDepth / 2;
+          shape.moveTo(-hw, -hd);
+          shape.lineTo(hw, -hd);
+          shape.lineTo(hw, hd);
+          shape.lineTo(-hw, hd);
+          shape.closePath();
+          
+          // Cut holes for each opening (convert from world cm to local meters)
+          for (const op of openings) {
+            const lx = op.x * scale - floorCenterX;
+            const ly = op.y * scale - floorCenterZ;
+            const lw = op.width * scale;
+            const ld = op.depth * scale;
+            const hole = new THREE.Path();
+            hole.moveTo(lx, ly);
+            hole.lineTo(lx + lw, ly);
+            hole.lineTo(lx + lw, ly + ld);
+            hole.lineTo(lx, ly + ld);
+            hole.closePath();
+            shape.holes.push(hole);
+          }
+          
+          return <shapeGeometry args={[shape]} />;
+        })()}
         {floorPlan.floorFinish?.materialId ? (
           <Suspense fallback={<meshStandardMaterial color={floorPlan.floorFinish?.color || "#f3f4f6"} roughness={0.8} />}>
             <FloorWithTexture
@@ -946,31 +980,42 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       {/* Ceiling */}
       <Ceiling3D floorPlan={floorPlan} visible={showCeiling} />
 
-      {/* Active floor slab with stairwell openings */}
+      {/* Stairwell opening borders on active floor */}
       {(() => {
         const activeFloorObj = building.floors.find(f => f.level === activeLevel);
-        if (!activeFloorObj?.slab || activeFloorObj.slab.openings.length === 0) return null;
-        const pts = floorPlan.points;
-        if (pts.length < 2) return null;
-        const xs = pts.map(p => p.x);
-        const ys = pts.map(p => p.y);
-        const roomW = Math.max(...xs) - Math.min(...xs);
-        const roomH = Math.max(...ys) - Math.min(...ys);
-        const cxRoom = (Math.min(...xs) + Math.max(...xs)) / 2;
-        const cyRoom = (Math.min(...ys) + Math.max(...ys)) / 2;
-        const floorHeight = (activeFloorObj.floorToFloorHeight ?? 300) * CM_TO_METERS;
-        // Slab sits at the top of this floor (ceiling level) — only for floors above ground
-        if (activeLevel <= 0) return null;
-        return (
-          <FloorSlab3D
-            slab={activeFloorObj.slab}
-            roomWidth={roomW}
-            roomHeight={roomH}
-            yPosition={0}
-            centerX={cxRoom}
-            centerY={cyRoom}
-          />
-        );
+        if (!activeFloorObj?.slab || activeFloorObj.slab.openings.length === 0 || activeLevel <= 0) return null;
+        return activeFloorObj.slab.openings.map(opening => {
+          const ox = opening.x * scale;
+          const oz = opening.y * scale;
+          const ow = opening.width * scale;
+          const od = opening.depth * scale;
+          const borderW = 0.03; // 3cm border
+          const borderH = 0.08; // 8cm tall rim
+          return (
+            <group key={`stairwell-border-${opening.id}`}>
+              {/* Front */}
+              <mesh position={[ox + ow / 2, borderH / 2, oz]} castShadow>
+                <boxGeometry args={[ow + borderW * 2, borderH, borderW]} />
+                <meshStandardMaterial color="#8a8078" roughness={0.8} />
+              </mesh>
+              {/* Back */}
+              <mesh position={[ox + ow / 2, borderH / 2, oz + od]} castShadow>
+                <boxGeometry args={[ow + borderW * 2, borderH, borderW]} />
+                <meshStandardMaterial color="#8a8078" roughness={0.8} />
+              </mesh>
+              {/* Left */}
+              <mesh position={[ox, borderH / 2, oz + od / 2]} castShadow>
+                <boxGeometry args={[borderW, borderH, od]} />
+                <meshStandardMaterial color="#8a8078" roughness={0.8} />
+              </mesh>
+              {/* Right */}
+              <mesh position={[ox + ow, borderH / 2, oz + od / 2]} castShadow>
+                <boxGeometry args={[borderW, borderH, od]} />
+                <meshStandardMaterial color="#8a8078" roughness={0.8} />
+              </mesh>
+            </group>
+          );
+        });
       })()}
 
       {/* Staircases visible from the active floor (placed here OR arriving here) */}
