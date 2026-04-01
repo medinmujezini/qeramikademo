@@ -1061,8 +1061,9 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       ctx.setLineDash([6, 4]);
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = 'hsla(38, 80%, 68%, 0.8)';
-      const canvasW = canvas.width / dpr;
-      const canvasH = canvas.height / dpr;
+      const canvasEl = canvasRef.current!;
+      const canvasW = canvasEl.clientWidth;
+      const canvasH = canvasEl.clientHeight;
       stairSnapGuides.forEach(guide => {
         ctx.beginPath();
         if (guide.axis === 'x') {
