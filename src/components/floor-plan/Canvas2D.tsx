@@ -100,6 +100,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const [isShiftHeld, setIsShiftHeld] = useState(false);
   const [snapIndicator, setSnapIndicator] = useState<{ x: number; y: number; isCloseLoop: boolean } | null>(null);
   const [columnPreview, setColumnPreview] = useState<{ x: number; y: number } | null>(null);
+  const [draggedStaircase, setDraggedStaircase] = useState<string | null>(null);
+  const [staircaseOffset, setStaircaseOffset] = useState({ x: 0, y: 0 });
 
   const connectionStatus = useConnectionStatus(floorPlan);
 
