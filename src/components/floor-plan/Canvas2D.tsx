@@ -104,6 +104,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const [columnPreview, setColumnPreview] = useState<{ x: number; y: number } | null>(null);
   const [draggedStaircase, setDraggedStaircase] = useState<string | null>(null);
   const [staircaseOffset, setStaircaseOffset] = useState({ x: 0, y: 0 });
+  const [pendingStaircaseDrag, setPendingStaircaseDrag] = useState<{ id: string; startX: number; startY: number; offsetX: number; offsetY: number } | null>(null);
 
   const connectionStatus = useConnectionStatus(floorPlan);
 
@@ -1151,7 +1152,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     floorPlan, offset, scale, showGrid, gridSize, showTiles, showRoutes, editRoutes,
     selectedElement, draggedPoint, draggedFixture, draggedColumn, wallStartPoint, tempEndPoint, hoverWallMidpoint, activeTool, hasCollision, doorWindowPreview, connectionStatus,
     snapToGrid, worldToScreen, screenToWorld, getConnectedWallCount, layerVisibility, hoverRoutePoint, hoverRouteSegment, snapIndicator, columnPreview,
-    staircases, activeLevel, selectedStaircaseId, draggedStaircase,
+    staircases, activeLevel, selectedStaircaseId, draggedStaircase, pendingStaircaseDrag,
   ]);
 
   // Handle resize
@@ -1194,12 +1195,16 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'select') {
       // Route editing removed - now handled in MEP tab
 
-      // Check staircase first (before other elements)
+      // Check staircase first — use pending drag to differentiate click vs drag
       const stairHit = findStaircaseAt(world.x, world.y);
       if (stairHit) {
-        setDraggedStaircase(stairHit.id);
-        setStaircaseOffset({ x: world.x - stairHit.x, y: world.y - stairHit.y });
-        setSelectedStaircaseId(stairHit.id);
+        setPendingStaircaseDrag({
+          id: stairHit.id,
+          startX: e.clientX,
+          startY: e.clientY,
+          offsetX: world.x - stairHit.x,
+          offsetY: world.y - stairHit.y,
+        });
         setSelectedElement(null);
         return;
       }
@@ -1401,6 +1406,18 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       moveColumn(draggedColumn, newX, newY);
     }
 
+    // Promote pending staircase click to drag if moved > 5px
+    if (pendingStaircaseDrag && !draggedStaircase) {
+      const dx = e.clientX - pendingStaircaseDrag.startX;
+      const dy = e.clientY - pendingStaircaseDrag.startY;
+      if (Math.sqrt(dx * dx + dy * dy) > 5) {
+        setDraggedStaircase(pendingStaircaseDrag.id);
+        setStaircaseOffset({ x: pendingStaircaseDrag.offsetX, y: pendingStaircaseDrag.offsetY });
+        setSelectedStaircaseId(pendingStaircaseDrag.id);
+        setPendingStaircaseDrag(null);
+      }
+    }
+
     // Staircase drag
     if (draggedStaircase) {
       const newX = snapToGrid(world.x - staircaseOffset.x);
@@ -1478,7 +1495,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     } else {
       setDoorWindowPreview(null);
     }
-  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
+  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -1494,7 +1511,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (draggedStaircase) {
       setDraggedStaircase(null);
     }
-  }, [draggedFixture, draggedColumn, draggedStaircase]);
+    // Pending staircase click (no drag happened) → just select
+    if (pendingStaircaseDrag) {
+      setSelectedStaircaseId(pendingStaircaseDrag.id);
+      setPendingStaircaseDrag(null);
+    }
+  }, [draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, setSelectedStaircaseId]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
