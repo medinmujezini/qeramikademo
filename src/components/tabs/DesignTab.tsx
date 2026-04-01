@@ -947,7 +947,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
 
       {/* Staircases on the active floor */}
       {staircases
-        .filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
+        .filter(s => s.fromLevel === activeLevel)
         .map(stair => (
           <group
             key={stair.id}
