@@ -984,7 +984,8 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       const d = stair.depth * scale;
       
       // Fill
-      ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' : 'hsla(38, 60%, 68%, 0.2)';
+      const isHovered = hoveredStaircaseId === stair.id;
+      ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' : isHovered ? 'hsla(38, 60%, 68%, 0.3)' : 'hsla(38, 60%, 68%, 0.2)';
       ctx.fillRect(0, 0, w, d);
       
       // Tread lines
