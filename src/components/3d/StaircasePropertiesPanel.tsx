@@ -38,6 +38,20 @@ export const StaircasePropertiesPanel: React.FC = () => {
     updateStaircase(stair.id, { treadDepth, ...geo });
   };
 
+  const handleGlbUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    updateStaircase(stair.id, { customGlbUrl: url });
+  };
+
+  const handleRemoveGlb = () => {
+    if (stair.customGlbUrl) {
+      URL.revokeObjectURL(stair.customGlbUrl);
+    }
+    updateStaircase(stair.id, { customGlbUrl: undefined });
+  };
+
   return (
     <div className="space-y-3 p-3">
       <div className="flex items-center justify-between">
