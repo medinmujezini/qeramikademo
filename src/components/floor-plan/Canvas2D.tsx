@@ -1511,7 +1511,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (draggedStaircase) {
       setDraggedStaircase(null);
     }
-  }, [draggedFixture, draggedColumn, draggedStaircase]);
+    // Pending staircase click (no drag happened) → just select
+    if (pendingStaircaseDrag) {
+      setSelectedStaircaseId(pendingStaircaseDrag.id);
+      setPendingStaircaseDrag(null);
+    }
+  }, [draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, setSelectedStaircaseId]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
