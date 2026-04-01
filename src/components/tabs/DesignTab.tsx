@@ -29,7 +29,7 @@ import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
-import { FloorSlab3D } from '@/components/3d/FloorSlab3D';
+
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
@@ -967,19 +967,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         ))
       }
 
-      {/* Floor slabs for upper floors */}
-      {building.floors
-        .filter(f => f.level > 0 && f.slab && (f.level === activeLevel || f.level === activeLevel + 1))
-        .map(floor => (
-          <FloorSlab3D
-            key={`slab-${floor.level}`}
-            slab={floor.slab!}
-            roomWidth={floorPlan.roomWidth || 800}
-            roomHeight={floorPlan.roomHeight || 600}
-            yPosition={floor.floorToFloorHeight * CM_TO_METERS * floor.level}
-          />
-        ))
-      }
 
       {/* Ghost floors — adjacent floors rendered as transparent wireframes */}
       {showAdjacentFloors && (() => {
@@ -990,7 +977,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           const ghostPlan = getFloorPlanForLevel(level);
           if (!ghostPlan || ghostPlan.walls.length === 0) return null;
           const floor = building.floors.find(f => f.level === level)!;
-          const yOffset = (level - activeLevel) * floor.floorToFloorHeight * CM_TO_METERS;
+          const activeFloor = building.floors.find(f => f.level === activeLevel);
+          const yOffset = (level - activeLevel) * (activeFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
           const ghostOpacity = level > activeLevel ? 0.12 : 0.08;
           
           return (
