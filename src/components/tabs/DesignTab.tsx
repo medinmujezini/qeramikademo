@@ -798,7 +798,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
               const localW = linkedStair.width * scale;
               const localD = linkedStair.depth * scale;
               const centerX = linkedStair.x * scale - floorCenterX;
-              const centerY = linkedStair.y * scale - floorCenterZ;
+              const centerY = -(linkedStair.y * scale - floorCenterZ);
               const rotation = -(linkedStair.rotation * Math.PI) / 180;
               const turnRatio = linkedStair.type === 'u-shaped' ? 0.5 : 0.55;
               const sideRun = linkedStair.type === 'u-shaped' ? localW * 0.47 : localW * 0.5;
@@ -848,7 +848,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             const cos = Math.cos(rotation);
             const sin = Math.sin(rotation);
             const centerX = (op.x + op.width / 2) * scale - floorCenterX;
-            const centerY = (op.y + op.depth / 2) * scale - floorCenterZ;
+            const centerY = -(( op.y + op.depth / 2) * scale - floorCenterZ);
             const halfWidth = (op.width * scale) / 2;
             const halfDepth = (op.depth * scale) / 2;
 
