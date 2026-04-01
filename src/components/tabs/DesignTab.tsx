@@ -849,7 +849,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             const cos = Math.cos(rotation);
             const sin = Math.sin(rotation);
             const centerX = (op.x + op.width / 2) * scale - floorCenterX;
-            const centerY = (op.y + op.depth / 2) * scale - floorCenterZ;
+            const centerY = -(( op.y + op.depth / 2) * scale - floorCenterZ);
             const halfWidth = (op.width * scale) / 2;
             const halfDepth = (op.depth * scale) / 2;
 
