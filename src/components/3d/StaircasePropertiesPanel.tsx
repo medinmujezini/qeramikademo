@@ -190,11 +190,11 @@ export const StaircasePropertiesPanel: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full h-7 text-xs gap-1"
+              className="w-full h-auto min-h-[28px] py-1.5 text-[10px] gap-1 whitespace-normal text-center leading-tight"
               onClick={() => glbInputRef.current?.click()}
             >
-              <Upload className="h-3 w-3" />
-              Upload Custom Model (.glb)
+              <Upload className="h-3 w-3 shrink-0" />
+              Upload .glb Model
             </Button>
           </>
         )}
