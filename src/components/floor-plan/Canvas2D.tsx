@@ -281,12 +281,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     }
     return null;
   }, [staircases, activeLevel, scale]);
-      ) {
-        return stair;
-      }
-    }
-    return null;
-  }, [staircases, activeLevel, scale]);
 
   // Find insertion point on wall - allows clicking ANYWHERE on wall to insert junction
   const findWallInsertionPoint = useCallback((worldX: number, worldY: number, threshold: number = 20): { wallId: string; x: number; y: number; position: number } | null => {
