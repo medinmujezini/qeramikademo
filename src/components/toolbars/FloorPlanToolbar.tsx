@@ -72,6 +72,7 @@ export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
   showDimensions = true,
   onToggleDimensions,
   onNewRoom,
+  onFromImage,
   onNewFloor,
 }) => {
   const { undo, redo, canUndo, canRedo, building, activeLevel, setActiveLevel } = useFloorPlanContext();
