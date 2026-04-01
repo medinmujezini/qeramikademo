@@ -1593,7 +1593,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     } else {
       setDoorWindowPreview(null);
     }
-  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, findStaircaseAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, staircases, editRoutes]);
+  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, pendingStaircaseDrag, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, findStaircaseAt, getRotatedStairBounds, floorPlan.fixtures, floorPlan.points, floorPlan.walls, staircases, editRoutes]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
