@@ -1827,8 +1827,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 </PopoverContent>
               </Popover>
 
-              <StaircaseTypePicker />
-
               <div className="w-px h-4 bg-primary/15" />
 
               {/* Floor manager */}
