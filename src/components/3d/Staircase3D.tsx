@@ -137,21 +137,21 @@ const ProceduralStaircase3D: React.FC<{
       {geo.treads.map((t, i) => (
         <mesh key={`t${i}`} position={t.position} rotation={[0, t.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={t.size} />
-          <StairMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} clippingPlanes={clippingPlanes} />
+          <StairMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} clippingPlanes={clippingPlanes} emissiveIntensity={0.35 * emissiveBoost} />
         </mesh>
       ))}
 
       {geo.risers.map((r, i) => (
         <mesh key={`r${i}`} position={r.position} rotation={[0, r.rotation, 0]} receiveShadow>
           <boxGeometry args={r.size} />
-          <StairMaterial color={riserColor} roughness={mat.roughness + 0.1} metalness={mat.metalness} clippingPlanes={clippingPlanes} />
+          <StairMaterial color={riserColor} roughness={mat.roughness + 0.1} metalness={mat.metalness} clippingPlanes={clippingPlanes} emissiveIntensity={0.25 * emissiveBoost} />
         </mesh>
       ))}
 
       {geo.landingPlatforms.map((p, i) => (
         <mesh key={`l${i}`} position={p.position} rotation={[0, p.rotation, 0]} castShadow receiveShadow>
           <boxGeometry args={p.size} />
-          <StairMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} clippingPlanes={clippingPlanes} />
+          <StairMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness} clippingPlanes={clippingPlanes} emissiveIntensity={0.35 * emissiveBoost} />
         </mesh>
       ))}
 
