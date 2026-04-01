@@ -1400,6 +1400,13 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       moveColumn(draggedColumn, newX, newY);
     }
 
+    // Staircase drag
+    if (draggedStaircase) {
+      const newX = snapToGrid(world.x - staircaseOffset.x);
+      const newY = snapToGrid(world.y - staircaseOffset.y);
+      updateStaircase(draggedStaircase, { x: newX, y: newY });
+    }
+
     // Column preview
     if (activeTool === 'column') {
       setColumnPreview(snappedWorld);
