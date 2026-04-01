@@ -1,58 +1,132 @@
 
 
-# Second Floor Editing Robustness
+# Robust Second Floor & High-Quality Staircase System — Enhanced Plan
 
-## What Changes
+## Issues Found Beyond Original Analysis
 
-1. **Quick floor-switching chevrons** next to FloorManager in the 3D toolbar
-2. **Ghost wall overlays** in the 2D Canvas (Room Layout) — blue below, orange above, non-interactive
-3. **Solid ghost walls + floor slabs** in the 3D view replacing current wireframes
+### Bug A: Rotation hit-test sign mismatch (confirmed still present)
+Line 267: `const rad = -(stair.rotation * Math.PI) / 180` (negative)
+Line 978: `ctx.rotate((stair.rotation * Math.PI) / 180)` (positive)
+The inverse rotation for hit-testing uses the wrong formula. After positive rotation, the inverse transform should be:
+```
+localX = dx * cos + dy * sin
+localY = -dx * sin + dy * cos
+```
+Currently it uses `dx * cos - dy * sin` / `dx * sin + dy * cos` which is wrong for the sign.
 
-## Technical Plan
+### Bug B: Width/depth sliders don't recalculate tread geometry
+Lines 122-127 in PropertiesPanel set `width` and `depth` directly without calling `calculateStaircaseGeometry`. The `StaircasePropertiesPanel` component (already exists) handles this correctly via `handleWidthChange`/`handleTreadDepthChange`. The inline panel should be replaced.
 
-### 1. Floor level chevrons — `src/components/tabs/DesignTab.tsx`
+### Bug C: No keyboard delete/rotate for staircases
+Lines 1699-1749: The Delete handler only checks `selectedElement`, never `selectedStaircaseId`. The R-key handler also ignores staircases.
 
-**Line 44**: Add `ChevronUp, ChevronDown` to the lucide-react import.
+### Bug D: Duplicate `break` statement
+Line 1714-1715: There's a double `break` after the wall delete case — harmless but sloppy.
 
-**After line 1833** (`<FloorManager />`): Insert up/down chevron buttons using existing `building`, `activeLevel`, `setActiveLevel` from context. Disable when no floor exists in that direction.
+### Bug E: No hover highlight for staircases
+The draw code has no visual distinction when hovering over a staircase in select mode — unlike walls/fixtures which change cursor. No fill change on hover.
 
+### Bug F: Staircase drag has no room boundary clamping
+Line 1463-1465: Drag updates position without constraining to room bounds. Stairs can be dragged outside walls.
+
+### Missing: `hoveredStaircaseId` state doesn't exist
+Need to add state tracking + mousemove detection for hover.
+
+## Plan
+
+### 1. Replace inline staircase panel with StaircasePropertiesPanel
+**File: `src/components/floor-plan/PropertiesPanel.tsx`** (lines 91-189)
+
+Replace the entire inline staircase block with:
 ```tsx
-<Button variant="ghost" size="icon" className="h-6 w-6"
-  disabled={!building.floors.some(f => f.level > activeLevel)}
-  onClick={() => setActiveLevel(activeLevel + 1)}>
-  <ChevronUp className="h-3 w-3" />
-</Button>
-<Button variant="ghost" size="icon" className="h-6 w-6"
-  disabled={!building.floors.some(f => f.level < activeLevel)}
-  onClick={() => setActiveLevel(activeLevel - 1)}>
-  <ChevronDown className="h-3 w-3" />
-</Button>
+import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
+
+if (selectedStaircaseId && !selectedElement) {
+  return (
+    <Card className="h-full border-border overflow-auto">
+      <StaircasePropertiesPanel />
+    </Card>
+  );
+}
+```
+This uses the existing component that correctly calls `calculateStaircaseGeometry` on dimension changes and includes GLB upload support.
+
+### 2. Fix rotation hit-test
+**File: `src/components/floor-plan/Canvas2D.tsx`** (lines 267-274)
+
+Change the inverse rotation math:
+```tsx
+const rad = (stair.rotation * Math.PI) / 180; // positive, matching draw
+const cos = Math.cos(rad);
+const sin = Math.sin(rad);
+const dx = worldX - stair.x;
+const dy = worldY - stair.y;
+const localX = dx * cos + dy * sin;   // correct inverse
+const localY = -dx * sin + dy * cos;  // correct inverse
 ```
 
-### 2. Ghost wall overlay in 2D — `src/components/floor-plan/Canvas2D.tsx`
+### 3. Add keyboard shortcuts for staircases
+**File: `src/components/floor-plan/Canvas2D.tsx`** (lines 1699-1749)
 
-**Context destructuring (line 70-80)**: Add `showAdjacentFloors`, `getFloorPlanForLevel` from `useFloorPlanContext()`.
+In the Delete/Backspace handler (after the `selectedElement` block), add:
+```tsx
+if (selectedStaircaseId) {
+  removeStaircase(selectedStaircaseId);
+  setSelectedStaircaseId(null);
+}
+```
 
-**In `draw()` function, after grid drawing (line 348) and before active wall drawing (line 350)**: Insert a ghost wall rendering block. For each adjacent level (`activeLevel ± 1`), get the floor plan via `getFloorPlanForLevel()` and draw each wall as a simple filled rectangle:
-- Floor below: `rgba(59, 130, 246, 0.20)` (blue)
-- Floor above: `rgba(249, 115, 22, 0.15)` (orange)
+In the R-key handler, add:
+```tsx
+if (selectedStaircaseId) {
+  const stair = staircases.find(s => s.id === selectedStaircaseId);
+  if (stair) updateStaircase(selectedStaircaseId, { rotation: (stair.rotation + 90) % 360 });
+}
+```
 
-Uses the same wall-rectangle math as active walls (compute angle from start→end, translate/rotate context, `fillRect` with wall thickness × length). No dimension labels, no interaction, no hit-testing.
+Add `removeStaircase`, `selectedStaircaseId`, `setSelectedStaircaseId`, `updateStaircase`, `staircases` to the `useCallback` deps array (line 1749).
 
-### 3. Solid ghost walls + slabs in 3D — `src/components/tabs/DesignTab.tsx`
+### 4. Add hover highlight for staircases
+**File: `src/components/floor-plan/Canvas2D.tsx`**
 
-**Lines 1006**: Change `meshBasicMaterial` to `meshStandardMaterial` with `color="#999"`, `transparent`, `opacity={0.25}`, `depthWrite={false}`. Remove `wireframe`.
+Add `hoveredStaircaseId` state. In `handleMouseMove`, when `activeTool === 'select'` and not dragging, call `findStaircaseAt` and set `hoveredStaircaseId`.
 
-**After the ghost walls group (line 1009)**, add a floor slab mesh for each ghost level that has a `slab` property:
-- Compute room bounds from `ghostPlan.points`
-- Slab height from `floor.slab.thickness` (default 20cm) × `CM_TO_METERS`
-- Position at `yOffset` (bottom of that level)
-- Render as `<boxGeometry>` with neutral gray 30% opacity material
+In the staircase draw block (line 985), use a brighter fill when hovered:
+```tsx
+const isHovered = hoveredStaircaseId === stair.id;
+ctx.fillStyle = isDragging ? 'hsla(38, 60%, 68%, 0.4)' 
+  : isHovered ? 'hsla(38, 60%, 68%, 0.3)' 
+  : 'hsla(38, 60%, 68%, 0.2)';
+```
+
+### 5. Clamp staircase drag to room bounds
+**File: `src/components/floor-plan/Canvas2D.tsx`** (lines 1461-1466)
+
+After computing `newX`/`newY`, clamp to room bounding box:
+```tsx
+const pts = floorPlan.points;
+if (pts.length > 0) {
+  const minX = Math.min(...pts.map(p => p.x));
+  const minY = Math.min(...pts.map(p => p.y));
+  const maxX = Math.max(...pts.map(p => p.x));
+  const maxY = Math.max(...pts.map(p => p.y));
+  const stair = staircases.find(s => s.id === draggedStaircase);
+  if (stair) {
+    newX = Math.max(minX, Math.min(newX, maxX - stair.width));
+    newY = Math.max(minY, Math.min(newY, maxY - stair.depth));
+  }
+}
+```
+
+### 6. Fix duplicate break statement
+**File: `src/components/floor-plan/Canvas2D.tsx`** (line 1715)
+
+Remove the extra `break;` after the wall delete case.
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/tabs/DesignTab.tsx` | Add ChevronUp/Down chevrons; upgrade ghost walls to solid + add slab meshes |
-| `src/components/floor-plan/Canvas2D.tsx` | Add ghost wall overlay for adjacent floors before active walls |
+| `src/components/floor-plan/PropertiesPanel.tsx` | Replace inline staircase section with `StaircasePropertiesPanel` |
+| `src/components/floor-plan/Canvas2D.tsx` | Fix rotation hit-test, add Delete/R keyboard shortcuts, hover highlight, room bounds clamping, remove duplicate break |
 
