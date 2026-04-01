@@ -1483,35 +1483,106 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       }
     }
 
-    // Staircase drag
+    // Staircase drag with wall snapping
     if (draggedStaircase) {
+      const WALL_SNAP_THRESHOLD = 20; // cm
       let newX = snapToGrid(world.x - staircaseOffset.x);
       let newY = snapToGrid(world.y - staircaseOffset.y);
       const pts = floorPlan.points;
-      if (pts.length > 0) {
+      const stair = staircases.find(s => s.id === draggedStaircase);
+      if (stair && pts.length > 0) {
         const minX = Math.min(...pts.map(p => p.x));
         const minY = Math.min(...pts.map(p => p.y));
         const maxX = Math.max(...pts.map(p => p.x));
         const maxY = Math.max(...pts.map(p => p.y));
-        const stair = staircases.find(s => s.id === draggedStaircase);
-        if (stair) {
-          const clamped = { ...stair, x: newX, y: newY };
-          let bounds = getRotatedStairBounds(clamped);
 
-          if (bounds.minX < minX) newX += minX - bounds.minX;
-          if (bounds.maxX > maxX) newX -= bounds.maxX - maxX;
-          if (bounds.minY < minY) newY += minY - bounds.minY;
-          if (bounds.maxY > maxY) newY -= bounds.maxY - maxY;
+        // Get rotated bounds of staircase at candidate position
+        const candidateBounds = getRotatedStairBounds({ ...stair, x: newX, y: newY });
+        const guides: { axis: 'x' | 'y'; value: number }[] = [];
 
-          const corrected = { ...stair, x: newX, y: newY };
-          bounds = getRotatedStairBounds(corrected);
-          if (bounds.minX < minX) newX = stair.x;
-          if (bounds.maxX > maxX) newX = stair.x;
-          if (bounds.minY < minY) newY = stair.y;
-          if (bounds.maxY > maxY) newY = stair.y;
+        // Collect unique wall edge X and Y values from wall endpoints
+        const wallEdgeXs = new Set<number>();
+        const wallEdgeYs = new Set<number>();
+        floorPlan.walls.forEach(w => {
+          const sp = floorPlan.points.find(p => p.id === w.startPointId);
+          const ep = floorPlan.points.find(p => p.id === w.endPointId);
+          if (sp && ep) {
+            // For vertical walls, snap to their X
+            if (Math.abs(sp.x - ep.x) < 5) {
+              wallEdgeXs.add(sp.x);
+            }
+            // For horizontal walls, snap to their Y
+            if (Math.abs(sp.y - ep.y) < 5) {
+              wallEdgeYs.add(sp.y);
+            }
+            // Always add endpoints as snap targets
+            wallEdgeXs.add(sp.x);
+            wallEdgeXs.add(ep.x);
+            wallEdgeYs.add(sp.y);
+            wallEdgeYs.add(ep.y);
+          }
+        });
+
+        // Snap left/right edges to wall X positions
+        let snappedX = false;
+        for (const wx of wallEdgeXs) {
+          const distLeft = Math.abs(candidateBounds.minX - wx);
+          const distRight = Math.abs(candidateBounds.maxX - wx);
+          if (distLeft < WALL_SNAP_THRESHOLD && distLeft <= distRight) {
+            newX += wx - candidateBounds.minX;
+            guides.push({ axis: 'x', value: wx });
+            snappedX = true;
+            break;
+          }
+          if (distRight < WALL_SNAP_THRESHOLD) {
+            newX += wx - candidateBounds.maxX;
+            guides.push({ axis: 'x', value: wx });
+            snappedX = true;
+            break;
+          }
         }
+
+        // Snap top/bottom edges to wall Y positions
+        let snappedY = false;
+        for (const wy of wallEdgeYs) {
+          const distTop = Math.abs(candidateBounds.minY - wy);
+          const distBottom = Math.abs(candidateBounds.maxY - wy);
+          if (distTop < WALL_SNAP_THRESHOLD && distTop <= distBottom) {
+            newY += wy - candidateBounds.minY;
+            guides.push({ axis: 'y', value: wy });
+            snappedY = true;
+            break;
+          }
+          if (distBottom < WALL_SNAP_THRESHOLD) {
+            newY += wy - candidateBounds.maxY;
+            guides.push({ axis: 'y', value: wy });
+            snappedY = true;
+            break;
+          }
+        }
+
+        setStairSnapGuides(guides);
+
+        // Room bounds clamping (after snapping)
+        const clamped = { ...stair, x: newX, y: newY };
+        let bounds = getRotatedStairBounds(clamped);
+        if (bounds.minX < minX) newX += minX - bounds.minX;
+        if (bounds.maxX > maxX) newX -= bounds.maxX - maxX;
+        if (bounds.minY < minY) newY += minY - bounds.minY;
+        if (bounds.maxY > maxY) newY -= bounds.maxY - maxY;
+
+        const corrected = { ...stair, x: newX, y: newY };
+        bounds = getRotatedStairBounds(corrected);
+        if (bounds.minX < minX) newX = stair.x;
+        if (bounds.maxX > maxX) newX = stair.x;
+        if (bounds.minY < minY) newY = stair.y;
+        if (bounds.maxY > maxY) newY = stair.y;
+      } else {
+        setStairSnapGuides([]);
       }
       updateStaircase(draggedStaircase, { x: newX, y: newY });
+    } else if (stairSnapGuides.length > 0) {
+      setStairSnapGuides([]);
     }
 
     // Hover detection for staircases
