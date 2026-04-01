@@ -119,7 +119,8 @@ const ProceduralStaircase3D: React.FC<{
   rotY: number;
   yOffset: number;
   clippingPlanes?: THREE.Plane[];
-}> = ({ staircase, posX, posZ, rotY, yOffset, clippingPlanes = [] }) => {
+  emissiveBoost?: number;
+}> = ({ staircase, posX, posZ, rotY, yOffset, clippingPlanes = [], emissiveBoost = 0 }) => {
   const geo = useMemo(() => generateStaircaseGeometry(staircase), [staircase]);
   const mat = TREAD_MATERIALS[staircase.treadMaterial] || TREAD_MATERIALS.wood;
   const riserColor = darkenColor(mat.color, 0.85);
