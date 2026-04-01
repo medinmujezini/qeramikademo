@@ -108,10 +108,19 @@ export const PropertiesPanel: React.FC = () => {
     return (
       <Card className="h-full">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sm">Wall Properties</CardTitle>
-          <Button variant="destructive" size="icon" onClick={() => deleteWall(wall.id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-sm">Wall Properties</CardTitle>
+            {wall.isStructural && (
+              <span className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary px-1.5 py-0.5 rounded-sm">
+                Structural
+              </span>
+            )}
+          </div>
+          {!wall.isStructural && (
+            <Button variant="destructive" size="icon" onClick={() => deleteWall(wall.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

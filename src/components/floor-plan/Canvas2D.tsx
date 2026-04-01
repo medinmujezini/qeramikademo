@@ -1502,8 +1502,15 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
           case 'point':
             deletePoint(selectedElement.id);
             break;
-          case 'wall':
+          case 'wall': {
+            const wallToDelete = floorPlan.walls.find(w => w.id === selectedElement.id);
+            if (wallToDelete?.isStructural) {
+              toast.error('Structural walls cannot be deleted');
+              break;
+            }
             deleteWall(selectedElement.id);
+            break;
+          }
             break;
           case 'door':
             deleteDoor(selectedElement.id);
