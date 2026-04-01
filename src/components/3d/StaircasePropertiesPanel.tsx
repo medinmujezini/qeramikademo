@@ -167,6 +167,38 @@ export const StaircasePropertiesPanel: React.FC = () => {
         <p>Footprint: {stair.width} × {stair.depth} cm</p>
         <p>Connects: Level {stair.fromLevel} → Level {stair.toLevel}</p>
       </div>
+
+      {/* Custom GLB Upload */}
+      <div className="space-y-1 border-t border-primary/10 pt-2">
+        <Label className="text-[10px] uppercase tracking-wider">Custom 3D Model</Label>
+        {stair.customGlbUrl ? (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground truncate flex-1">Custom model loaded</span>
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={handleRemoveGlb}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        ) : (
+          <>
+            <input
+              ref={glbInputRef}
+              type="file"
+              accept=".glb,.gltf"
+              className="hidden"
+              onChange={handleGlbUpload}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-7 text-xs gap-1"
+              onClick={() => glbInputRef.current?.click()}
+            >
+              <Upload className="h-3 w-3" />
+              Upload Custom Model (.glb)
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 };
