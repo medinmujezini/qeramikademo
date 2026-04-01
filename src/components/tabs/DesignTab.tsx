@@ -775,7 +775,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
               depth: stair.depth,
             }));
           const openings = activeLevel > 0 ? [...manualOpenings, ...stairOpenings] : [];
-          console.log('[FloorSlab Debug]', { activeLevel, staircasesCount: staircases.length, stairOpeningsCount: stairOpenings.length, openingsCount: openings.length, staircases: staircases.map(s => ({ id: s.id, from: s.fromLevel, to: s.toLevel })) });
 
           if (openings.length === 0) {
             return <planeGeometry args={[floorWidth, floorDepth]} />;
