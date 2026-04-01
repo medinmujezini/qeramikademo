@@ -20,6 +20,10 @@ import {
   LayoutTemplate,
   ImagePlus,
   ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  Plus,
+  Layers,
 } from 'lucide-react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import {
@@ -51,6 +55,7 @@ interface FloorPlanToolbarProps {
   onToggleDimensions?: () => void;
   onNewRoom?: () => void;
   onFromImage?: () => void;
+  onNewFloor?: () => void;
 }
 
 export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
@@ -68,8 +73,15 @@ export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
   onToggleDimensions,
   onNewRoom,
   onFromImage,
+  onNewFloor,
 }) => {
-  const { undo, redo, canUndo, canRedo } = useFloorPlanContext();
+  const { undo, redo, canUndo, canRedo, building, activeLevel, setActiveLevel } = useFloorPlanContext();
+
+  const sortedFloors = [...building.floors].sort((a, b) => a.level - b.level);
+  const currentIndex = sortedFloors.findIndex(f => f.level === activeLevel);
+  const currentFloorName = sortedFloors[currentIndex]?.name || 'Floor';
+  const canGoUp = currentIndex < sortedFloors.length - 1;
+  const canGoDown = currentIndex > 0;
 
   return (
     <div className="flex items-center gap-1 h-full">
@@ -231,6 +243,38 @@ export const FloorPlanToolbar: React.FC<FloorPlanToolbarProps> = ({
         <ImagePlus className="h-3.5 w-3.5" />
         From Image
       </Button>
+      <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={onNewFloor}>
+        <Plus className="h-3.5 w-3.5" />
+        New Floor
+      </Button>
+
+      <div className="w-px h-4 bg-primary/15" />
+
+      {/* Floor Switcher */}
+      <div className="flex items-center gap-0.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+          disabled={!canGoDown}
+          onClick={() => canGoDown && setActiveLevel(sortedFloors[currentIndex - 1].level)}
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+        </Button>
+        <span className="text-xs font-medium min-w-[60px] text-center flex items-center gap-1 justify-center">
+          <Layers className="h-3 w-3 text-muted-foreground" />
+          {currentFloorName}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+          disabled={!canGoUp}
+          onClick={() => canGoUp && setActiveLevel(sortedFloors[currentIndex + 1].level)}
+        >
+          <ChevronUp className="h-3.5 w-3.5" />
+        </Button>
+      </div>
 
       <div className="w-px h-4 bg-primary/15" />
 
