@@ -1262,12 +1262,11 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
     if (activeTool === 'staircase') {
       if (building.floors.length < 2) {
-        toast('Add a floor above first');
+        toast.error('Add a floor above first');
       } else {
         addStaircase('straight', snappedWorld.x, snappedWorld.y);
-        // Find the newly added staircase (last one)
-        // We can't access updated state here directly, so just switch tool
-        // The staircase will be auto-selected after re-render
+        toast.success('Staircase placed');
+        setActiveTool?.('select');
       }
     }
 
