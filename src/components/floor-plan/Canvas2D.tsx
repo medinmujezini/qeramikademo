@@ -18,6 +18,7 @@ type Tool = 'select' | 'wall' | 'door' | 'window' | 'pan' | 'column' | 'staircas
 
 interface Canvas2DProps {
   activeTool: Tool;
+  setActiveTool?: (tool: Tool) => void;
   showGrid: boolean;
   gridSize: number;
   showTiles?: boolean;
