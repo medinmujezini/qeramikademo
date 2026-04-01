@@ -5,6 +5,7 @@ import { TILE_LIBRARY } from '@/types/floorPlan';
 import { checkFixtureCollisions, getClearanceZone, FIXTURE_CLEARANCES } from '@/utils/collisionDetection';
 import { useConnectionStatus, getOverallStatus, getConnectionStatusColor } from '@/hooks/useConnectionStatus';
 import { getArcPoints, getBulgeHandlePosition, arcLength } from '@/utils/arcUtils';
+import { toast } from 'sonner';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -121,6 +122,9 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
 
   const findWallAt = useCallback((worldX: number, worldY: number, threshold: number = 10): Wall | null => {
     for (const wall of floorPlan.walls) {
+      // Structural walls cannot be selected
+      if (wall.isStructural) continue;
+
       const startPoint = floorPlan.points.find(p => p.id === wall.startPointId);
       const endPoint = floorPlan.points.find(p => p.id === wall.endPointId);
       if (!startPoint || !endPoint) continue;
@@ -343,9 +347,14 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         }
       };
       
-      // Neon color definitions - thinner and less opaque
-      const neonEdge = isSelected ? 'hsla(38, 80%, 68%, 0.8)' : 'hsla(38, 60%, 58%, 0.7)';
-      const glassFill = 'hsla(38, 30%, 20%, 0.4)';
+      // Neon color definitions — structural walls get gold outline
+      const isStructuralWall = wall.isStructural === true;
+      const neonEdge = isStructuralWall
+        ? 'hsla(38, 70%, 55%, 0.9)'
+        : isSelected ? 'hsla(38, 80%, 68%, 0.8)' : 'hsla(38, 60%, 58%, 0.7)';
+      const glassFill = isStructuralWall
+        ? 'hsla(38, 40%, 25%, 0.5)'
+        : 'hsla(38, 30%, 20%, 0.4)';
       
       // Calculate wall angle
       const angle = Math.atan2(end.y - start.y, end.x - start.x);
@@ -1494,8 +1503,15 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
           case 'point':
             deletePoint(selectedElement.id);
             break;
-          case 'wall':
+          case 'wall': {
+            const wallToDelete = floorPlan.walls.find(w => w.id === selectedElement.id);
+            if (wallToDelete?.isStructural) {
+              toast.error('Structural walls cannot be deleted');
+              break;
+            }
             deleteWall(selectedElement.id);
+            break;
+          }
             break;
           case 'door':
             deleteDoor(selectedElement.id);
