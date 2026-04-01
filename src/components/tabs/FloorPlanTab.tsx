@@ -10,6 +10,7 @@ import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
 import { BlueprintImportWizard, FloorPlanAnalysis } from '@/components/blueprint/BlueprintImportWizard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NewFloorDialog } from '@/components/floor-plan/NewFloorDialog';
 import { toast } from 'sonner';
 import { generateRectangleRoom, generateLShapeRoom } from '@/utils/roomTemplates';
 
