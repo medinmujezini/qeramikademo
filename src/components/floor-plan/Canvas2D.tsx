@@ -258,10 +258,10 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   }, [floorPlan.columns]);
 
   // Find staircase at world position (only active level)
-  const findStaircaseAt = useCallback((worldX: number, worldY: number) => {
+  const findStaircaseAt = useCallback((worldX: number, worldY: number, thresholdPx: number = 18) => {
+    const thresholdWorld = thresholdPx / scale;
     for (const stair of staircases) {
       if (stair.fromLevel !== activeLevel) continue;
-      // Simple axis-aligned hit test (rotation not applied for simplicity)
       const rad = -(stair.rotation * Math.PI) / 180;
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
@@ -270,12 +270,17 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       // Transform to staircase local space (origin at stair.x, stair.y)
       const localX = dx * cos + dy * sin;
       const localY = -dx * sin + dy * cos;
-      if (localX >= 0 && localX <= stair.width && localY >= 0 && localY <= stair.depth) {
+      if (
+        localX >= -thresholdWorld &&
+        localX <= stair.width + thresholdWorld &&
+        localY >= -thresholdWorld &&
+        localY <= stair.depth + thresholdWorld
+      ) {
         return stair;
       }
     }
     return null;
-  }, [staircases, activeLevel]);
+  }, [staircases, activeLevel, scale]);
 
   // Find insertion point on wall - allows clicking ANYWHERE on wall to insert junction
   const findWallInsertionPoint = useCallback((worldX: number, worldY: number, threshold: number = 20): { wallId: string; x: number; y: number; position: number } | null => {
