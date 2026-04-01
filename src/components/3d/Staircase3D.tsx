@@ -39,7 +39,8 @@ const StairMaterial: React.FC<{
   transparent?: boolean;
   opacity?: number;
   clippingPlanes?: THREE.Plane[];
-}> = ({ color, roughness, metalness, transparent = false, opacity = 1, clippingPlanes = [] }) => (
+  emissiveIntensity?: number;
+}> = ({ color, roughness, metalness, transparent = false, opacity = 1, clippingPlanes = [], emissiveIntensity = 0 }) => (
   <meshStandardMaterial
     color={color}
     roughness={roughness}
@@ -48,6 +49,8 @@ const StairMaterial: React.FC<{
     opacity={opacity}
     clippingPlanes={clippingPlanes}
     clipShadows
+    emissive={emissiveIntensity > 0 ? color : '#000000'}
+    emissiveIntensity={emissiveIntensity}
   />
 );
 
