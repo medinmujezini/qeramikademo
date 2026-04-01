@@ -1,67 +1,58 @@
 
 
-# Fix Staircase Issues: Selection, Resize, Finishes Tab, 3D Placement
+# Second Floor Editing Robustness
 
-## Issues
+## What Changes
 
-1. **Selection unresponsive in Room Layout** — clicking a staircase immediately starts dragging instead of just selecting. The `handleMouseDown` sets `draggedStaircase` on first click, making simple click-to-select impossible. Need to differentiate click vs drag (use mouseup without movement for selection).
-
-2. **No resize controls** — staircases have fixed width/depth from `calculateStaircaseGeometry`. The `StaircasePropertiesPanel` has width/depth sliders but the 2D canvas shows no resize handles. Need width/depth inputs in `PropertiesPanel` when a staircase is selected (similar to how wall properties show).
-
-3. **Stairs missing in Finishes tab** — `TilesCanvas.tsx` only draws walls, doors, and windows. It never reads `staircases` from context. Need to render the same gold staircase symbol there (non-interactive, just visual).
-
-4. **3D: stairs on both floors + sticking out** — In `DesignTab.tsx` line 950, the filter is `s.fromLevel === activeLevel || s.toLevel === activeLevel`, which renders the staircase on BOTH the ground and first floor. Should only render on `fromLevel === activeLevel`. Also the staircase position is absolute (`stair.x`, `stair.y`) but may be placed outside room bounds — the user needs resize to fix that.
+1. **Quick floor-switching chevrons** next to FloorManager in the 3D toolbar
+2. **Ghost wall overlays** in the 2D Canvas (Room Layout) — blue below, orange above, non-interactive
+3. **Solid ghost walls + floor slabs** in the 3D view replacing current wireframes
 
 ## Technical Plan
 
-### 1. Fix click-to-select vs drag in Canvas2D
-**File: `src/components/floor-plan/Canvas2D.tsx`**
+### 1. Floor level chevrons — `src/components/tabs/DesignTab.tsx`
 
-- On mousedown with staircase hit: store the staircase ID and click position but do NOT set `draggedStaircase` yet. Set a `pendingStaircaseDrag` state.
-- On mousemove: if `pendingStaircaseDrag` and mouse moved > 5px, promote to `draggedStaircase`.
-- On mouseup: if `pendingStaircaseDrag` and mouse didn't move (no drag), just select via `setSelectedStaircaseId`. Show properties panel.
+**Line 44**: Add `ChevronUp, ChevronDown` to the lucide-react import.
 
-### 2. Show staircase properties in PropertiesPanel
-**File: `src/components/floor-plan/PropertiesPanel.tsx`**
+**After line 1833** (`<FloorManager />`): Insert up/down chevron buttons using existing `building`, `activeLevel`, `setActiveLevel` from context. Disable when no floor exists in that direction.
 
-- Read `selectedStaircaseId`, `staircases`, `updateStaircase`, `removeStaircase`, `setSelectedStaircaseId` from context.
-- When `selectedStaircaseId` is set (and no wall/fixture selected), render a staircase properties card with:
-  - Type display (read-only label)
-  - Width slider (60-200 cm)
-  - Depth slider (100-600 cm)  
-  - Stair width slider (60-150 cm)
-  - Tread depth slider (20-35 cm)
-  - Rotation slider (0-360)
-  - Position X/Y inputs
-  - Delete button (calls `removeStaircase`)
-- Changing width/depth calls `updateStaircase` which updates both 2D and 3D.
-
-### 3. Render staircases in Finishes tab (TilesCanvas)
-**File: `src/components/tiles/TilesCanvas.tsx`**
-
-- Import `staircases`, `activeLevel` from `useFloorPlanContext()`.
-- In the draw function, after drawing walls/doors/windows, draw each staircase where `fromLevel === activeLevel` as a semi-transparent gold rectangle with tread lines (same visual as Canvas2D but non-interactive).
-
-### 4. Fix 3D: only render staircase on fromLevel
-**File: `src/components/tabs/DesignTab.tsx`** (line 950)
-
-Change filter from:
-```ts
-.filter(s => s.fromLevel === activeLevel || s.toLevel === activeLevel)
-```
-To:
-```ts
-.filter(s => s.fromLevel === activeLevel)
+```tsx
+<Button variant="ghost" size="icon" className="h-6 w-6"
+  disabled={!building.floors.some(f => f.level > activeLevel)}
+  onClick={() => setActiveLevel(activeLevel + 1)}>
+  <ChevronUp className="h-3 w-3" />
+</Button>
+<Button variant="ghost" size="icon" className="h-6 w-6"
+  disabled={!building.floors.some(f => f.level < activeLevel)}
+  onClick={() => setActiveLevel(activeLevel - 1)}>
+  <ChevronDown className="h-3 w-3" />
+</Button>
 ```
 
-This ensures the staircase only appears once, on the floor where it starts.
+### 2. Ghost wall overlay in 2D — `src/components/floor-plan/Canvas2D.tsx`
+
+**Context destructuring (line 70-80)**: Add `showAdjacentFloors`, `getFloorPlanForLevel` from `useFloorPlanContext()`.
+
+**In `draw()` function, after grid drawing (line 348) and before active wall drawing (line 350)**: Insert a ghost wall rendering block. For each adjacent level (`activeLevel ± 1`), get the floor plan via `getFloorPlanForLevel()` and draw each wall as a simple filled rectangle:
+- Floor below: `rgba(59, 130, 246, 0.20)` (blue)
+- Floor above: `rgba(249, 115, 22, 0.15)` (orange)
+
+Uses the same wall-rectangle math as active walls (compute angle from start→end, translate/rotate context, `fillRect` with wall thickness × length). No dimension labels, no interaction, no hit-testing.
+
+### 3. Solid ghost walls + slabs in 3D — `src/components/tabs/DesignTab.tsx`
+
+**Lines 1006**: Change `meshBasicMaterial` to `meshStandardMaterial` with `color="#999"`, `transparent`, `opacity={0.25}`, `depthWrite={false}`. Remove `wireframe`.
+
+**After the ghost walls group (line 1009)**, add a floor slab mesh for each ghost level that has a `slab` property:
+- Compute room bounds from `ghostPlan.points`
+- Slab height from `floor.slab.thickness` (default 20cm) × `CM_TO_METERS`
+- Position at `yOffset` (bottom of that level)
+- Render as `<boxGeometry>` with neutral gray 30% opacity material
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/floor-plan/Canvas2D.tsx` | Click vs drag differentiation for staircases |
-| `src/components/floor-plan/PropertiesPanel.tsx` | Add staircase properties section with resize controls + delete |
-| `src/components/tiles/TilesCanvas.tsx` | Render staircase symbols on Finishes tab |
-| `src/components/tabs/DesignTab.tsx` | Fix filter to only show staircase on fromLevel |
+| `src/components/tabs/DesignTab.tsx` | Add ChevronUp/Down chevrons; upgrade ghost walls to solid + add slab meshes |
+| `src/components/floor-plan/Canvas2D.tsx` | Add ghost wall overlay for adjacent floors before active walls |
 
