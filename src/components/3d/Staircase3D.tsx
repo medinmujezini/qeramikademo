@@ -115,13 +115,16 @@ const ProceduralStaircase3D: React.FC<{
         const midX = (s[0] + e[0]) / 2;
         const midY = (s[1] + e[1]) / 2;
         const midZ = (s[2] + e[2]) / 2;
-        const pitch = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+        // Calculate pitch (tilt) and yaw (direction in XZ plane)
+        const horizontalLen = Math.sqrt(dx * dx + dz * dz);
+        const pitch = -Math.atan2(dy, horizontalLen);
+        const yaw = Math.atan2(dx, dz);
 
         return (
           <mesh
             key={`stringer-${i}`}
             position={[midX, midY, midZ]}
-            rotation={[pitch, 0, 0]}
+            rotation={[pitch, yaw, 0]}
             castShadow
           >
             <boxGeometry args={[stringer.width, 0.25, len]} />
