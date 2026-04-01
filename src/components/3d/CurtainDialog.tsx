@@ -70,7 +70,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
     }
   }, [win, wallHeight]);
 
-  const isPhase2 = type === 'roman' || type === 'roller' || type === 'pleated';
+  const isPhase2 = false; // All types now implemented
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
