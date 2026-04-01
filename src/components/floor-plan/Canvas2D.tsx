@@ -1486,7 +1486,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (draggedStaircase) {
       let newX = snapToGrid(world.x - staircaseOffset.x);
       let newY = snapToGrid(world.y - staircaseOffset.y);
-      // Clamp to room bounds
       const pts = floorPlan.points;
       if (pts.length > 0) {
         const minX = Math.min(...pts.map(p => p.x));
@@ -1495,8 +1494,20 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         const maxY = Math.max(...pts.map(p => p.y));
         const stair = staircases.find(s => s.id === draggedStaircase);
         if (stair) {
-          newX = Math.max(minX, Math.min(newX, maxX - stair.width));
-          newY = Math.max(minY, Math.min(newY, maxY - stair.depth));
+          const clamped = { ...stair, x: newX, y: newY };
+          let bounds = getRotatedStairBounds(clamped);
+
+          if (bounds.minX < minX) newX += minX - bounds.minX;
+          if (bounds.maxX > maxX) newX -= bounds.maxX - maxX;
+          if (bounds.minY < minY) newY += minY - bounds.minY;
+          if (bounds.maxY > maxY) newY -= bounds.maxY - maxY;
+
+          const corrected = { ...stair, x: newX, y: newY };
+          bounds = getRotatedStairBounds(corrected);
+          if (bounds.minX < minX) newX = stair.x;
+          if (bounds.maxX > maxX) newX = stair.x;
+          if (bounds.minY < minY) newY = stair.y;
+          if (bounds.maxY > maxY) newY = stair.y;
         }
       }
       updateStaircase(draggedStaircase, { x: newX, y: newY });
