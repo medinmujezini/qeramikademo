@@ -543,7 +543,7 @@ export const TilesCanvas: React.FC<TilesCanvasProps> = ({
       ctx.textAlign = 'center';
       ctx.fillText('Click on a wall to select it for tiling', width / 2, 30);
     }
-  }, [floorPlan, offset, scale, selectedWallId, pendingWallId, selectedTile, hoveredWallId, jointWidth, showTilePreview, screenToWorld, worldToScreen, externalTiles]);
+  }, [floorPlan, offset, scale, selectedWallId, pendingWallId, selectedTile, hoveredWallId, jointWidth, showTilePreview, screenToWorld, worldToScreen, externalTiles, staircases, activeLevel]);
 
   // Resize handling
   useEffect(() => {
