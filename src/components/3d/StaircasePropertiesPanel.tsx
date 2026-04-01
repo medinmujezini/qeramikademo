@@ -15,6 +15,7 @@ import type { StaircaseType, RailingStyle } from '@/types/multiFloor';
 
 export const StaircasePropertiesPanel: React.FC = () => {
   const { selectedStaircaseId, setSelectedStaircaseId, staircases, updateStaircase, removeStaircase, building } = useFloorPlanContext();
+  const glbInputRef = useRef<HTMLInputElement>(null);
 
   const stair = staircases.find(s => s.id === selectedStaircaseId);
   if (!stair) return null;
