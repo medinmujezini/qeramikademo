@@ -229,6 +229,7 @@ export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0
       rotY={rotY}
       yOffset={yOffset}
       clippingPlanes={clippingPlanes}
+      emissiveBoost={emissiveBoost}
     />
   );
 };
