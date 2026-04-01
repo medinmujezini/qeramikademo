@@ -1988,9 +1988,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       )}
 
       {/* Canvas area */}
-      <div className={`flex-1 relative overflow-hidden ${unrealActive ? 'bg-transparent' : 'canvas-vignette'}`}>
-      {/* Gold dust particles — hidden in Unreal mode */}
-      {!unrealActive && (
+      <div className="flex-1 relative overflow-hidden canvas-vignette">
+      {/* Gold dust particles */}
+      {(
         <>
           <div className="gold-particle" style={{ left: '10%', bottom: '5%', ['--duration' as string]: '12s', ['--delay' as string]: '0s' }} />
           <div className="gold-particle" style={{ left: '25%', bottom: '15%', ['--duration' as string]: '9s', ['--delay' as string]: '2s' }} />
