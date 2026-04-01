@@ -105,6 +105,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   const [draggedStaircase, setDraggedStaircase] = useState<string | null>(null);
   const [staircaseOffset, setStaircaseOffset] = useState({ x: 0, y: 0 });
   const [pendingStaircaseDrag, setPendingStaircaseDrag] = useState<{ id: string; startX: number; startY: number; offsetX: number; offsetY: number } | null>(null);
+  const [hoveredStaircaseId, setHoveredStaircaseId] = useState<string | null>(null);
 
   const connectionStatus = useConnectionStatus(floorPlan);
 
@@ -257,10 +258,10 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
   }, [floorPlan.columns]);
 
   // Find staircase at world position (only active level)
-  const findStaircaseAt = useCallback((worldX: number, worldY: number) => {
+  const findStaircaseAt = useCallback((worldX: number, worldY: number, thresholdPx: number = 18) => {
+    const thresholdWorld = thresholdPx / scale;
     for (const stair of staircases) {
       if (stair.fromLevel !== activeLevel) continue;
-      // Simple axis-aligned hit test (rotation not applied for simplicity)
       const rad = -(stair.rotation * Math.PI) / 180;
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
@@ -269,12 +270,17 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       // Transform to staircase local space (origin at stair.x, stair.y)
       const localX = dx * cos + dy * sin;
       const localY = -dx * sin + dy * cos;
-      if (localX >= 0 && localX <= stair.width && localY >= 0 && localY <= stair.depth) {
+      if (
+        localX >= -thresholdWorld &&
+        localX <= stair.width + thresholdWorld &&
+        localY >= -thresholdWorld &&
+        localY <= stair.depth + thresholdWorld
+      ) {
         return stair;
       }
     }
     return null;
-  }, [staircases, activeLevel]);
+  }, [staircases, activeLevel, scale]);
 
   // Find insertion point on wall - allows clicking ANYWHERE on wall to insert junction
   const findWallInsertionPoint = useCallback((worldX: number, worldY: number, threshold: number = 20): { wallId: string; x: number; y: number; position: number } | null => {
@@ -1195,9 +1201,11 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'select') {
       // Route editing removed - now handled in MEP tab
 
-      // Check staircase first — use pending drag to differentiate click vs drag
+      // Check staircase first — immediate selection with forgiving hit area, drag starts on movement
       const stairHit = findStaircaseAt(world.x, world.y);
       if (stairHit) {
+        setSelectedStaircaseId(stairHit.id);
+        setSelectedElement(null);
         setPendingStaircaseDrag({
           id: stairHit.id,
           startX: e.clientX,
@@ -1205,7 +1213,6 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
           offsetX: world.x - stairHit.x,
           offsetY: world.y - stairHit.y,
         });
-        setSelectedElement(null);
         return;
       }
 
@@ -1459,9 +1466,12 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
       setSnapIndicator(null);
     }
 
-    // Check for wall insertion point hover (for adding junction points)
-    if (activeTool === 'select' && !draggedPoint && !draggedFixture) {
-      const insertPoint = findWallInsertionPoint(world.x, world.y);
+    // Check hover targets for select mode
+    if (activeTool === 'select' && !draggedPoint && !draggedFixture && !draggedColumn && !draggedStaircase) {
+      const hoveredStair = findStaircaseAt(world.x, world.y);
+      setHoveredStaircaseId(hoveredStair?.id || null);
+
+      const insertPoint = hoveredStair ? null : findWallInsertionPoint(world.x, world.y);
       setHoverWallMidpoint(insertPoint);
       
       // Route hover removed - now handled in MEP tab
@@ -1470,6 +1480,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         setHoverRouteSegment(null);
       }
     } else {
+      setHoveredStaircaseId(null);
       setHoverWallMidpoint(null);
       setHoverRoutePoint(null);
       setHoverRouteSegment(null);
@@ -1761,7 +1772,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'pan') return isPanning ? 'grabbing' : 'grab';
     if (isPanning) return 'grabbing';
     if (draggedPoint || draggedFixture || draggedStaircase) return 'move';
-    if (hoverWallMidpoint) return 'pointer';
+    if (hoveredStaircaseId || hoverWallMidpoint) return 'pointer';
     if (activeTool === 'wall' || activeTool === 'door' || activeTool === 'window' || activeTool === 'staircase') return 'crosshair';
     return 'default';
   };
