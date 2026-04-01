@@ -1072,8 +1072,11 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           const stairCenterZ = stair.y * CM_TO_METERS + stair.depth * CM_TO_METERS / 2;
           const stairW = stair.width * CM_TO_METERS;
           const stairD = stair.depth * CM_TO_METERS;
+          const fromFloorHeightMeters = (fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
           const trimH = 0.10; // 10cm tall trim
           const trimT = 0.02; // 2cm thick
+          const revealT = 0.03; // 3cm inner shaft wall thickness
+          const revealH = Math.max(fromFloorHeightMeters - trimH, 0.25);
 
           return (
           <group
@@ -1088,30 +1091,51 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                 color="#fff5e6" intensity={1.5} distance={8} decay={1.5} castShadow={false} />
             )}
 
-            {/* Stairwell trim border around slab opening */}
+            {/* Stairwell opening reveal so the hole reads clearly from above */}
             {isArrivingFromBelow && (
-              <group position={[stairCenterX, -trimH / 2, stairCenterZ]}>
-                {/* Front trim */}
-                <mesh position={[0, 0, -stairD / 2]} castShadow>
-                  <boxGeometry args={[stairW + trimT * 2, trimH, trimT]} />
-                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
-                </mesh>
-                {/* Back trim */}
-                <mesh position={[0, 0, stairD / 2]} castShadow>
-                  <boxGeometry args={[stairW + trimT * 2, trimH, trimT]} />
-                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
-                </mesh>
-                {/* Left trim */}
-                <mesh position={[-stairW / 2, 0, 0]} castShadow>
-                  <boxGeometry args={[trimT, trimH, stairD]} />
-                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
-                </mesh>
-                {/* Right trim */}
-                <mesh position={[stairW / 2, 0, 0]} castShadow>
-                  <boxGeometry args={[trimT, trimH, stairD]} />
-                  <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
-                </mesh>
-              </group>
+              <>
+                <group position={[stairCenterX, -trimH / 2, stairCenterZ]}>
+                  {/* Front trim */}
+                  <mesh position={[0, 0, -stairD / 2]} castShadow receiveShadow>
+                    <boxGeometry args={[stairW + trimT * 2, trimH, trimT]} />
+                    <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                  </mesh>
+                  {/* Back trim */}
+                  <mesh position={[0, 0, stairD / 2]} castShadow receiveShadow>
+                    <boxGeometry args={[stairW + trimT * 2, trimH, trimT]} />
+                    <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                  </mesh>
+                  {/* Left trim */}
+                  <mesh position={[-stairW / 2, 0, 0]} castShadow receiveShadow>
+                    <boxGeometry args={[trimT, trimH, stairD]} />
+                    <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                  </mesh>
+                  {/* Right trim */}
+                  <mesh position={[stairW / 2, 0, 0]} castShadow receiveShadow>
+                    <boxGeometry args={[trimT, trimH, stairD]} />
+                    <meshStandardMaterial color="#e5e5e5" roughness={0.9} />
+                  </mesh>
+                </group>
+
+                <group position={[stairCenterX, -(trimH + revealH / 2), stairCenterZ]}>
+                  <mesh position={[0, 0, -stairD / 2 + revealT / 2]} castShadow receiveShadow>
+                    <boxGeometry args={[stairW, revealH, revealT]} />
+                    <meshStandardMaterial color="hsl(0 0% 91%)" roughness={0.95} />
+                  </mesh>
+                  <mesh position={[0, 0, stairD / 2 - revealT / 2]} castShadow receiveShadow>
+                    <boxGeometry args={[stairW, revealH, revealT]} />
+                    <meshStandardMaterial color="hsl(0 0% 91%)" roughness={0.95} />
+                  </mesh>
+                  <mesh position={[-stairW / 2 + revealT / 2, 0, 0]} castShadow receiveShadow>
+                    <boxGeometry args={[revealT, revealH, Math.max(stairD - revealT * 2, revealT)]} />
+                    <meshStandardMaterial color="hsl(0 0% 91%)" roughness={0.95} />
+                  </mesh>
+                  <mesh position={[stairW / 2 - revealT / 2, 0, 0]} castShadow receiveShadow>
+                    <boxGeometry args={[revealT, revealH, Math.max(stairD - revealT * 2, revealT)]} />
+                    <meshStandardMaterial color="hsl(0 0% 91%)" roughness={0.95} />
+                  </mesh>
+                </group>
+              </>
             )}
 
             {/* Selection outline */}
