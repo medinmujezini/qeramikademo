@@ -29,7 +29,7 @@ import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
-import { FloorSlab3D } from '@/components/3d/FloorSlab3D';
+
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
 import { Switch } from '@/components/ui/switch';
