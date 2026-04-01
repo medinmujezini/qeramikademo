@@ -1192,10 +1192,21 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'select') {
       // Route editing removed - now handled in MEP tab
 
+      // Check staircase first (before other elements)
+      const stairHit = findStaircaseAt(world.x, world.y);
+      if (stairHit) {
+        setDraggedStaircase(stairHit.id);
+        setStaircaseOffset({ x: world.x - stairHit.x, y: world.y - stairHit.y });
+        setSelectedStaircaseId(stairHit.id);
+        setSelectedElement(null);
+        return;
+      }
+
       const point = findPointAt(world.x, world.y);
       if (point) {
         setDraggedPoint(point.id);
         setSelectedElement({ type: 'point', id: point.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
@@ -1204,6 +1215,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         setDraggedColumn(column.id);
         setColumnOffset({ x: world.x - column.x, y: world.y - column.y });
         setSelectedElement({ type: 'column', id: column.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
@@ -1212,28 +1224,33 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
         setDraggedFixture(fixture.id);
         setFixtureOffset({ x: world.x - fixture.cx, y: world.y - fixture.cy });
         setSelectedElement({ type: 'fixture', id: fixture.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       const door = findDoorAt(world.x, world.y);
       if (door) {
         setSelectedElement({ type: 'door', id: door.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       const window = findWindowAt(world.x, world.y);
       if (window) {
         setSelectedElement({ type: 'window', id: window.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       const wall = findWallAt(world.x, world.y);
       if (wall) {
         setSelectedElement({ type: 'wall', id: wall.id });
+        setSelectedStaircaseId(null);
         return;
       }
 
       setSelectedElement(null);
+      setSelectedStaircaseId(null);
     }
 
     if (activeTool === 'column') {
