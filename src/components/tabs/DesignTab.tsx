@@ -29,6 +29,8 @@ import { Ceiling3D } from '@/components/3d/Ceiling3D';
 import { Door3D } from '@/components/3d/Door3D';
 import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
+import { Curtain3D } from '@/components/3d/Curtain3D';
+import { CurtainDialog } from '@/components/3d/CurtainDialog';
 
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
