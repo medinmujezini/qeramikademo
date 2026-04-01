@@ -108,6 +108,7 @@ const HandrailBar: React.FC<{
         transparent={transparent}
         opacity={opacity}
         clippingPlanes={clippingPlanes}
+        emissiveIntensity={emissiveIntensity}
       />
     </mesh>
   );

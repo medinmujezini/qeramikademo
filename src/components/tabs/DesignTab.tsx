@@ -1080,22 +1080,13 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             key={stair.id}
             onClick={(e) => { e.stopPropagation(); setSelectedStaircaseId(stair.id); }}
           >
-            <Staircase3D staircase={stair} yOffset={stairYOffset} clipBelowY={clipBelowY} />
+            <Staircase3D staircase={stair} yOffset={stairYOffset} clipBelowY={clipBelowY} emissiveBoost={isArrivingFromBelow ? 1 : 0} />
 
-            {/* Stairwell lighting for upper floor view — 3 lights distributed along shaft */}
-            {isArrivingFromBelow && (() => {
-              const h = (fromFloor?.floorToFloorHeight ?? 300) * CM_TO_METERS;
-              return (
-                <>
-                  <pointLight position={[stairCenterX, -0.3, stairCenterZ]}
-                    color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
-                  <pointLight position={[stairCenterX, -(h * 0.5), stairCenterZ]}
-                    color="#fff5e6" intensity={3} distance={8} decay={1.5} castShadow={false} />
-                  <pointLight position={[stairCenterX, -h + 0.3, stairCenterZ]}
-                    color="#fff5e6" intensity={2} distance={8} decay={1.5} castShadow={false} />
-                </>
-              );
-            })()}
+            {/* Single fill light for stairwell trim/slab edges */}
+            {isArrivingFromBelow && (
+              <pointLight position={[stairCenterX, -0.3, stairCenterZ]}
+                color="#fff5e6" intensity={1.5} distance={8} decay={1.5} castShadow={false} />
+            )}
 
             {/* Stairwell trim border around slab opening */}
             {isArrivingFromBelow && (
