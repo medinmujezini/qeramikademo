@@ -1,68 +1,66 @@
 
 
-# Move Walkthrough to Dedicated Transparent Route
+# Multi-Floor: New Floor Dialog + Structural Walls
 
-## Problem
+## What Changes
 
-When the WebUI plugin renders the web app inside Unreal Engine, the user sees a **black background** instead of the Unreal 3D scene behind it. This happens because:
+1. When the user clicks "Add Floor," a dialog appears asking for floor name, height (cm), and whether to copy outer walls from the floor below as locked structural walls.
+2. Structural walls (`isStructural: true`) render with a gold outline in Canvas2D and cannot be selected, moved, or deleted.
+3. FloorManager shows a lock icon with structural wall count per floor.
 
-1. The `/design` page has `bg-background` (near-black), `bg-card` header, tab bar, and the R3F `<Canvas>` — all opaque elements
-2. Even with the `.unreal-transparent` CSS class, the page structure (header, tab bar, containers) still renders with solid backgrounds
-3. Per the WebUI documentation, transparency works by sampling pixel alpha — pixels above `0.333` alpha are hit-testable, below are click-through. The entire page is currently opaque
+## Technical Plan
 
-## Solution
+### 1. Add `isStructural` to Wall type
+**File: `src/types/floorPlan.ts`** (line ~37)
 
-Create a new route `/walkthrough` that renders a **fully transparent page** with only:
-- A minimal transparent header (logo + exit button only, with `bg-transparent`)
-- The Unreal status badge (already has `bg-card/80` which is above the 0.333 threshold so it stays interactive)
-- No Canvas, no tab bar, no panels, no particles, no backgrounds
+Add `isStructural?: boolean;` to the `Wall` interface.
 
-When `enterWalkthrough` detects `isInsideUnreal()`, it navigates to `/walkthrough` instead of toggling state within `DesignTab`. When exiting (via Unreal message or Exit button), it navigates back to `/design`.
+### 2. Update `addFloor` signature in context
+**File: `src/contexts/FloorPlanContext.tsx`**
 
-## Steps
+- Change `addFloor` type from `() => void` to `(options?: { name?: string; height?: number; copyOuterWalls?: boolean }) => void`
+- In the implementation (~line 178), accept the options object:
+  - Use `options.name` and `options.height` if provided, otherwise defaults
+  - If `copyOuterWalls` is true, find the current active floor's walls, identify perimeter walls (walls that form the outermost boundary — simplification: copy ALL walls from the floor below and mark them `isStructural: true`), clone those walls and their points into the new floor plan
 
-### 1. Create `/walkthrough` page
-**New file: `src/pages/WalkthroughPage.tsx`**
+### 3. Create NewFloorDialog component
+**New file: `src/components/floor-plan/NewFloorDialog.tsx`**
 
-- Renders with `bg-transparent` on root div, no `bg-background` or `bg-card`
-- Applies `unreal-transparent` class to `html` and `body` on mount, removes on unmount
-- Minimal header: just the logo/brand text + "Exit" button, all with transparent backgrounds
-- The "Running in Unreal Engine" status badge (green dot, text, exit button)
-- Listens for `onExitWalkthrough` messages from Unreal to auto-navigate back
-- No R3F Canvas, no 3D scene, no particles, no tab bar
+A `Dialog` with:
+- Floor name input (default: "Floor N")
+- Floor-to-floor height input (default: 300, range 200-600)
+- Checkbox: "Copy outside walls from floor below" (disabled if no floor below)
+- Cancel / Create buttons
+- On create: calls `addFloor({ name, height, copyOuterWalls })`
 
-### 2. Register the route
-**File: `src/App.tsx`**
+### 4. Update FloorManager to show dialog instead of direct add
+**File: `src/components/floor-plan/FloorManager.tsx`**
 
-- Add `import WalkthroughPage from './pages/WalkthroughPage'`
-- Add `<Route path="/walkthrough" element={<WalkthroughPage />} />`
+- Add state `showNewFloorDialog`
+- Change the "Add" button onClick to open the dialog instead of calling `addFloor()` directly
+- Import and render `NewFloorDialog`
+- Add structural wall count per floor: count walls where `isStructural === true` in each floor's plan, show a `Lock` icon + count next to the height line
 
-### 3. Update DesignTab to navigate instead of toggling state
-**File: `src/components/tabs/DesignTab.tsx`**
+### 5. Protect structural walls in Canvas2D
+**File: `src/components/floor-plan/Canvas2D.tsx`**
 
-- In `enterWalkthrough`, when `isInsideUnreal()`: after exporting GLB + sending to Unreal, use `window.location.href = '/walkthrough'` (or React Router `navigate`) to go to the transparent page
-- Remove the `unrealActive` state and its associated rendering logic from DesignTab (it moves to WalkthroughPage)
-- Keep the non-Unreal browser walkthrough as-is (pointer lock, WASD, etc.)
+- In `findWallAt()`: skip walls where `isStructural === true` (prevents selection)
+- In `draw()`: render structural walls with a gold stroke (`#C9A96E`) and slightly thicker line
+- In delete handlers: skip structural walls
 
-### 4. Update CSS for full transparency
-**File: `src/index.css`**
+### 6. Protect structural walls in PropertiesPanel
+**File: `src/components/floor-plan/PropertiesPanel.tsx`**
 
-- Extend `.unreal-transparent` to also force `canvas` elements transparent and hide any remaining opaque containers
-- Add `#root { background: transparent !important }` under `.unreal-transparent`
-
-## Technical Detail
-
-The WebUI transparency threshold is `0.333` — any pixel with alpha above this is interactive (receives mouse events), below is click-through to Unreal. The walkthrough page will:
-- Use fully transparent backgrounds (alpha = 0) for the page body — click-through
-- Keep the status badge and exit button with `bg-card/80` (alpha ≈ 0.8) — interactive
-- The header brand text will be semi-transparent but positioned at the top edge, out of the way
+- If the selected wall is structural, show a read-only view with a "Structural Wall" badge and disable edit/delete controls
 
 ## Files Modified
 
 | File | Change |
 |---|---|
-| New `src/pages/WalkthroughPage.tsx` | Fully transparent page with minimal header + Unreal status badge |
-| `src/App.tsx` | Add `/walkthrough` route |
-| `src/components/tabs/DesignTab.tsx` | Navigate to `/walkthrough` when in Unreal, remove `unrealActive` UI |
-| `src/index.css` | Strengthen transparent overrides |
+| `src/types/floorPlan.ts` | Add `isStructural?: boolean` to `Wall` |
+| `src/contexts/FloorPlanContext.tsx` | Update `addFloor` to accept options, copy walls logic |
+| New `src/components/floor-plan/NewFloorDialog.tsx` | Dialog for name, height, copy walls checkbox |
+| `src/components/floor-plan/FloorManager.tsx` | Show dialog on Add, display structural wall count with lock icon |
+| `src/components/floor-plan/Canvas2D.tsx` | Gold outline for structural walls, prevent selection/deletion |
+| `src/components/floor-plan/PropertiesPanel.tsx` | Read-only mode for structural walls |
 
