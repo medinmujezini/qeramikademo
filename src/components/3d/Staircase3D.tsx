@@ -200,7 +200,7 @@ const ProceduralStaircase3D: React.FC<{
         return (
           <mesh key={`s${i}`} position={[mx, my, mz]} rotation={[pitch, yaw, 0]} receiveShadow>
             <boxGeometry args={[soffit.width, soffit.thickness, len]} />
-            <StairMaterial color={soffitColor} roughness={0.9} metalness={0} clippingPlanes={clippingPlanes} />
+            <StairMaterial color={soffitColor} roughness={0.9} metalness={0} clippingPlanes={clippingPlanes} emissiveIntensity={0.15 * emissiveBoost} />
           </mesh>
         );
       })}
