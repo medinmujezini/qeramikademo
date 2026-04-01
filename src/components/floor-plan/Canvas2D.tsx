@@ -1477,7 +1477,7 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     } else {
       setDoorWindowPreview(null);
     }
-  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, fixtureOffset, columnOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
+  }, [isPanning, panStart, draggedPoint, draggedFixture, draggedColumn, draggedStaircase, fixtureOffset, columnOffset, staircaseOffset, wallStartPoint, activeTool, screenToWorld, snapToGrid, movePoint, moveFixture, moveColumn, updateStaircase, findWallInsertionPoint, findWallAt, floorPlan.fixtures, floorPlan.points, floorPlan.walls, editRoutes]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -1490,7 +1490,10 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (draggedColumn) {
       setDraggedColumn(null);
     }
-  }, [draggedFixture, draggedColumn]);
+    if (draggedStaircase) {
+      setDraggedStaircase(null);
+    }
+  }, [draggedFixture, draggedColumn, draggedStaircase]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
