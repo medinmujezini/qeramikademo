@@ -497,6 +497,41 @@ export interface RoomLight {
   enabled: boolean;
 }
 
+// Curtain types
+export type CurtainType = 'panel' | 'sheer' | 'roman' | 'roller' | 'pleated';
+export type CurtainFabric = 'linen' | 'velvet' | 'cotton' | 'silk' | 'blackout';
+
+export interface Curtain {
+  id: string;
+  wallId: string;
+  windowId: string; // tied to a specific window
+  position: number; // 0-1 along wall (mirrors window position)
+  width: number; // cm
+  height: number; // cm
+  type: CurtainType;
+  fabricColor: string; // hex
+  fabricMaterial: CurtainFabric;
+  opacity: number; // 0-1
+  openAmount: number; // 0=closed, 1=fully open
+  mountHeight?: number; // cm from floor, defaults to wall height
+  rodVisible?: boolean; // show curtain rod
+}
+
+export const CURTAIN_FABRIC_PRESETS = [
+  { id: 'white', name: 'White', color: '#ffffff' },
+  { id: 'cream', name: 'Cream', color: '#f5f0e1' },
+  { id: 'ivory', name: 'Ivory', color: '#fffff0' },
+  { id: 'linen', name: 'Natural Linen', color: '#d4c9b0' },
+  { id: 'sand', name: 'Sand', color: '#c2b280' },
+  { id: 'charcoal', name: 'Charcoal', color: '#36454f' },
+  { id: 'navy', name: 'Navy', color: '#1b2a4a' },
+  { id: 'forest', name: 'Forest Green', color: '#2d4a2d' },
+  { id: 'burgundy', name: 'Burgundy', color: '#6b1c2a' },
+  { id: 'dusty-rose', name: 'Dusty Rose', color: '#c4a4a7' },
+  { id: 'slate-blue', name: 'Slate Blue', color: '#6a7b8b' },
+  { id: 'gold', name: 'Gold', color: '#c9a96e' },
+] as const;
+
 export interface SavedCameraView {
   id: string;
   name: string;
