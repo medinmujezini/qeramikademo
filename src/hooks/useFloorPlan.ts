@@ -1195,6 +1195,33 @@ export const useFloorPlan = () => {
     });
   }, [saveToHistory]);
 
+  // Curtains
+  const addCurtain = useCallback((curtain: Omit<Curtain, 'id'>): string => {
+    const id = uuidv4();
+    const newCurtain: Curtain = { ...curtain, id };
+    setFloorPlan(prev => {
+      const updated = { ...prev, curtains: [...(prev.curtains ?? []), newCurtain] };
+      saveToHistory(updated);
+      return updated;
+    });
+    return id;
+  }, [saveToHistory]);
+
+  const updateCurtain = useCallback((id: string, updates: Partial<Curtain>) => {
+    setFloorPlan(prev => ({
+      ...prev,
+      curtains: (prev.curtains ?? []).map(c => c.id === id ? { ...c, ...updates } : c),
+    }));
+  }, []);
+
+  const deleteCurtain = useCallback((id: string) => {
+    setFloorPlan(prev => {
+      const updated = { ...prev, curtains: (prev.curtains ?? []).filter(c => c.id !== id) };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
   return {
     floorPlan,
     setFloorPlan,
