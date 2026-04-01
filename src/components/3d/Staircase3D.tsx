@@ -215,7 +215,7 @@ export const Staircase3D: React.FC<Staircase3DProps> = ({ staircase, yOffset = 0
   const posZ = staircase.y * CM_TO_METERS;
   const rotY = -(staircase.rotation * Math.PI) / 180;
   const clippingPlanes = useMemo(
-    () => clipBelowY === undefined ? [] : [new THREE.Plane(new THREE.Vector3(0, -1, 0), clipBelowY)],
+    () => clipBelowY === undefined ? [] : [new THREE.Plane(new THREE.Vector3(0, 1, 0), -clipBelowY)],
     [clipBelowY],
   );
 
