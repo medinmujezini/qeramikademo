@@ -1195,12 +1195,16 @@ export const Canvas2D: React.FC<Canvas2DProps> = ({
     if (activeTool === 'select') {
       // Route editing removed - now handled in MEP tab
 
-      // Check staircase first (before other elements)
+      // Check staircase first — use pending drag to differentiate click vs drag
       const stairHit = findStaircaseAt(world.x, world.y);
       if (stairHit) {
-        setDraggedStaircase(stairHit.id);
-        setStaircaseOffset({ x: world.x - stairHit.x, y: world.y - stairHit.y });
-        setSelectedStaircaseId(stairHit.id);
+        setPendingStaircaseDrag({
+          id: stairHit.id,
+          startX: e.clientX,
+          startY: e.clientY,
+          offsetX: world.x - stairHit.x,
+          offsetY: world.y - stairHit.y,
+        });
         setSelectedElement(null);
         return;
       }
