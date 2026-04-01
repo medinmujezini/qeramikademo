@@ -1049,30 +1049,6 @@ const DesignScene: React.FC<DesignSceneProps> = ({
                   </mesh>
                 );
               })}
-              {/* Floor slab between levels — with stairwell openings */}
-              {floor.slab && (() => {
-                const pts = ghostPlan.points;
-                if (pts.length < 2) return null;
-                const xs = pts.map(p => p.x);
-                const ys = pts.map(p => p.y);
-                const roomW = Math.max(...xs) - Math.min(...xs);
-                const roomH = Math.max(...ys) - Math.min(...ys);
-                const cxRoom = (Math.min(...xs) + Math.max(...xs)) / 2;
-                const cyRoom = (Math.min(...ys) + Math.max(...ys)) / 2;
-                const slabH = (floor.slab!.thickness || 20) * scale;
-                return (
-                  <group position={[0, yOffset - slabH, 0]}>
-                    <FloorSlab3D
-                      slab={floor.slab!}
-                      roomWidth={roomW}
-                      roomHeight={roomH}
-                      yPosition={0}
-                      centerX={cxRoom}
-                      centerY={cyRoom}
-                    />
-                  </group>
-                );
-              })()}
             </group>
           );
         });
