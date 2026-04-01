@@ -23,6 +23,7 @@ export const FloorPlanTab: React.FC = () => {
   const [wallChainLength, setWallChainLength] = useState(0);
   const [showImportWizard, setShowImportWizard] = useState(false);
   const [showNewRoomDialog, setShowNewRoomDialog] = useState(false);
+  const [showNewFloorDialog, setShowNewFloorDialog] = useState(false);
   const [rectWidth, setRectWidth] = useState('300');
   const [rectHeight, setRectHeight] = useState('250');
   const [lWidth, setLWidth] = useState('400');
