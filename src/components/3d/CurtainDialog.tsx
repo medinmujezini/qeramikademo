@@ -92,6 +92,21 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-4 p-1">
+            {/* Window picker (when multiple windows on wall) */}
+            {windows.length > 1 && (
+              <div className="space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Window</Label>
+                <Select value={chosenWindowId} onValueChange={setChosenWindowId}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {windows.map((w, i) => (
+                      <SelectItem key={w.id} value={w.id}>Window {i + 1} — {w.width}×{w.height}cm ({w.type})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Type selector */}
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Curtain Type</Label>
