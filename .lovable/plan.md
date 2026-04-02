@@ -1,45 +1,64 @@
-# Verdict: Approve with revisions
 
-## What's good
-- Clean interface design with sensible defaults
-- Following existing patterns (room lights) for CRUD
-- 5 distinct curtain types with unique 3D geometry
-- Fabric material affecting roughness is a nice touch
 
-## Revisions needed
+# Fix Curtain Sizing & Positioning — Realistic Interior Look
 
-### (1) Type definition — Minor fix
-- Add `mountHeight?: number` (cm from floor, default = wall height) — curtains aren't always ceiling-mounted
-- Add `rodVisible?: boolean` (default true) — curtain rod/track visibility
-- `openAmount` should only apply to panel/sheer types (roman/roller/pleated have different open mechanics). Consider renaming to `openPercent` and documenting per-type behavior
+## Problem
+Curtains are currently sized to barely cover the window opening (+40cm width, height = wallHeight - 10). Real curtains:
+- Extend 20-30cm past each side of the window (total width = window width + 50-60cm)
+- For **panel/sheer**: hang from near ceiling to floor (full wall height)
+- For **roman/roller/pleated** (blinds): sized to window opening + small margins
+- Mount near the ceiling, not at the window frame
 
-### (2) CRUD — Approve as-is
-Pattern matches room lights exactly. No issues.
+## Changes
 
-### (3) CurtainDialog — Minor revision
-- 20 color presets is excessive for a dialog. Use 12 presets (neutrals + key accents) plus a custom hex input — same pattern as `ColorPickerField.tsx` already in the project
-- Add a small preview swatch showing fabric color + opacity together
+### 1. `CurtainDialog.tsx` — Smart defaults by type
 
-### (4) Placement mode — Revision needed
-- Don't just "click a wall" — curtains should only be placeable on walls that have **windows**. Auto-detect windows on the clicked wall and pre-fill width to match window width. Allow override.
-- If wall has no windows, show a toast: "Curtains can only be placed on walls with windows"
+When a wall is selected, calculate defaults based on curtain type:
 
-### (5) Curtain3D — Approve with scope note
-- The 5 geometry types are well-specified. However, this is the most complex part. Suggest implementing **panel and sheer first** (they share similar geometry — flat plane with folds), then roman/roller/pleated as a follow-up. This keeps the first PR reviewable.
-- Sine wave folds on panel: use a simple `PlaneGeometry` with vertex displacement along X. Don't overcomplicate with cloth simulation.
-- Sheer: same as panel but with `transparent: true, opacity: fabricOpacity`
+- **Panel/Sheer** (full drapes):
+  - Width: window width + 60cm (30cm overhang each side)
+  - Height: wallHeight - 5cm (near floor)
+  - Mount height: wallHeight (ceiling)
 
-### (6) Properties panel — Minor revision  
-- Reuse the existing properties panel pattern from `PropertiesPanel.tsx` rather than creating a standalone panel. Add a "Curtain" section that appears when a curtain is selected, same as wall/door/window sections.
+- **Roman/Roller/Pleated** (window treatments):
+  - Width: window width + 20cm (10cm overhang each side)
+  - Height: window height + 20cm (10cm above frame, 10cm below sill)
+  - Mount height: window sill height + window height + 10cm
 
-## Recommended implementation order
-1. Types + CRUD (steps 1-2)
-2. Panel + Sheer 3D geometry (step 5 partial)
-3. Placement mode + dialog (steps 3-4)
-4. Properties panel (step 6)
-5. Roman/Roller/Pleated geometry (step 5 remainder)
+Add a type-change effect that recalculates width/height defaults when the user switches curtain type.
 
-## Scope concern
-This is a **large feature** (~500-700 lines across 4-5 files). Recommend splitting into 2 phases:
-- **Phase 1**: Types, CRUD, panel+sheer curtains, basic dialog, placement on windows
-- **Phase 2**: Roman/roller/pleated geometry, full properties panel, rod visibility toggle
+### 2. `CurtainDialog.tsx` — Add "Hang Style" radio
+
+Add a simple selector below dimensions:
+- **Floor-length** (default for panel/sheer): height auto-set to mountHeight
+- **Sill-length**: height auto-set to match window bottom
+- **Custom**: manual entry
+
+This gives users control while defaulting to the realistic option.
+
+### 3. `Curtain3D.tsx` — Positioning fix
+
+Currently `cy = mountH - curtainH / 2` which centers the curtain vertically from mount point. This is correct but the mount height and curtain height defaults are what make it look wrong. No geometry changes needed — the dialog defaults fix the visual.
+
+### 4. `CurtainDialog.tsx` — Pass window dimensions to defaults
+
+The `onConfirm` callback already receives `width`/`height`/`mountHeight`. The fix is in the `useEffect` that calculates defaults — it needs to account for curtain type and use window sill height + window height data.
+
+Update the wall-selection effect to compute:
+```
+avgWindowWidth = average window width on wall
+avgWindowHeight = average window height on wall  
+avgSillHeight = average sill height on wall
+```
+
+Then set defaults per type as described above.
+
+### Files to change
+
+| File | Change |
+|---|---|
+| `src/components/3d/CurtainDialog.tsx` | Type-aware default sizing, hang style selector, pass window height/sill data |
+| `src/components/tabs/DesignTab.tsx` | Pass `wallHeight` from actual wall height instead of hardcoded `280` |
+
+No changes to `Curtain3D.tsx` — the 3D geometry is fine, it's the input defaults that are wrong.
+
