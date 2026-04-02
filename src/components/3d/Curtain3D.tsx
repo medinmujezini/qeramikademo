@@ -12,6 +12,8 @@ interface Curtain3DProps {
   wallEndY: number;
   wallThickness: number;
   wallHeight: number;
+  selected?: boolean;
+  onClick?: (id: string) => void;
 }
 
 const FABRIC_ROUGHNESS: Record<string, number> = {
