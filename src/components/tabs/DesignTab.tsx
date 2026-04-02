@@ -2577,14 +2577,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <CurtainDialog
         open={curtainDialogOpen}
         onOpenChange={setCurtainDialogOpen}
-        window={curtainTargetWindow?.window ?? null}
-        wallHeight={curtainTargetWindow?.wall.height ?? 280}
+        windows={curtainTargetWall ? floorPlan.windows.filter(w => w.wallId === curtainTargetWall.id) : []}
+        selectedWindowId={null}
+        wallHeight={curtainTargetWall?.height ?? 280}
         onConfirm={(config) => {
-          if (!curtainTargetWindow) return;
-          const { window: win, wall } = curtainTargetWindow;
+          if (!curtainTargetWall) return;
+          const win = floorPlan.windows.find(w => w.id === config.windowId);
+          if (!win) return;
           addCurtain({
-            wallId: wall.id,
-            windowId: win.id,
+            wallId: curtainTargetWall.id,
+            windowId: config.windowId,
             position: win.position,
             width: config.width,
             height: config.height,
