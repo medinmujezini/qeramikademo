@@ -2362,8 +2362,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       
       {/* RIGHT PANEL - Properties */}
       {viewMode === 'design' && isPanelOpen && (
-        <div className="absolute top-4 right-6 z-20 w-64 max-h-[calc(100%-48px)]">
-          <div className="glass-floating overflow-hidden flex flex-col h-full relative">
+        <div className="absolute top-4 bottom-4 right-6 z-20 w-64">
+          <div className="glass-floating overflow-hidden flex h-full min-h-0 flex-col relative">
             <div className="pointer-events-none absolute -bottom-12 -right-12 w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.06)_0%,transparent_70%)]" />
             <div className="pointer-events-none absolute -top-8 -left-8 w-[100px] h-[100px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)]" />
             <div className="panel-header shrink-0">
@@ -2377,7 +2377,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 <PanelRightClose className="h-3 w-3" />
               </Button>
             </div>
-            <ScrollArea className="flex-1 relative z-10">
+            <ScrollArea className="relative z-10 min-h-0 flex-1">
               {selectedCurtain && selectedCurtainWall ? (
                 <CurtainPropertiesPanel
                   curtain={selectedCurtain}
