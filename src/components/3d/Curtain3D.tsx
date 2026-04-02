@@ -209,6 +209,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   wallEndY,
   wallThickness,
   wallHeight,
+  selected = false,
+  onClick,
 }) => {
   const scale = CM_TO_METERS;
   const roughness = FABRIC_ROUGHNESS[curtain.fabricMaterial] || 0.8;
