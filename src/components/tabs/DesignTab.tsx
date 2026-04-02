@@ -21,6 +21,7 @@ import { FixtureScene } from '@/components/3d/FixtureScene';
 import { RenderPipelineController } from '@/components/3d/RenderPipelineController';
 import { UnifiedLibrary } from '@/components/design/UnifiedLibrary';
 import { DesignPropertiesPanel } from '@/components/design/DesignPropertiesPanel';
+import { CurtainPropertiesPanel } from '@/components/design/CurtainPropertiesPanel';
 import { QualitySettingsPanel, QualitySettings, DEFAULT_QUALITY_SETTINGS } from '@/components/design/QualitySettingsPanel';
 import { WallSurfaceDialog } from '@/components/3d/WallSurfaceDialog';
 import { FloorSurfaceDialog } from '@/components/3d/FloorSurfaceDialog';
