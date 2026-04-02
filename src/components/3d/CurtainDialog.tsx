@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CURTAIN_FABRIC_PRESETS } from '@/types/floorPlan';
 import type { CurtainType, CurtainFabric, Wall, Window as FloorWindow } from '@/types/floorPlan';
 import { Blinds, Layers, SquareStack, ScrollText, ChevronDown } from 'lucide-react';
@@ -21,7 +21,7 @@ interface CurtainDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   wallsWithWindows: WallWithWindows[];
-  wallHeight: number;
+  wallHeight: number; // fallback only
   onConfirm: (config: {
     wallId: string;
     type: CurtainType;
@@ -51,11 +51,47 @@ const FABRIC_MATERIALS: { value: CurtainFabric; label: string }[] = [
   { value: 'blackout', label: 'Blackout' },
 ];
 
+type HangStyle = 'floor' | 'sill' | 'custom';
+
+const isDrapeType = (t: CurtainType) => t === 'panel' || t === 'sheer';
+
+function computeDefaults(
+  type: CurtainType,
+  hangStyle: HangStyle,
+  wallH: number,
+  avgWinWidth: number,
+  avgWinHeight: number,
+  avgSillHeight: number,
+) {
+  const drape = isDrapeType(type);
+
+  // Width: drapes extend 30cm each side, blinds 10cm each side
+  const w = drape ? avgWinWidth + 60 : avgWinWidth + 20;
+
+  // Mount height
+  const mount = drape ? wallH : Math.min(avgSillHeight + avgWinHeight + 10, wallH);
+
+  // Height based on hang style
+  let h: number;
+  if (hangStyle === 'floor') {
+    h = mount - 5; // 5cm off the floor
+  } else if (hangStyle === 'sill') {
+    h = drape
+      ? mount - avgSillHeight + 10 // 10cm below sill
+      : avgWinHeight + 20;
+  } else {
+    // custom — don't override
+    return { width: w, mountHeight: mount, height: undefined };
+  }
+
+  return { width: Math.round(w), height: Math.round(h), mountHeight: Math.round(mount) };
+}
+
 export const CurtainDialog: React.FC<CurtainDialogProps> = ({
   open,
   onOpenChange,
   wallsWithWindows,
-  wallHeight,
+  wallHeight: fallbackWallHeight,
   onConfirm,
 }) => {
   const [selectedWallId, setSelectedWallId] = useState<string>('');
@@ -63,34 +99,72 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
   const [fabricColor, setFabricColor] = useState('#f5f0e1');
   const [fabricMaterial, setFabricMaterial] = useState<CurtainFabric>('linen');
   const [width, setWidth] = useState(160);
-  const [height, setHeight] = useState(wallHeight - 10);
+  const [height, setHeight] = useState(270);
   const [opacity, setOpacity] = useState(1);
-  const [mountHeight, setMountHeight] = useState(wallHeight);
+  const [mountHeight, setMountHeight] = useState(280);
   const [rodVisible, setRodVisible] = useState(true);
+  const [hangStyle, setHangStyle] = useState<HangStyle>('floor');
+
+  // Compute averages for current wall
+  const selectedEntry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
+  const windowCount = selectedEntry?.windows.length ?? 0;
+
+  const getWallWindowAverages = (entry: WallWithWindows | undefined) => {
+    if (!entry || entry.windows.length === 0) return { avgW: 100, avgH: 120, avgSill: 90 };
+    const wins = entry.windows;
+    const avgW = wins.reduce((s, w) => s + w.width, 0) / wins.length;
+    const avgH = wins.reduce((s, w) => s + w.height, 0) / wins.length;
+    const avgSill = wins.reduce((s, w) => s + w.sillHeight, 0) / wins.length;
+    return { avgW, avgH, avgSill };
+  };
+
+  const getEffectiveWallHeight = (entry: WallWithWindows | undefined) =>
+    entry?.wall.height ?? fallbackWallHeight || 280;
+
+  // Apply smart defaults
+  const applyDefaults = (
+    curtainType: CurtainType,
+    style: HangStyle,
+    entry: WallWithWindows | undefined,
+  ) => {
+    const { avgW, avgH, avgSill } = getWallWindowAverages(entry);
+    const wh = getEffectiveWallHeight(entry);
+    const defaults = computeDefaults(curtainType, style, wh, avgW, avgH, avgSill);
+    setWidth(defaults.width);
+    setMountHeight(defaults.mountHeight);
+    if (defaults.height !== undefined) setHeight(defaults.height);
+  };
 
   // Init on open
-  React.useEffect(() => {
+  useEffect(() => {
     if (open && wallsWithWindows.length > 0) {
       const first = wallsWithWindows[0];
       setSelectedWallId(first.wall.id);
-      const avgW = first.windows.reduce((s, w) => s + w.width, 0) / first.windows.length;
-      setWidth(Math.round(avgW + 40));
-      setHeight(wallHeight - 10);
-      setMountHeight(wallHeight);
+      const defaultStyle: HangStyle = isDrapeType(type) ? 'floor' : 'sill';
+      setHangStyle(defaultStyle);
+      applyDefaults(type, defaultStyle, first);
     }
-  }, [open, wallsWithWindows, wallHeight]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update width when wall selection changes
-  React.useEffect(() => {
+  // Re-compute when wall changes
+  useEffect(() => {
     const entry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
-    if (entry) {
-      const avgW = entry.windows.reduce((s, w) => s + w.width, 0) / entry.windows.length;
-      setWidth(Math.round(avgW + 40));
-    }
-  }, [selectedWallId, wallsWithWindows]);
+    if (entry) applyDefaults(type, hangStyle, entry);
+  }, [selectedWallId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selectedEntry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
-  const windowCount = selectedEntry?.windows.length ?? 0;
+  // Re-compute when type changes (also update default hang style)
+  useEffect(() => {
+    const entry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
+    const defaultStyle: HangStyle = isDrapeType(type) ? 'floor' : 'sill';
+    setHangStyle(defaultStyle);
+    applyDefaults(type, defaultStyle, entry);
+  }, [type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-compute when hang style changes
+  useEffect(() => {
+    const entry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
+    applyDefaults(type, hangStyle, entry);
+  }, [hangStyle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,6 +250,25 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
               </div>
             </div>
 
+            {/* Hang style */}
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Hang Style</Label>
+              <RadioGroup value={hangStyle} onValueChange={(v) => setHangStyle(v as HangStyle)} className="flex gap-4">
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="floor" id="hang-floor" />
+                  <Label htmlFor="hang-floor" className="text-xs cursor-pointer">Floor-length</Label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="sill" id="hang-sill" />
+                  <Label htmlFor="hang-sill" className="text-xs cursor-pointer">Sill-length</Label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="custom" id="hang-custom" />
+                  <Label htmlFor="hang-custom" className="text-xs cursor-pointer">Custom</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             {/* Dimensions */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -184,7 +277,15 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Height (cm)</Label>
-                <Input type="number" value={height} onChange={e => setHeight(Number(e.target.value))} className="h-8 text-xs" min={20} max={400} />
+                <Input
+                  type="number"
+                  value={height}
+                  onChange={e => setHeight(Number(e.target.value))}
+                  className="h-8 text-xs"
+                  min={20}
+                  max={400}
+                  disabled={hangStyle !== 'custom'}
+                />
               </div>
             </div>
 
