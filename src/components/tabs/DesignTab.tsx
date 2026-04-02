@@ -2584,28 +2584,29 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <CurtainDialog
         open={curtainDialogOpen}
         onOpenChange={setCurtainDialogOpen}
-        windows={curtainTargetWall ? floorPlan.windows.filter(w => w.wallId === curtainTargetWall.id) : []}
-        selectedWindowId={null}
-        wallHeight={curtainTargetWall?.height ?? 280}
+        wallsWithWindows={floorPlan.walls
+          .filter(w => floorPlan.windows.some(win => win.wallId === w.id))
+          .map(w => ({ wall: w, windows: floorPlan.windows.filter(win => win.wallId === w.id) }))}
+        wallHeight={280}
         onConfirm={(config) => {
-          if (!curtainTargetWall) return;
-          const win = floorPlan.windows.find(w => w.id === config.windowId);
-          if (!win) return;
-          addCurtain({
-            wallId: curtainTargetWall.id,
-            windowId: config.windowId,
-            position: win.position,
-            width: config.width,
-            height: config.height,
-            type: config.type,
-            fabricColor: config.fabricColor,
-            fabricMaterial: config.fabricMaterial,
-            opacity: config.opacity,
-            openAmount: 0,
-            mountHeight: config.mountHeight,
-            rodVisible: config.rodVisible,
+          const wallWindows = floorPlan.windows.filter(w => w.wallId === config.wallId);
+          wallWindows.forEach(win => {
+            addCurtain({
+              wallId: config.wallId,
+              windowId: win.id,
+              position: win.position,
+              width: config.width,
+              height: config.height,
+              type: config.type,
+              fabricColor: config.fabricColor,
+              fabricMaterial: config.fabricMaterial,
+              opacity: config.opacity,
+              openAmount: 0,
+              mountHeight: config.mountHeight,
+              rodVisible: config.rodVisible,
+            });
           });
-          toast.success('Curtain placed');
+          toast.success(`${wallWindows.length} curtain${wallWindows.length > 1 ? 's' : ''} placed`);
         }}
       />
       </div>{/* end flex-1 canvas area */}
