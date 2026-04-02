@@ -9,17 +9,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { CURTAIN_FABRIC_PRESETS } from '@/types/floorPlan';
-import type { CurtainType, CurtainFabric, Window as FloorWindow } from '@/types/floorPlan';
+import type { CurtainType, CurtainFabric, Wall, Window as FloorWindow } from '@/types/floorPlan';
 import { Blinds, Layers, SquareStack, ScrollText, ChevronDown } from 'lucide-react';
+
+interface WallWithWindows {
+  wall: Wall;
+  windows: FloorWindow[];
+}
 
 interface CurtainDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  windows: FloorWindow[]; // all windows on the wall
-  selectedWindowId: string | null;
+  wallsWithWindows: WallWithWindows[];
   wallHeight: number;
   onConfirm: (config: {
-    windowId: string;
+    wallId: string;
     type: CurtainType;
     fabricColor: string;
     fabricMaterial: CurtainFabric;
@@ -31,12 +35,12 @@ interface CurtainDialogProps {
   }) => void;
 }
 
-const CURTAIN_TYPES: { value: CurtainType; label: string; description: string; icon: React.ReactNode }[] = [
-  { value: 'panel', label: 'Panel', description: 'Classic split curtains with folds', icon: <Blinds className="h-4 w-4" /> },
-  { value: 'sheer', label: 'Sheer', description: 'Translucent light-filtering', icon: <Layers className="h-4 w-4" /> },
-  { value: 'roman', label: 'Roman', description: 'Horizontal fold layers', icon: <SquareStack className="h-4 w-4" /> },
-  { value: 'roller', label: 'Roller', description: 'Roll-up shade', icon: <ScrollText className="h-4 w-4" /> },
-  { value: 'pleated', label: 'Pleated', description: 'Accordion zigzag', icon: <ChevronDown className="h-4 w-4" /> },
+const CURTAIN_TYPES: { value: CurtainType; label: string; icon: React.ReactNode }[] = [
+  { value: 'panel', label: 'Panel', icon: <Blinds className="h-4 w-4" /> },
+  { value: 'sheer', label: 'Sheer', icon: <Layers className="h-4 w-4" /> },
+  { value: 'roman', label: 'Roman', icon: <SquareStack className="h-4 w-4" /> },
+  { value: 'roller', label: 'Roller', icon: <ScrollText className="h-4 w-4" /> },
+  { value: 'pleated', label: 'Pleated', icon: <ChevronDown className="h-4 w-4" /> },
 ];
 
 const FABRIC_MATERIALS: { value: CurtainFabric; label: string }[] = [
@@ -50,39 +54,43 @@ const FABRIC_MATERIALS: { value: CurtainFabric; label: string }[] = [
 export const CurtainDialog: React.FC<CurtainDialogProps> = ({
   open,
   onOpenChange,
-  windows,
-  selectedWindowId,
+  wallsWithWindows,
   wallHeight,
   onConfirm,
 }) => {
+  const [selectedWallId, setSelectedWallId] = useState<string>('');
   const [type, setType] = useState<CurtainType>('panel');
   const [fabricColor, setFabricColor] = useState('#f5f0e1');
   const [fabricMaterial, setFabricMaterial] = useState<CurtainFabric>('linen');
-  const [chosenWindowId, setChosenWindowId] = useState<string>(selectedWindowId ?? windows[0]?.id ?? '');
-  const chosenWindow = windows.find(w => w.id === chosenWindowId) ?? windows[0] ?? null;
-  const [width, setWidth] = useState(chosenWindow ? chosenWindow.width + 40 : 160);
+  const [width, setWidth] = useState(160);
   const [height, setHeight] = useState(wallHeight - 10);
   const [opacity, setOpacity] = useState(1);
   const [mountHeight, setMountHeight] = useState(wallHeight);
   const [rodVisible, setRodVisible] = useState(true);
 
-  // Update dimensions when window changes
+  // Init on open
   React.useEffect(() => {
-    if (chosenWindow) {
-      setWidth(chosenWindow.width + 40);
+    if (open && wallsWithWindows.length > 0) {
+      const first = wallsWithWindows[0];
+      setSelectedWallId(first.wall.id);
+      const avgW = first.windows.reduce((s, w) => s + w.width, 0) / first.windows.length;
+      setWidth(Math.round(avgW + 40));
       setHeight(wallHeight - 10);
       setMountHeight(wallHeight);
     }
-  }, [chosenWindow, wallHeight]);
+  }, [open, wallsWithWindows, wallHeight]);
 
-  // Sync chosen window when dialog opens
+  // Update width when wall selection changes
   React.useEffect(() => {
-    if (open) {
-      setChosenWindowId(selectedWindowId ?? windows[0]?.id ?? '');
+    const entry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
+    if (entry) {
+      const avgW = entry.windows.reduce((s, w) => s + w.width, 0) / entry.windows.length;
+      setWidth(Math.round(avgW + 40));
     }
-  }, [open, selectedWindowId, windows]);
+  }, [selectedWallId, wallsWithWindows]);
 
-  const isPhase2 = false; // All types now implemented
+  const selectedEntry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
+  const windowCount = selectedEntry?.windows.length ?? 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,20 +100,25 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-4 p-1">
-            {/* Window picker (when multiple windows on wall) */}
-            {windows.length > 1 && (
-              <div className="space-y-1">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Window</Label>
-                <Select value={chosenWindowId} onValueChange={setChosenWindowId}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {windows.map((w, i) => (
-                      <SelectItem key={w.id} value={w.id}>Window {i + 1} — {w.width}×{w.height}cm ({w.type})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Wall picker */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Wall</Label>
+              <Select value={selectedWallId} onValueChange={setSelectedWallId}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {wallsWithWindows.map((entry, i) => (
+                    <SelectItem key={entry.wall.id} value={entry.wall.id}>
+                      Wall {i + 1} — {entry.windows.length} window{entry.windows.length !== 1 ? 's' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {windowCount > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Curtains will be placed on all {windowCount} window{windowCount !== 1 ? 's' : ''} on this wall
+                </p>
+              )}
+            </div>
 
             {/* Type selector */}
             <div className="space-y-2">
@@ -126,18 +139,13 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
                   </button>
                 ))}
               </div>
-              {isPhase2 && (
-                <Badge variant="outline" className="text-[10px]">Coming in Phase 2</Badge>
-              )}
             </div>
 
             {/* Fabric material */}
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Fabric Material</Label>
               <Select value={fabricMaterial} onValueChange={(v) => setFabricMaterial(v as CurtainFabric)}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {FABRIC_MATERIALS.map(fm => (
                     <SelectItem key={fm.value} value={fm.value}>{fm.label}</SelectItem>
@@ -163,18 +171,8 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
                 ))}
               </div>
               <div className="flex gap-2 items-center">
-                <Input
-                  type="color"
-                  value={fabricColor}
-                  onChange={(e) => setFabricColor(e.target.value)}
-                  className="h-8 w-12 p-1 cursor-pointer"
-                />
-                <Input
-                  type="text"
-                  value={fabricColor}
-                  onChange={(e) => setFabricColor(e.target.value)}
-                  className="h-8 text-xs flex-1"
-                />
+                <Input type="color" value={fabricColor} onChange={(e) => setFabricColor(e.target.value)} className="h-8 w-12 p-1 cursor-pointer" />
+                <Input type="text" value={fabricColor} onChange={(e) => setFabricColor(e.target.value)} className="h-8 text-xs flex-1" />
               </div>
             </div>
 
@@ -194,13 +192,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
             {type === 'sheer' && (
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Opacity: {Math.round(opacity * 100)}%</Label>
-                <Slider
-                  value={[opacity]}
-                  onValueChange={([v]) => setOpacity(v)}
-                  min={0.1}
-                  max={1}
-                  step={0.05}
-                />
+                <Slider value={[opacity]} onValueChange={([v]) => setOpacity(v)} min={0.1} max={1} step={0.05} />
               </div>
             )}
 
@@ -215,12 +207,12 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             onClick={() => {
-              onConfirm({ windowId: chosenWindowId, type, fabricColor, fabricMaterial, width, height, opacity, mountHeight, rodVisible });
+              onConfirm({ wallId: selectedWallId, type, fabricColor, fabricMaterial, width, height, opacity, mountHeight, rodVisible });
               onOpenChange(false);
             }}
-            disabled={isPhase2}
+            disabled={!selectedWallId}
           >
-            Place Curtain
+            Place Curtain{windowCount > 1 ? `s (${windowCount})` : ''}
           </Button>
         </DialogFooter>
       </DialogContent>
