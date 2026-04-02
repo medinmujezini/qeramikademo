@@ -215,7 +215,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             onClick={() => {
-              onConfirm({ type, fabricColor, fabricMaterial, width, height, opacity, mountHeight, rodVisible });
+              onConfirm({ windowId: chosenWindowId, type, fabricColor, fabricMaterial, width, height, opacity, mountHeight, rodVisible });
               onOpenChange(false);
             }}
             disabled={isPhase2}
