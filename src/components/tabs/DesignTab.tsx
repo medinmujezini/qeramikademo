@@ -631,6 +631,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   onTileAnimationComplete,
   findTile,
   floorPlan,
+  selectedCurtainId,
+  onCurtainClick,
 }) => {
   const { staircases, building, activeLevel, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   const { 
