@@ -15,9 +15,11 @@ import { Blinds, Layers, SquareStack, ScrollText, ChevronDown } from 'lucide-rea
 interface CurtainDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  window: FloorWindow | null;
+  windows: FloorWindow[]; // all windows on the wall
+  selectedWindowId: string | null;
   wallHeight: number;
   onConfirm: (config: {
+    windowId: string;
     type: CurtainType;
     fabricColor: string;
     fabricMaterial: CurtainFabric;
