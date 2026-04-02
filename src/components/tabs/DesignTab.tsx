@@ -1547,7 +1547,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Curtain placement state
   const [curtainDialogOpen, setCurtainDialogOpen] = useState(false);
-  const [curtainTargetWall, setCurtainTargetWall] = useState<Wall | null>(null);
   const [selectedCurtainId, setSelectedCurtainId] = useState<string | null>(null);
   const selectedCurtain = (floorPlan.curtains ?? []).find(c => c.id === selectedCurtainId) ?? null;
   const selectedCurtainWall = selectedCurtain ? floorPlan.walls.find(w => w.id === selectedCurtain.wallId) : null;
@@ -1970,15 +1969,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
 
               <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
-                // Find walls with windows
-                const wallsWithWindows = floorPlan.walls.filter(w =>
-                  floorPlan.windows.some(win => win.wallId === w.id)
-                );
-                if (wallsWithWindows.length === 0) {
+                const ww = floorPlan.walls
+                  .filter(w => floorPlan.windows.some(win => win.wallId === w.id))
+                  .map(w => ({ wall: w, windows: floorPlan.windows.filter(win => win.wallId === w.id) }));
+                if (ww.length === 0) {
                   toast.error('No windows found — curtains can only be placed on walls with windows');
                   return;
                 }
-                setCurtainTargetWall(wallsWithWindows[0]);
                 setCurtainDialogOpen(true);
               }}>
                 <Blinds className="h-3 w-3" />
@@ -2586,28 +2583,29 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <CurtainDialog
         open={curtainDialogOpen}
         onOpenChange={setCurtainDialogOpen}
-        windows={curtainTargetWall ? floorPlan.windows.filter(w => w.wallId === curtainTargetWall.id) : []}
-        selectedWindowId={null}
-        wallHeight={curtainTargetWall?.height ?? 280}
+        wallsWithWindows={floorPlan.walls
+          .filter(w => floorPlan.windows.some(win => win.wallId === w.id))
+          .map(w => ({ wall: w, windows: floorPlan.windows.filter(win => win.wallId === w.id) }))}
+        wallHeight={280}
         onConfirm={(config) => {
-          if (!curtainTargetWall) return;
-          const win = floorPlan.windows.find(w => w.id === config.windowId);
-          if (!win) return;
-          addCurtain({
-            wallId: curtainTargetWall.id,
-            windowId: config.windowId,
-            position: win.position,
-            width: config.width,
-            height: config.height,
-            type: config.type,
-            fabricColor: config.fabricColor,
-            fabricMaterial: config.fabricMaterial,
-            opacity: config.opacity,
-            openAmount: 0,
-            mountHeight: config.mountHeight,
-            rodVisible: config.rodVisible,
+          const wallWindows = floorPlan.windows.filter(w => w.wallId === config.wallId);
+          wallWindows.forEach(win => {
+            addCurtain({
+              wallId: config.wallId,
+              windowId: win.id,
+              position: win.position,
+              width: config.width,
+              height: config.height,
+              type: config.type,
+              fabricColor: config.fabricColor,
+              fabricMaterial: config.fabricMaterial,
+              opacity: config.opacity,
+              openAmount: 0,
+              mountHeight: config.mountHeight,
+              rodVisible: config.rodVisible,
+            });
           });
-          toast.success('Curtain placed');
+          toast.success(`${wallWindows.length} curtain${wallWindows.length > 1 ? 's' : ''} placed`);
         }}
       />
       </div>{/* end flex-1 canvas area */}
