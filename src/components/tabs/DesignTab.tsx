@@ -2381,7 +2381,15 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
             </div>
             <ScrollArea className="flex-1 relative z-10">
-              {selectedStaircaseId ? (
+              {selectedCurtain && selectedCurtainWall ? (
+                <CurtainPropertiesPanel
+                  curtain={selectedCurtain}
+                  wallHeight={selectedCurtainWall.height}
+                  onUpdate={updateCurtain}
+                  onDelete={(id) => { deleteCurtain(id); setSelectedCurtainId(null); }}
+                  onDeselect={() => setSelectedCurtainId(null)}
+                />
+              ) : selectedStaircaseId ? (
                 <StaircasePropertiesPanel />
               ) : (
                 <DesignPropertiesPanel
