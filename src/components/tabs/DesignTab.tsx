@@ -2590,12 +2590,34 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         wallHeight={0} /* dynamic per-wall, handled inside dialog */
         onConfirm={(config) => {
           const wallWindows = floorPlan.windows.filter(w => w.wallId === config.wallId);
+          
+          // Calculate effective width for panel/sheer on multi-window walls
+          let effectiveWidth = config.width;
+          const isDrape = config.type === 'panel' || config.type === 'sheer';
+          if (isDrape && wallWindows.length >= 2) {
+            const wall = floorPlan.walls.find(w => w.id === config.wallId);
+            if (wall) {
+              const startPt = floorPlan.points.find(p => p.id === wall.startPointId);
+              const endPt = floorPlan.points.find(p => p.id === wall.endPointId);
+              if (startPt && endPt) {
+                const wallLength = distanceBetweenPoints(startPt, endPt);
+                const sorted = [...wallWindows].sort((a, b) => a.position - b.position);
+                let maxGap = 0;
+                for (let i = 1; i < sorted.length; i++) {
+                  const gap = (sorted[i].position - sorted[i - 1].position) * wallLength;
+                  if (gap > maxGap) maxGap = gap;
+                }
+                effectiveWidth = Math.max(config.width, maxGap + 20);
+              }
+            }
+          }
+          
           wallWindows.forEach(win => {
             addCurtain({
               wallId: config.wallId,
               windowId: win.id,
               position: win.position,
-              width: config.width,
+              width: effectiveWidth,
               height: config.height,
               type: config.type,
               fabricColor: config.fabricColor,
