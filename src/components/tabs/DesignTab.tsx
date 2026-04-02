@@ -8,6 +8,7 @@
 
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { createTriplanarMaterial } from '@/utils/triplanarMaterial';
+import { distanceBetweenPoints } from '@/utils/wallGeometry';
 import { SpawnPointMarker, type SpawnPoint } from '@/components/3d/SpawnPointMarker';
 import { WalkthroughOverlay } from '@/components/3d/WalkthroughOverlay';
 import { Canvas, useThree, useFrame, useLoader, ThreeEvent } from '@react-three/fiber';
