@@ -2586,7 +2586,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         wallsWithWindows={floorPlan.walls
           .filter(w => floorPlan.windows.some(win => win.wallId === w.id))
           .map(w => ({ wall: w, windows: floorPlan.windows.filter(win => win.wallId === w.id) }))}
-        wallHeight={280}
+        wallHeight={0} /* dynamic per-wall, handled inside dialog */
         onConfirm={(config) => {
           const wallWindows = floorPlan.windows.filter(w => w.wallId === config.wallId);
           wallWindows.forEach(win => {
