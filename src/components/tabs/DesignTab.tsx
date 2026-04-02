@@ -2282,6 +2282,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               onTileAnimationComplete={handleTileAnimationComplete}
               findTile={findTile}
               floorPlan={floorPlan}
+              selectedCurtainId={selectedCurtainId}
+              onCurtainClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); }}
             />
           </Suspense>
           {/* Spawn point marker */}
