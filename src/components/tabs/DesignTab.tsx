@@ -1040,7 +1040,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             wallThickness={wall.thickness}
             wallHeight={wall.height}
             selected={curtain.id === selectedCurtainId}
-            onClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); }}
+            onClick={(id) => onCurtainClick?.(id)}
           />
         );
       })}
