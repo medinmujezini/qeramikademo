@@ -21,6 +21,7 @@ import { FixtureScene } from '@/components/3d/FixtureScene';
 import { RenderPipelineController } from '@/components/3d/RenderPipelineController';
 import { UnifiedLibrary } from '@/components/design/UnifiedLibrary';
 import { DesignPropertiesPanel } from '@/components/design/DesignPropertiesPanel';
+import { CurtainPropertiesPanel } from '@/components/design/CurtainPropertiesPanel';
 import { QualitySettingsPanel, QualitySettings, DEFAULT_QUALITY_SETTINGS } from '@/components/design/QualitySettingsPanel';
 import { WallSurfaceDialog } from '@/components/3d/WallSurfaceDialog';
 import { FloorSurfaceDialog } from '@/components/3d/FloorSurfaceDialog';
@@ -267,6 +268,9 @@ interface DesignSceneProps {
   findTile: (tileId: string, wallFinish?: WallFinish) => Tile | null;
   // Floor plan data passed as props (required for R3F Canvas context isolation)
   floorPlan: import('@/types/floorPlan').FloorPlan;
+  // Curtain selection
+  selectedCurtainId?: string | null;
+  onCurtainClick?: (id: string) => void;
 }
 
 const Wall3D = ({
@@ -628,6 +632,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   onTileAnimationComplete,
   findTile,
   floorPlan,
+  selectedCurtainId,
+  onCurtainClick,
 }) => {
   const { staircases, building, activeLevel, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   const { 
@@ -1034,6 +1040,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
             wallEndY={end.y}
             wallThickness={wall.thickness}
             wallHeight={wall.height}
+            selected={curtain.id === selectedCurtainId}
+            onClick={(id) => onCurtainClick?.(id)}
           />
         );
       })}
@@ -1539,7 +1547,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Curtain placement state
   const [curtainDialogOpen, setCurtainDialogOpen] = useState(false);
-  const [curtainTargetWindow, setCurtainTargetWindow] = useState<{ window: FloorWindow; wall: Wall } | null>(null);
+  const [curtainTargetWall, setCurtainTargetWall] = useState<Wall | null>(null);
+  const [selectedCurtainId, setSelectedCurtainId] = useState<string | null>(null);
+  const selectedCurtain = (floorPlan.curtains ?? []).find(c => c.id === selectedCurtainId) ?? null;
+  const selectedCurtainWall = selectedCurtain ? floorPlan.walls.find(w => w.id === selectedCurtain.wallId) : null;
   
   const handlePipelineError = useCallback((error: Error) => {
     console.warn('[DesignTab] Pipeline error, falling back to basic lighting:', error);
@@ -1967,10 +1978,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                   toast.error('No windows found — curtains can only be placed on walls with windows');
                   return;
                 }
-                // Use first wall with windows and first window on it
-                const wall = wallsWithWindows[0];
-                const win = floorPlan.windows.find(w => w.wallId === wall.id)!;
-                setCurtainTargetWindow({ window: win, wall });
+                setCurtainTargetWall(wallsWithWindows[0]);
                 setCurtainDialogOpen(true);
               }}>
                 <Blinds className="h-3 w-3" />
@@ -2275,6 +2283,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               onTileAnimationComplete={handleTileAnimationComplete}
               findTile={findTile}
               floorPlan={floorPlan}
+              selectedCurtainId={selectedCurtainId}
+              onCurtainClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); }}
             />
           </Suspense>
           {/* Spawn point marker */}
@@ -2371,7 +2381,15 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
             </div>
             <ScrollArea className="flex-1 relative z-10">
-              {selectedStaircaseId ? (
+              {selectedCurtain && selectedCurtainWall ? (
+                <CurtainPropertiesPanel
+                  curtain={selectedCurtain}
+                  wallHeight={selectedCurtainWall.height}
+                  onUpdate={updateCurtain}
+                  onDelete={(id) => { deleteCurtain(id); setSelectedCurtainId(null); }}
+                  onDeselect={() => setSelectedCurtainId(null)}
+                />
+              ) : selectedStaircaseId ? (
                 <StaircasePropertiesPanel />
               ) : (
                 <DesignPropertiesPanel
@@ -2568,14 +2586,16 @@ export const DesignTab: React.FC<DesignTabProps> = ({
       <CurtainDialog
         open={curtainDialogOpen}
         onOpenChange={setCurtainDialogOpen}
-        window={curtainTargetWindow?.window ?? null}
-        wallHeight={curtainTargetWindow?.wall.height ?? 280}
+        windows={curtainTargetWall ? floorPlan.windows.filter(w => w.wallId === curtainTargetWall.id) : []}
+        selectedWindowId={null}
+        wallHeight={curtainTargetWall?.height ?? 280}
         onConfirm={(config) => {
-          if (!curtainTargetWindow) return;
-          const { window: win, wall } = curtainTargetWindow;
+          if (!curtainTargetWall) return;
+          const win = floorPlan.windows.find(w => w.id === config.windowId);
+          if (!win) return;
           addCurtain({
-            wallId: wall.id,
-            windowId: win.id,
+            wallId: curtainTargetWall.id,
+            windowId: config.windowId,
             position: win.position,
             width: config.width,
             height: config.height,

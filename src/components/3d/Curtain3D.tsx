@@ -12,6 +12,8 @@ interface Curtain3DProps {
   wallEndY: number;
   wallThickness: number;
   wallHeight: number;
+  selected?: boolean;
+  onClick?: (id: string) => void;
 }
 
 const FABRIC_ROUGHNESS: Record<string, number> = {
@@ -207,6 +209,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   wallEndY,
   wallThickness,
   wallHeight,
+  selected = false,
+  onClick,
 }) => {
   const scale = CM_TO_METERS;
   const roughness = FABRIC_ROUGHNESS[curtain.fabricMaterial] || 0.8;
@@ -266,7 +270,15 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
     <group
       position={[cx, cy, cz]}
       rotation={[0, -wallAngle, 0]}
+      onClick={(e) => { e.stopPropagation(); onClick?.(curtain.id); }}
     >
+      {/* Selection highlight */}
+      {selected && (
+        <mesh>
+          <boxGeometry args={[curtainW + 0.04, curtainH + 0.04, 0.06]} />
+          <meshBasicMaterial color="#C9A96E" transparent opacity={0.15} depthWrite={false} />
+        </mesh>
+      )}
       {/* Curtain rod — panel/sheer only */}
       {isPanelType && curtain.rodVisible !== false && (
         <group position={[0, curtainH / 2 + rodRadius, 0]}>
