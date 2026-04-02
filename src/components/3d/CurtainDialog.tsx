@@ -50,14 +50,17 @@ const FABRIC_MATERIALS: { value: CurtainFabric; label: string }[] = [
 export const CurtainDialog: React.FC<CurtainDialogProps> = ({
   open,
   onOpenChange,
-  window: win,
+  windows,
+  selectedWindowId,
   wallHeight,
   onConfirm,
 }) => {
   const [type, setType] = useState<CurtainType>('panel');
   const [fabricColor, setFabricColor] = useState('#f5f0e1');
   const [fabricMaterial, setFabricMaterial] = useState<CurtainFabric>('linen');
-  const [width, setWidth] = useState(win ? win.width + 40 : 160);
+  const [chosenWindowId, setChosenWindowId] = useState<string>(selectedWindowId ?? windows[0]?.id ?? '');
+  const chosenWindow = windows.find(w => w.id === chosenWindowId) ?? windows[0] ?? null;
+  const [width, setWidth] = useState(chosenWindow ? chosenWindow.width + 40 : 160);
   const [height, setHeight] = useState(wallHeight - 10);
   const [opacity, setOpacity] = useState(1);
   const [mountHeight, setMountHeight] = useState(wallHeight);
@@ -65,12 +68,19 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
 
   // Update dimensions when window changes
   React.useEffect(() => {
-    if (win) {
-      setWidth(win.width + 40); // 20cm wider each side
+    if (chosenWindow) {
+      setWidth(chosenWindow.width + 40);
       setHeight(wallHeight - 10);
       setMountHeight(wallHeight);
     }
-  }, [win, wallHeight]);
+  }, [chosenWindow, wallHeight]);
+
+  // Sync chosen window when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setChosenWindowId(selectedWindowId ?? windows[0]?.id ?? '');
+    }
+  }, [open, selectedWindowId, windows]);
 
   const isPhase2 = false; // All types now implemented
 
