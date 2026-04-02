@@ -1977,10 +1977,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                   toast.error('No windows found — curtains can only be placed on walls with windows');
                   return;
                 }
-                // Use first wall with windows and first window on it
-                const wall = wallsWithWindows[0];
-                const win = floorPlan.windows.find(w => w.wallId === wall.id)!;
-                setCurtainTargetWindow({ window: win, wall });
+                setCurtainTargetWall(wallsWithWindows[0]);
                 setCurtainDialogOpen(true);
               }}>
                 <Blinds className="h-3 w-3" />
