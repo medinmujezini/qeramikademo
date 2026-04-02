@@ -1547,7 +1547,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
   // Curtain placement state
   const [curtainDialogOpen, setCurtainDialogOpen] = useState(false);
-  const [curtainTargetWall, setCurtainTargetWall] = useState<Wall | null>(null);
   const [selectedCurtainId, setSelectedCurtainId] = useState<string | null>(null);
   const selectedCurtain = (floorPlan.curtains ?? []).find(c => c.id === selectedCurtainId) ?? null;
   const selectedCurtainWall = selectedCurtain ? floorPlan.walls.find(w => w.id === selectedCurtain.wallId) : null;
