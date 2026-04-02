@@ -1970,15 +1970,13 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
 
               <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
-                // Find walls with windows
-                const wallsWithWindows = floorPlan.walls.filter(w =>
-                  floorPlan.windows.some(win => win.wallId === w.id)
-                );
-                if (wallsWithWindows.length === 0) {
+                const ww = floorPlan.walls
+                  .filter(w => floorPlan.windows.some(win => win.wallId === w.id))
+                  .map(w => ({ wall: w, windows: floorPlan.windows.filter(win => win.wallId === w.id) }));
+                if (ww.length === 0) {
                   toast.error('No windows found — curtains can only be placed on walls with windows');
                   return;
                 }
-                setCurtainTargetWall(wallsWithWindows[0]);
                 setCurtainDialogOpen(true);
               }}>
                 <Blinds className="h-3 w-3" />
