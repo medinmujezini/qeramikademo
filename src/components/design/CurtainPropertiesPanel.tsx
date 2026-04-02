@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Blinds, Trash2 } from 'lucide-react';
 import { CURTAIN_FABRIC_PRESETS } from '@/types/floorPlan';
 import type { Curtain, CurtainType, CurtainFabric } from '@/types/floorPlan';
