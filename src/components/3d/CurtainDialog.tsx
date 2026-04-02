@@ -119,7 +119,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
   };
 
   const getEffectiveWallHeight = (entry: WallWithWindows | undefined) =>
-    entry?.wall.height ?? fallbackWallHeight || 280;
+    entry?.wall.height ?? (fallbackWallHeight || 280);
 
   // Apply smart defaults
   const applyDefaults = (
