@@ -267,6 +267,9 @@ interface DesignSceneProps {
   findTile: (tileId: string, wallFinish?: WallFinish) => Tile | null;
   // Floor plan data passed as props (required for R3F Canvas context isolation)
   floorPlan: import('@/types/floorPlan').FloorPlan;
+  // Curtain selection
+  selectedCurtainId?: string | null;
+  onCurtainClick?: (id: string) => void;
 }
 
 const Wall3D = ({
