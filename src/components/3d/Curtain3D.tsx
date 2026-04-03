@@ -52,13 +52,14 @@ const CurtainGLTFModel: React.FC<{
 
     clone.scale.setScalar(uniformScale);
     // Re-center after scaling
+    // Position: center X/Y, but align back face flush at Z=0 (extends outward)
     clone.position.set(
       -center.x * uniformScale,
       -center.y * uniformScale,
-      -center.z * uniformScale,
+      -box.max.z * uniformScale,
     );
 
-    // Override material colors with fabric color
+    // Preserve original model textures — don't override colors
     clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -66,15 +67,11 @@ const CurtainGLTFModel: React.FC<{
         if (Array.isArray(mat)) {
           mesh.material = mat.map(m => {
             const newMat = (m as THREE.MeshStandardMaterial).clone();
-            newMat.color.set(fabricColor);
-            newMat.roughness = roughness;
             newMat.metalness = 0;
             return newMat;
           });
         } else {
           const newMat = (mat as THREE.MeshStandardMaterial).clone();
-          newMat.color.set(fabricColor);
-          newMat.roughness = roughness;
           newMat.metalness = 0;
           mesh.material = newMat;
         }
@@ -126,7 +123,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   // Offset: push curtain to the inside face of the wall, flush
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
-  const offset = (wallThickness * scale / 2) + 0.005;
+  const hasModel = !!curtain.modelUrl;
+  const offset = (wallThickness * scale / 2) + (hasModel ? 0.01 : 0.005);
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
@@ -144,8 +142,6 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
-  // Check if this curtain has a GLB model
-  const hasModel = !!curtain.modelUrl;
 
   return (
     <group
