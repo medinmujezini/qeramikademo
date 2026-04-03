@@ -33,6 +33,9 @@ import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
 import { Curtain3D } from '@/components/3d/Curtain3D';
 import { CurtainDialog } from '@/components/3d/CurtainDialog';
+import KitchenBlock3D from '@/components/3d/KitchenBlock3D';
+import KitchenBlockDialog from '@/components/3d/KitchenBlockDialog';
+import { KitchenPropertiesPanel } from '@/components/3d/KitchenPropertiesPanel';
 
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
