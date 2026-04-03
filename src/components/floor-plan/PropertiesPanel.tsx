@@ -883,7 +883,7 @@ export const PropertiesPanel: React.FC = () => {
                 <Input
                   id="colDepth"
                   type="number"
-                  value={column.depth}
+                  value={round2(column.depth)}
                   onChange={(e) => updateColumn(column.id, { depth: Number(e.target.value) })}
                   min={10}
                   max={100}
