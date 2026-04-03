@@ -658,8 +658,54 @@ const DesignScene: React.FC<DesignSceneProps> = ({
     setIsDraggingFixture 
   } = useMEPContext();
   const { furniture } = useFurnitureContext();
+  const { gl, camera } = useThree();
   
   const scale = 0.01;
+
+  // Kitchen block drag state
+  const draggingKitchenRef = useRef<string | null>(null);
+  const kitchenDragPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
+  const kitchenRaycaster = useMemo(() => new THREE.Raycaster(), []);
+  const kitchenDragIntersection = useMemo(() => new THREE.Vector3(), []);
+
+  const handleKitchenDragStart = useCallback((id: string) => {
+    draggingKitchenRef.current = id;
+    onKitchenBlockClick?.(id);
+    document.body.style.cursor = 'grabbing';
+  }, [onKitchenBlockClick]);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!draggingKitchenRef.current) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouse = new THREE.Vector2(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1
+      );
+      kitchenRaycaster.setFromCamera(mouse, camera);
+      if (kitchenRaycaster.ray.intersectPlane(kitchenDragPlane, kitchenDragIntersection)) {
+        const xCm = Math.round(kitchenDragIntersection.x / scale);
+        const yCm = Math.round(kitchenDragIntersection.z / scale);
+        onKitchenBlockMove?.(draggingKitchenRef.current, xCm, yCm);
+      }
+    };
+
+    const handlePointerUp = () => {
+      if (draggingKitchenRef.current) {
+        draggingKitchenRef.current = null;
+        document.body.style.cursor = 'default';
+      }
+    };
+
+    canvas.addEventListener('pointermove', handlePointerMove);
+    canvas.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      canvas.removeEventListener('pointermove', handlePointerMove);
+      canvas.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [gl, camera, onKitchenBlockMove, kitchenRaycaster, kitchenDragPlane, kitchenDragIntersection, scale]);
 
   const bounds = useMemo(() => {
     if (floorPlan.points.length === 0) return { minX: 0, maxX: 8, minY: 0, maxY: 6 };
