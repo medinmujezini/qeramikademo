@@ -535,6 +535,39 @@ export const CURTAIN_FABRIC_PRESETS = [
   { id: 'gold', name: 'Gold', color: '#c9a96e' },
 ] as const;
 
+// Kitchen block types
+export type KitchenBlockType = 'base-cabinet' | 'wall-cabinet' | 'tall-cabinet' | 'countertop' | 'appliance-fridge' | 'appliance-stove' | 'appliance-sink' | 'appliance-dishwasher' | 'island';
+export type CountertopMaterial = 'granite' | 'marble' | 'quartz' | 'wood' | 'steel';
+export type HandleStyle = 'bar' | 'knob' | 'integrated' | 'none';
+
+export const KITCHEN_BLOCK_DEFAULTS: Record<KitchenBlockType, { width: number; height: number; depth: number }> = {
+  'base-cabinet': { width: 60, height: 85, depth: 60 },
+  'wall-cabinet': { width: 60, height: 70, depth: 35 },
+  'tall-cabinet': { width: 60, height: 200, depth: 60 },
+  'countertop': { width: 60, height: 3, depth: 60 },
+  'appliance-fridge': { width: 70, height: 180, depth: 70 },
+  'appliance-stove': { width: 60, height: 85, depth: 60 },
+  'appliance-sink': { width: 60, height: 85, depth: 60 },
+  'appliance-dishwasher': { width: 60, height: 85, depth: 60 },
+  'island': { width: 120, height: 85, depth: 80 },
+};
+
+export interface KitchenBlock {
+  id: string;
+  x: number; // cm, plan coords
+  y: number; // cm, plan coords
+  rotation: number; // degrees: 0/90/180/270
+  blockType: KitchenBlockType;
+  width: number; // cm
+  height: number; // cm
+  depth: number; // cm
+  cabinetColor: string; // hex
+  countertopColor: string; // hex
+  countertopMaterial: CountertopMaterial;
+  handleStyle: HandleStyle;
+  modelUrl?: string; // optional GLB
+}
+
 export interface SavedCameraView {
   id: string;
   name: string;
