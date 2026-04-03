@@ -93,10 +93,10 @@ const CurtainGLTFModel: React.FC<{
   const rightHalf = useMemo(() => createHalf(rightClipPlane), [scene, targetWidth, targetHeight, rightClipPlane]);
 
   // Slide each half toward wall edges; compress X to simulate bunching
-  const gatherScale = 1 - openAmount * 0.75; // compress to 25% width at full open
-  const bunchDepth = 1 + openAmount * 2.5; // increase Z depth for bunched look
-  // Slide halves to edges: at 100% open, each half sits at ±45% of width
-  const openOffset = openAmount * targetWidth * 0.45;
+  const gatherScale = 1 - openAmount * 0.8; // compress to 20% width at full open
+  const bunchDepth = 1 + openAmount * 0.8; // slight Z depth increase for bunched look (not too much)
+  // Slide halves to edges: at 100% open, each half sits at ±40% of width
+  const openOffset = openAmount * targetWidth * 0.4;
 
   return (
     <group>
