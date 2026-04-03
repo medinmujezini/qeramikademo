@@ -159,7 +159,7 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
       ? new THREE.Color(bodyColor).offsetHSL(0, -0.15, -0.03).getStyle()
       : new THREE.Color(bodyColor).offsetHSL(0, 0, -0.05).getStyle();
     const darkColor = new THREE.Color(bodyColor).offsetHSL(0, 0, -0.15).getStyle();
-    const seamColor = new THREE.Color(bodyColor).offsetHSL(0, 0, -0.25).getStyle();
+    const seamColor = new THREE.Color(bodyColor).multiplyScalar(0.2).getStyle();
 
     const matProps = COUNTERTOP_MATERIAL_PROPS[block.countertopMaterial] || COUNTERTOP_MATERIAL_PROPS.quartz;
     const ctColor = matProps.tint(block.countertopColor);
