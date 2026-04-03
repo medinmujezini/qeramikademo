@@ -33,7 +33,8 @@ const CurtainGLTFModel: React.FC<{
   targetHeight: number;
   fabricColor: string;
   roughness: number;
-}> = ({ url, targetWidth, targetHeight, fabricColor, roughness }) => {
+  openAmount: number;
+}> = ({ url, targetWidth, targetHeight, fabricColor, roughness, openAmount }) => {
   const { scene } = useGLTF(url);
 
   const clonedScene = useMemo(() => {
@@ -42,21 +43,22 @@ const CurtainGLTFModel: React.FC<{
     const box = new THREE.Box3().setFromObject(clone);
     const size = new THREE.Vector3();
     box.getSize(size);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
 
-    // Uniform scale to fit target dimensions
+    // Independent axis scaling — fill target exactly, clamp depth to 3cm
     const scaleX = size.x > 0 ? targetWidth / size.x : 1;
     const scaleY = size.y > 0 ? targetHeight / size.y : 1;
-    const uniformScale = Math.min(scaleX, scaleY);
+    const scaleZ = size.z > 0 ? 0.03 / size.z : 1;
+    clone.scale.set(scaleX, scaleY, scaleZ);
 
-    clone.scale.setScalar(uniformScale);
-    // Re-center after scaling
-    // Position: center X/Y, but align back face flush at Z=0 (extends outward)
+    // Recompute bounding box after scaling
+    const newBox = new THREE.Box3().setFromObject(clone);
+    const newCenter = newBox.getCenter(new THREE.Vector3());
+
+    // Position: center X, ground bottom at Y=0, back face at Z=0 (extends outward)
     clone.position.set(
-      -center.x * uniformScale,
-      -center.y * uniformScale,
-      -box.max.z * uniformScale,
+      -newCenter.x,
+      -newBox.min.y,
+      -newBox.min.z,
     );
 
     // Preserve original model textures — don't override colors
@@ -81,7 +83,14 @@ const CurtainGLTFModel: React.FC<{
     return clone;
   }, [scene, targetWidth, targetHeight, fabricColor, roughness]);
 
-  return <primitive object={clonedScene} />;
+  // Apply open amount as X-scale compression (simulate gathering)
+  const openScale = 1 - openAmount * 0.7;
+
+  return (
+    <group scale={[openScale, 1, 1]}>
+      <primitive object={clonedScene} />
+    </group>
+  );
 };
 
 // Fallback box used during loading and as error fallback
