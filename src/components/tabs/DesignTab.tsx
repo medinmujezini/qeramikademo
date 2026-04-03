@@ -673,14 +673,29 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   const handleKitchenDragStart = useCallback((id: string) => {
     draggingKitchenRef.current = id;
     onKitchenBlockClick?.(id);
+    onKitchenDragStateChange?.(true);
     document.body.style.cursor = 'grabbing';
-  }, [onKitchenBlockClick]);
+  }, [onKitchenBlockClick, onKitchenDragStateChange]);
+
+  // Compute room bounds in CM for clamping
+  const roomBoundsCm = useMemo(() => {
+    if (floorPlan.points.length === 0) return { minX: 0, maxX: 800, minY: 0, maxY: 600 };
+    const xs = floorPlan.points.map(p => p.x);
+    const ys = floorPlan.points.map(p => p.y);
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+    };
+  }, [floorPlan.points]);
 
   useEffect(() => {
     const canvas = gl.domElement;
     
     const handlePointerMove = (e: PointerEvent) => {
       if (!draggingKitchenRef.current) return;
+      e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const mouse = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -688,8 +703,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       );
       kitchenRaycaster.setFromCamera(mouse, camera);
       if (kitchenRaycaster.ray.intersectPlane(kitchenDragPlane, kitchenDragIntersection)) {
-        const xCm = Math.round(kitchenDragIntersection.x / scale);
-        const yCm = Math.round(kitchenDragIntersection.z / scale);
+        const xCm = Math.round(Math.max(roomBoundsCm.minX, Math.min(roomBoundsCm.maxX, kitchenDragIntersection.x / scale)));
+        const yCm = Math.round(Math.max(roomBoundsCm.minY, Math.min(roomBoundsCm.maxY, kitchenDragIntersection.z / scale)));
         onKitchenBlockMove?.(draggingKitchenRef.current, xCm, yCm);
       }
     };
@@ -698,6 +713,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       if (draggingKitchenRef.current) {
         draggingKitchenRef.current = null;
         document.body.style.cursor = 'default';
+        onKitchenDragStateChange?.(false);
       }
     };
 
@@ -707,7 +723,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       canvas.removeEventListener('pointermove', handlePointerMove);
       canvas.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [gl, camera, onKitchenBlockMove, kitchenRaycaster, kitchenDragPlane, kitchenDragIntersection, scale]);
+  }, [gl, camera, onKitchenBlockMove, kitchenRaycaster, kitchenDragPlane, kitchenDragIntersection, scale, roomBoundsCm, onKitchenDragStateChange]);
 
   const bounds = useMemo(() => {
     if (floorPlan.points.length === 0) return { minX: 0, maxX: 8, minY: 0, maxY: 6 };
