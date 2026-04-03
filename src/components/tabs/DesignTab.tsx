@@ -279,6 +279,7 @@ interface DesignSceneProps {
   selectedKitchenBlockId?: string | null;
   onKitchenBlockClick?: (id: string) => void;
   onKitchenBlockMove?: (id: string, x: number, y: number) => void;
+  onKitchenDragStateChange?: (dragging: boolean) => void;
 }
 
 const Wall3D = ({
@@ -645,6 +646,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   selectedKitchenBlockId,
   onKitchenBlockClick,
   onKitchenBlockMove,
+  onKitchenDragStateChange,
 }) => {
   const { staircases, building, activeLevel, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   const { 
@@ -671,14 +673,29 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   const handleKitchenDragStart = useCallback((id: string) => {
     draggingKitchenRef.current = id;
     onKitchenBlockClick?.(id);
+    onKitchenDragStateChange?.(true);
     document.body.style.cursor = 'grabbing';
-  }, [onKitchenBlockClick]);
+  }, [onKitchenBlockClick, onKitchenDragStateChange]);
+
+  // Compute room bounds in CM for clamping
+  const roomBoundsCm = useMemo(() => {
+    if (floorPlan.points.length === 0) return { minX: 0, maxX: 800, minY: 0, maxY: 600 };
+    const xs = floorPlan.points.map(p => p.x);
+    const ys = floorPlan.points.map(p => p.y);
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+    };
+  }, [floorPlan.points]);
 
   useEffect(() => {
     const canvas = gl.domElement;
     
     const handlePointerMove = (e: PointerEvent) => {
       if (!draggingKitchenRef.current) return;
+      e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const mouse = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -686,8 +703,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       );
       kitchenRaycaster.setFromCamera(mouse, camera);
       if (kitchenRaycaster.ray.intersectPlane(kitchenDragPlane, kitchenDragIntersection)) {
-        const xCm = Math.round(kitchenDragIntersection.x / scale);
-        const yCm = Math.round(kitchenDragIntersection.z / scale);
+        const xCm = Math.round(Math.max(roomBoundsCm.minX, Math.min(roomBoundsCm.maxX, kitchenDragIntersection.x / scale)));
+        const yCm = Math.round(Math.max(roomBoundsCm.minY, Math.min(roomBoundsCm.maxY, kitchenDragIntersection.z / scale)));
         onKitchenBlockMove?.(draggingKitchenRef.current, xCm, yCm);
       }
     };
@@ -696,6 +713,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       if (draggingKitchenRef.current) {
         draggingKitchenRef.current = null;
         document.body.style.cursor = 'default';
+        onKitchenDragStateChange?.(false);
       }
     };
 
@@ -705,7 +723,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
       canvas.removeEventListener('pointermove', handlePointerMove);
       canvas.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [gl, camera, onKitchenBlockMove, kitchenRaycaster, kitchenDragPlane, kitchenDragIntersection, scale]);
+  }, [gl, camera, onKitchenBlockMove, kitchenRaycaster, kitchenDragPlane, kitchenDragIntersection, scale, roomBoundsCm, onKitchenDragStateChange]);
 
   const bounds = useMemo(() => {
     if (floorPlan.points.length === 0) return { minX: 0, maxX: 8, minY: 0, maxY: 6 };
@@ -1296,6 +1314,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
+  const [isDraggingKitchen, setIsDraggingKitchen] = useState(false);
   const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel, updateCeilingEmitterConfig, addCurtain, updateCurtain, deleteCurtain, addKitchenBlock, updateKitchenBlock, removeKitchenBlock, selectedKitchenBlockId, setSelectedKitchenBlockId } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
@@ -2360,7 +2379,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               minPolarAngle={0}
               maxPolarAngle={maxPolarAngle}
               target={defaultTarget}
-              enabled={!isDragging && !isDraggingFixture && !isDraggingSpawn}
+              enabled={!isDragging && !isDraggingFixture && !isDraggingSpawn && !isDraggingKitchen}
               onStart={() => {
                 isAnimatingCamera.current = false;
               }}
@@ -2399,6 +2418,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               selectedKitchenBlockId={selectedKitchenBlockId}
               onKitchenBlockClick={(id) => { setSelectedKitchenBlockId(id); setSelectedCurtainId(null); setSelectedStaircaseId(null); setIsPanelOpen(true); }}
               onKitchenBlockMove={(id, x, y) => updateKitchenBlock(id, { x, y })}
+              onKitchenDragStateChange={setIsDraggingKitchen}
             />
           </Suspense>
           {/* Spawn point marker */}
