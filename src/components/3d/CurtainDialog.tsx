@@ -170,6 +170,10 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
     const defaultStyle: HangStyle = isDrapeType(type) ? 'floor' : 'sill';
     setHangStyle(defaultStyle);
     applyDefaults(type, defaultStyle, entry);
+    setSelectedModelUrl(undefined);
+    // Fetch curtain models for this type
+    supabase.from('curtain_models').select('*').eq('type', type).eq('is_active', true).order('sort_order')
+      .then(({ data }) => setCurtainModels((data as CurtainModel[]) ?? []));
   }, [type]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-compute when hang style changes
