@@ -231,6 +231,43 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
               </div>
             </div>
 
+            {/* 3D Model selector */}
+            {curtainModels.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">3D Model (optional)</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setSelectedModelUrl(undefined)}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-md border text-xs transition-colors ${
+                      !selectedModelUrl ? 'border-primary bg-primary/10 text-primary' : 'border-border/50 hover:border-primary/30'
+                    }`}
+                  >
+                    <Blinds className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-[10px]">Default</span>
+                  </button>
+                  {curtainModels.map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelectedModelUrl(m.model_url)}
+                      className={`relative flex flex-col items-center gap-1 p-2 rounded-md border text-xs transition-colors ${
+                        selectedModelUrl === m.model_url ? 'border-primary bg-primary/10 text-primary' : 'border-border/50 hover:border-primary/30'
+                      }`}
+                    >
+                      {m.thumbnail_url ? (
+                        <img src={m.thumbnail_url} alt={m.name} className="w-8 h-8 object-cover rounded" />
+                      ) : (
+                        <Blinds className="h-6 w-6" />
+                      )}
+                      <span className="text-[10px] truncate max-w-full">{m.name}</span>
+                      {selectedModelUrl === m.model_url && (
+                        <Check className="absolute top-1 right-1 w-3 h-3 text-primary" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Fabric material */}
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Fabric Material</Label>
