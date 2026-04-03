@@ -144,9 +144,9 @@ export const StaircasePropertiesPanel: React.FC = () => {
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-[10px] uppercase tracking-wider">X (cm)</Label>
-          <Input
+           <Input
             type="number"
-            value={stair.x}
+            value={round2(stair.x)}
             onChange={e => updateStaircase(stair.id, { x: Number(e.target.value) })}
             className="h-7 text-xs"
           />
@@ -155,7 +155,7 @@ export const StaircasePropertiesPanel: React.FC = () => {
           <Label className="text-[10px] uppercase tracking-wider">Y (cm)</Label>
           <Input
             type="number"
-            value={stair.y}
+            value={round2(stair.y)}
             onChange={e => updateStaircase(stair.id, { y: Number(e.target.value) })}
             className="h-7 text-xs"
           />
