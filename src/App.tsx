@@ -32,6 +32,7 @@ import ImportExportPage from "./pages/admin/ImportExportPage";
 import ActivityLog from "./pages/admin/ActivityLog";
 import SettingsPage from "./pages/admin/SettingsPage";
 import FurnitureScraper from "./pages/admin/FurnitureScraper";
+import CurtainModelManagement from "./pages/admin/CurtainModelManagement";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +123,11 @@ const App = () => (
                     <Route path="/admin/import-export" element={
                       <ProtectedAdminRoute>
                         <AdminLayout><ImportExportPage /></AdminLayout>
+                      </ProtectedAdminRoute>
+                    } />
+                    <Route path="/admin/curtain-models" element={
+                      <ProtectedAdminRoute>
+                        <AdminLayout><CurtainModelManagement /></AdminLayout>
                       </ProtectedAdminRoute>
                     } />
                     
