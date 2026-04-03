@@ -120,6 +120,7 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
   const [building, setBuilding] = useState<Building>(createDefaultBuilding());
   const [selectedStaircaseId, setSelectedStaircaseId] = useState<string | null>(null);
   const [showAdjacentFloors, setShowAdjacentFloors] = useState(true);
+  const [selectedKitchenBlockId, setSelectedKitchenBlockId] = useState<string | null>(null);
   
   // Track which level's floor plan is currently loaded in useFloorPlan
   const loadedLevelRef = useRef<number>(0);
