@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { round2 } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -133,11 +134,11 @@ export const CurtainPropertiesPanel: React.FC<CurtainPropertiesPanelProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Width (cm)</Label>
-                <Input type="number" value={curtain.width} onChange={e => onUpdate(curtain.id, { width: Number(e.target.value) })} className="h-7 text-xs" min={20} max={500} />
+                <Input type="number" value={round2(curtain.width)} onChange={e => onUpdate(curtain.id, { width: Number(e.target.value) })} className="h-7 text-xs" min={20} max={500} />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Height (cm)</Label>
-                <Input type="number" value={curtain.height} onChange={e => onUpdate(curtain.id, { height: Number(e.target.value) })} className="h-7 text-xs" min={20} max={400} />
+                <Input type="number" value={round2(curtain.height)} onChange={e => onUpdate(curtain.id, { height: Number(e.target.value) })} className="h-7 text-xs" min={20} max={400} />
               </div>
             </div>
 
