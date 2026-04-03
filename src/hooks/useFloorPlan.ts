@@ -1222,6 +1222,33 @@ export const useFloorPlan = () => {
     });
   }, [saveToHistory]);
 
+  // Kitchen blocks
+  const addKitchenBlock = useCallback((block: Omit<import('@/types/floorPlan').KitchenBlock, 'id'>): string => {
+    const id = uuidv4();
+    const newBlock: import('@/types/floorPlan').KitchenBlock = { ...block, id };
+    setFloorPlan(prev => {
+      const updated = { ...prev, kitchenBlocks: [...(prev.kitchenBlocks ?? []), newBlock] };
+      saveToHistory(updated);
+      return updated;
+    });
+    return id;
+  }, [saveToHistory]);
+
+  const updateKitchenBlock = useCallback((id: string, updates: Partial<import('@/types/floorPlan').KitchenBlock>) => {
+    setFloorPlan(prev => ({
+      ...prev,
+      kitchenBlocks: (prev.kitchenBlocks ?? []).map(b => b.id === id ? { ...b, ...updates } : b),
+    }));
+  }, []);
+
+  const removeKitchenBlock = useCallback((id: string) => {
+    setFloorPlan(prev => {
+      const updated = { ...prev, kitchenBlocks: (prev.kitchenBlocks ?? []).filter(b => b.id !== id) };
+      saveToHistory(updated);
+      return updated;
+    });
+  }, [saveToHistory]);
+
   return {
     floorPlan,
     setFloorPlan,
@@ -1302,5 +1329,9 @@ export const useFloorPlan = () => {
     addCurtain,
     updateCurtain,
     deleteCurtain,
+    // Kitchen blocks
+    addKitchenBlock,
+    updateKitchenBlock,
+    removeKitchenBlock,
   };
 };
