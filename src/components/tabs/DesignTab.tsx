@@ -278,6 +278,7 @@ interface DesignSceneProps {
   onCurtainClick?: (id: string) => void;
   selectedKitchenBlockId?: string | null;
   onKitchenBlockClick?: (id: string) => void;
+  onKitchenBlockMove?: (id: string, x: number, y: number) => void;
 }
 
 const Wall3D = ({
