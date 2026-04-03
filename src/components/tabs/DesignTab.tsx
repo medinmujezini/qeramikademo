@@ -1296,6 +1296,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [maxPolarAngle, setMaxPolarAngle] = useState(Math.PI / 2);
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const toolbarScrollRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
@@ -1555,6 +1556,20 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const handlePipelineError = useCallback((error: Error) => {
     console.warn('[DesignTab] Pipeline error, falling back to basic lighting:', error);
     setGiEnabled(false);
+  }, []);
+
+  // Horizontal scroll for toolbar via mouse wheel
+  useEffect(() => {
+    const el = toolbarScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+        el.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
   }, []);
 
   // Auto-open panel when furniture/fixture is selected
@@ -1905,11 +1920,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     <div className="h-full flex flex-col">
       {/* Layer 3 — contextual toolbar */}
       {(
-      <div className="h-11 border-b shrink-0 relative shimmer-border-top" style={{ borderColor: 'hsl(var(--primary) / 0.10)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
+      <div className="border-b shrink-0 relative shimmer-border-top" style={{ borderColor: 'hsl(var(--primary) / 0.10)', background: 'linear-gradient(90deg, hsl(var(--card)), hsl(var(--card)) 40%, hsl(38 60% 68% / 0.03) 50%, hsl(var(--card)) 60%, hsl(var(--card)))' }}>
         <div className="gold-accent-line w-full absolute bottom-0 left-0 z-0" />
         <div className="pointer-events-none absolute -top-10 right-1/4 w-[250px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)] z-0" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/[0.02] to-transparent z-0" />
-        <div className="flex items-center gap-3 h-full px-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-none relative z-10 [&>*]:shrink-0">
+        <div
+          ref={toolbarScrollRef}
+          className="flex items-center gap-2 h-11 px-3 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-none relative z-10 [&>*]:shrink-0"
+        >
           <div className="flex items-center gap-1.5">
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
             <Label htmlFor="gi-enabled" className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
