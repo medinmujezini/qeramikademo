@@ -33,6 +33,7 @@ import ActivityLog from "./pages/admin/ActivityLog";
 import SettingsPage from "./pages/admin/SettingsPage";
 import FurnitureScraper from "./pages/admin/FurnitureScraper";
 import CurtainModelManagement from "./pages/admin/CurtainModelManagement";
+import KitchenModelManagement from "./pages/admin/KitchenModelManagement";
 
 const queryClient = new QueryClient();
 
