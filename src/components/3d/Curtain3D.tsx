@@ -54,7 +54,9 @@ const CurtainGLTFModel: React.FC<{
 
     const scaleX = size.x > 0 ? targetWidth / size.x : 1;
     const scaleY = size.y > 0 ? targetHeight / size.y : 1;
-    const scaleZ = size.z > 0 ? 0.03 / size.z : 1;
+    let scaleZ = scaleX; // preserve natural depth proportions
+    const maxDepth = 0.15;
+    if (size.z * scaleZ > maxDepth) scaleZ = maxDepth / size.z;
     clone.scale.set(scaleX, scaleY, scaleZ);
 
     const newBox = new THREE.Box3().setFromObject(clone);
@@ -90,14 +92,15 @@ const CurtainGLTFModel: React.FC<{
   const leftHalf = useMemo(() => createHalf(leftClipPlane), [scene, targetWidth, targetHeight, leftClipPlane]);
   const rightHalf = useMemo(() => createHalf(rightClipPlane), [scene, targetWidth, targetHeight, rightClipPlane]);
 
-  const openOffset = openAmount * (targetWidth / 2);
+  const openOffset = openAmount * targetWidth * 0.35;
+  const gatherScale = 1 - openAmount * 0.3;
 
   return (
     <group>
-      <group position={[-openOffset, 0, 0]}>
+      <group position={[-openOffset, 0, 0]} scale={[gatherScale, 1, 1]}>
         <primitive object={leftHalf} />
       </group>
-      <group position={[openOffset, 0, 0]}>
+      <group position={[openOffset, 0, 0]} scale={[gatherScale, 1, 1]}>
         <primitive object={rightHalf} />
       </group>
     </group>
