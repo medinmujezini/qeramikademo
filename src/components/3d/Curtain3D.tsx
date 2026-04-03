@@ -239,33 +239,49 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
-  // Open mechanism: panels shrink and slide, clamped within curtainW bounds
-  const halfW = (curtainW / 2) * (1 - openAmount * 0.85);
-  // Clamp: outer edge of each panel must not exceed ±curtainW/2
-  const panelCenterX = Math.min(curtainW / 2 - halfW / 2, curtainW / 4 + openAmount * curtainW / 4);
+  // Open mechanism: panels shrink and slide, but stay within wall ends
+  const wallLength = Math.hypot(wallEndX - wallStartX, wallEndY - wallStartY) * scale;
+  const curtainCenterOnWall = curtain.position * wallLength;
+  const leftSpace = curtainCenterOnWall;
+  const rightSpace = wallLength - curtainCenterOnWall;
+
+  const desiredHalfW = (curtainW / 2) * (1 - openAmount * 0.8);
+  const leftHalfW = Math.min(desiredHalfW, Math.max(leftSpace * 2, 0.05));
+  const rightHalfW = Math.min(desiredHalfW, Math.max(rightSpace * 2, 0.05));
+  const leftPanelCenterX = -Math.max(leftHalfW / 2, curtainW / 4 + openAmount * curtainW / 4);
+  const rightPanelCenterX = Math.max(rightHalfW / 2, curtainW / 4 + openAmount * curtainW / 4);
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
-  // Generate fold strips for fabric texture (panel type)
-  const FOLD_COUNT = 10; // strips per half-panel
-  const foldStrips = useMemo(() => {
-    const strips: { xOffset: number; zOffset: number; brightness: number }[] = [];
-    for (let i = 0; i < FOLD_COUNT; i++) {
-      const t = (i / (FOLD_COUNT - 1)) - 0.5; // -0.5 to 0.5
-      strips.push({
-        xOffset: t, // fractional position within half-width
-        zOffset: (i % 2 === 0 ? 0.003 : -0.003), // alternating depth
-        brightness: 0.92 + 0.08 * Math.cos(i * Math.PI), // subtle light/dark alternation
-      });
-    }
-    return strips;
-  }, []);
+  const panelTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
 
-  // Darken/lighten color helper
-  const adjustColor = (hex: string, factor: number) => {
-    const c = new THREE.Color(hex);
-    c.multiplyScalar(factor);
-    return c;
-  };
+    ctx.fillStyle = curtain.fabricColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const stripeCount = 18;
+    for (let i = 0; i < stripeCount; i++) {
+      const x = (i / stripeCount) * canvas.width;
+      const stripeW = canvas.width / stripeCount;
+      const grad = ctx.createLinearGradient(x, 0, x + stripeW, 0);
+      grad.addColorStop(0, 'rgba(255,255,255,0.12)');
+      grad.addColorStop(0.35, 'rgba(255,255,255,0.04)');
+      grad.addColorStop(0.5, 'rgba(0,0,0,0.10)');
+      grad.addColorStop(0.7, 'rgba(255,255,255,0.03)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.14)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, 0, stripeW, canvas.height);
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.needsUpdate = true;
+    return texture;
+  }, [curtain.fabricColor]);
 
   return (
     <group
@@ -298,54 +314,51 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
         </group>
       )}
 
-      {/* ── Panel type: fold strips for fabric texture ── */}
+      {/* ── Panel type: solid opaque panels with fabric texture ── */}
       {curtain.type === 'panel' && (
         <>
-          {/* Left half */}
-          <group position={[-panelCenterX, 0, 0]}>
-            {/* Solid backing to block any see-through */}
-            <mesh position={[0, 0, -0.004]}>
-              <planeGeometry args={[halfW, curtainH]} />
+          <group position={[leftPanelCenterX, 0, 0]}>
+            <mesh position={[0, 0, -0.0025]}>
+              <planeGeometry args={[leftHalfW + 0.01, curtainH + 0.01]} />
               <meshStandardMaterial
-                color={curtain.fabricColor} roughness={roughness} metalness={0}
+                color={curtain.fabricColor}
+                roughness={roughness}
+                metalness={0}
                 side={THREE.FrontSide}
               />
             </mesh>
-            {/* Fold strips */}
-            {foldStrips.map((strip, i) => {
-              const stripW = halfW / FOLD_COUNT;
-              return (
-                <mesh key={i} position={[strip.xOffset * halfW, 0, strip.zOffset]}>
-                  <boxGeometry args={[stripW * 1.05, curtainH, 0.004]} />
-                  <meshStandardMaterial
-                    color={adjustColor(curtain.fabricColor, strip.brightness)}
-                    roughness={roughness} metalness={0}
-                  />
-                </mesh>
-              );
-            })}
+            <mesh>
+              <boxGeometry args={[leftHalfW, curtainH, 0.006]} />
+              <meshStandardMaterial
+                color={curtain.fabricColor}
+                map={panelTexture ?? undefined}
+                roughness={roughness}
+                metalness={0}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
           </group>
-          {/* Right half */}
-          <group position={[panelCenterX, 0, 0]}>
-            <mesh position={[0, 0, -0.004]}>
-              <planeGeometry args={[halfW, curtainH]} />
+
+          <group position={[rightPanelCenterX, 0, 0]}>
+            <mesh position={[0, 0, -0.0025]}>
+              <planeGeometry args={[rightHalfW + 0.01, curtainH + 0.01]} />
               <meshStandardMaterial
-                color={curtain.fabricColor} roughness={roughness} metalness={0}
+                color={curtain.fabricColor}
+                roughness={roughness}
+                metalness={0}
                 side={THREE.FrontSide}
               />
             </mesh>
-            {foldStrips.map((strip, i) => {
-              const stripW = halfW / FOLD_COUNT;
-              return (
-                <mesh key={i} position={[strip.xOffset * halfW, 0, strip.zOffset]}>
-                  <boxGeometry args={[stripW * 1.05, curtainH, 0.004]} />
-                  <meshStandardMaterial
-                    color={adjustColor(curtain.fabricColor, strip.brightness)}
-                    roughness={roughness} metalness={0}
-                  />
-                </mesh>
-              );
-            })}
+            <mesh>
+              <boxGeometry args={[rightHalfW, curtainH, 0.006]} />
+              <meshStandardMaterial
+                color={curtain.fabricColor}
+                map={panelTexture ?? undefined}
+                roughness={roughness}
+                metalness={0}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
           </group>
         </>
       )}
@@ -367,6 +380,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
             <boxGeometry args={[0.02 + openAmount * 0.05, curtainH * 0.95, 0.035]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
+              map={panelTexture ?? undefined}
             />
           </mesh>
           {curtain.type === 'panel' && (
@@ -374,6 +388,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
               <boxGeometry args={[0.02 + openAmount * 0.05, curtainH * 0.95, 0.035]} />
               <meshStandardMaterial
                 color={curtain.fabricColor} roughness={roughness} metalness={0}
+                map={panelTexture ?? undefined}
               />
             </mesh>
           )}
