@@ -1296,6 +1296,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [maxPolarAngle, setMaxPolarAngle] = useState(Math.PI / 2);
   const [isDraggingFromLibrary, setIsDraggingFromLibrary] = useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const toolbarScrollRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const [isPreparingWalkthrough, setIsPreparingWalkthrough] = useState(false);
