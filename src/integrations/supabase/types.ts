@@ -364,6 +364,42 @@ export type Database = {
         }
         Relationships: []
       }
+      kitchen_models: {
+        Row: {
+          block_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          model_url: string
+          name: string
+          sort_order: number
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          block_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          model_url: string
+          name: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          model_url?: string
+          name?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           albedo_url: string | null

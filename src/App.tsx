@@ -33,6 +33,7 @@ import ActivityLog from "./pages/admin/ActivityLog";
 import SettingsPage from "./pages/admin/SettingsPage";
 import FurnitureScraper from "./pages/admin/FurnitureScraper";
 import CurtainModelManagement from "./pages/admin/CurtainModelManagement";
+import KitchenModelManagement from "./pages/admin/KitchenModelManagement";
 
 const queryClient = new QueryClient();
 
@@ -128,6 +129,11 @@ const App = () => (
                     <Route path="/admin/curtain-models" element={
                       <ProtectedAdminRoute>
                         <AdminLayout><CurtainModelManagement /></AdminLayout>
+                      </ProtectedAdminRoute>
+                    } />
+                    <Route path="/admin/kitchen-models" element={
+                      <ProtectedAdminRoute>
+                        <AdminLayout><KitchenModelManagement /></AdminLayout>
                       </ProtectedAdminRoute>
                     } />
                     

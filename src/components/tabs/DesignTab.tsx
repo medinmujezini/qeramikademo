@@ -33,6 +33,9 @@ import { Window3D } from '@/components/3d/Window3D';
 import { Staircase3D } from '@/components/3d/Staircase3D';
 import { Curtain3D } from '@/components/3d/Curtain3D';
 import { CurtainDialog } from '@/components/3d/CurtainDialog';
+import KitchenBlock3D from '@/components/3d/KitchenBlock3D';
+import KitchenBlockDialog from '@/components/3d/KitchenBlockDialog';
+import { KitchenPropertiesPanel } from '@/components/3d/KitchenPropertiesPanel';
 
 import { RoomLightMarker } from '@/components/3d/RoomLightMarker';
 import { GIQualityTier } from '@/gi/GIConfig';
@@ -45,7 +48,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun, ChevronUp, ChevronDown, Blinds } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Grid3X3, Droplets, RotateCcw, Move3D, Settings2, Camera, Download, Loader2, PanelRightClose, PanelRight, LayoutGrid, Mountain, Box, Bookmark, Trash2, Play, PersonStanding, X, MousePointer, Lightbulb, Layers, Plus, ArrowUpDown, Building2, Sun, ChevronUp, ChevronDown, Blinds, ChefHat } from 'lucide-react';
 import { FloorManager } from '@/components/floor-plan/FloorManager';
 
 import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
@@ -54,7 +57,8 @@ import { CM_TO_METERS } from '@/constants/units';
 import { supabase } from '@/integrations/supabase/client';
 import * as THREE from 'three';
 import { TILE_LIBRARY, DEFAULT_CEILING_EMITTER_CONFIG } from '@/types/floorPlan';
-import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity, Curtain, Window as FloorWindow } from '@/types/floorPlan';
+import type { Wall, Point, TilePattern, WallFinish, FloorSurfaceType, Tile, TileTextureUrls, CeilingEmitterDensity, Curtain, Window as FloorWindow, KitchenBlock, KitchenBlockType } from '@/types/floorPlan';
+import { KITCHEN_BLOCK_DEFAULTS } from '@/types/floorPlan';
 import { useTileTemplates } from '@/hooks/useTemplatesFromDB';
 import { PAINT_COLORS, WALLPAPER_PATTERNS } from '@/types/floorPlan';
 import { createTilePatternCanvas } from '@/utils/tileRenderer';
@@ -272,6 +276,8 @@ interface DesignSceneProps {
   // Curtain selection
   selectedCurtainId?: string | null;
   onCurtainClick?: (id: string) => void;
+  selectedKitchenBlockId?: string | null;
+  onKitchenBlockClick?: (id: string) => void;
 }
 
 const Wall3D = ({
@@ -635,6 +641,8 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   floorPlan,
   selectedCurtainId,
   onCurtainClick,
+  selectedKitchenBlockId,
+  onKitchenBlockClick,
 }) => {
   const { staircases, building, activeLevel, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   const { 
@@ -1207,6 +1215,16 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         });
       })()}
 
+      {/* Kitchen blocks */}
+      {(floorPlan.kitchenBlocks ?? []).map(block => (
+        <KitchenBlock3D
+          key={block.id}
+          block={block}
+          selected={block.id === selectedKitchenBlockId}
+          onClick={(id) => onKitchenBlockClick?.(id)}
+        />
+      ))}
+
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
     </>
@@ -1229,7 +1247,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const { furniture, selectedFurnitureId, selectedFurniture, deleteFurniture, rotateFurnitureWithValidation, isDragging, addFurnitureWithCollisionCheck } = useFurnitureContext();
   const { fixtures, addFixture, isDraggingFixture } = useMEPContext();
   const [isDraggingSpawn, setIsDraggingSpawn] = useState(false);
-  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel, updateCeilingEmitterConfig, addCurtain, updateCurtain, deleteCurtain } = useFloorPlanContext();
+  const { floorPlan, setWallFinish, removeWallFinish, setFloorFinish, removeFloorFinish, addCameraView, removeCameraView, addRoomLight, updateRoomLight, deleteRoomLight, building, activeLevel, setActiveLevel, addFloor, staircases, addStaircase, removeStaircase, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, setShowAdjacentFloors, getFloorPlanForLevel, updateCeilingEmitterConfig, addCurtain, updateCurtain, deleteCurtain, addKitchenBlock, updateKitchenBlock, removeKitchenBlock, selectedKitchenBlockId, setSelectedKitchenBlockId } = useFloorPlanContext();
   
   // Fetch tiles from database for 3D rendering
   const { data: dbTiles } = useTileTemplates();
@@ -1552,6 +1570,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [selectedCurtainId, setSelectedCurtainId] = useState<string | null>(null);
   const selectedCurtain = (floorPlan.curtains ?? []).find(c => c.id === selectedCurtainId) ?? null;
   const selectedCurtainWall = selectedCurtain ? floorPlan.walls.find(w => w.id === selectedCurtain.wallId) : null;
+
+  // Kitchen placement state
+  const [kitchenDialogOpen, setKitchenDialogOpen] = useState(false);
+  const selectedKitchenBlock = (floorPlan.kitchenBlocks ?? []).find(b => b.id === selectedKitchenBlockId) ?? null;
   
   const handlePipelineError = useCallback((error: Error) => {
     console.warn('[DesignTab] Pipeline error, falling back to basic lighting:', error);
@@ -2020,6 +2042,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 Curtain
               </Button>
 
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => setKitchenDialogOpen(true)}>
+                <ChefHat className="h-3 w-3" />
+                Kitchen
+              </Button>
+
               {/* Auto Emitter Controls */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -2319,7 +2346,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               findTile={findTile}
               floorPlan={floorPlan}
               selectedCurtainId={selectedCurtainId}
-              onCurtainClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); setIsPanelOpen(true); }}
+              onCurtainClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); setSelectedKitchenBlockId(null); setIsPanelOpen(true); }}
+              selectedKitchenBlockId={selectedKitchenBlockId}
+              onKitchenBlockClick={(id) => { setSelectedKitchenBlockId(id); setSelectedCurtainId(null); setSelectedStaircaseId(null); setIsPanelOpen(true); }}
             />
           </Suspense>
           {/* Spawn point marker */}
@@ -2416,7 +2445,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
             </div>
             <ScrollArea className="relative z-10 min-h-0 flex-1">
-              {selectedCurtain && selectedCurtainWall ? (
+              {selectedKitchenBlock ? (
+                <KitchenPropertiesPanel
+                  block={selectedKitchenBlock}
+                  onUpdate={updateKitchenBlock}
+                  onDelete={(id) => { removeKitchenBlock(id); setSelectedKitchenBlockId(null); }}
+                  onDeselect={() => setSelectedKitchenBlockId(null)}
+                />
+              ) : selectedCurtain && selectedCurtainWall ? (
                 <CurtainPropertiesPanel
                   curtain={selectedCurtain}
                   wallHeight={selectedCurtainWall.height}
@@ -2669,7 +2705,24 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           toast.success(`${wallWindows.length} curtain${wallWindows.length > 1 ? 's' : ''} placed`);
         }}
       />
-      </div>{/* end flex-1 canvas area */}
+
+      {/* Kitchen Block Dialog */}
+      <KitchenBlockDialog
+        open={kitchenDialogOpen}
+        onOpenChange={setKitchenDialogOpen}
+        onConfirm={(config) => {
+          const cx = (floorPlan.roomWidth || 800) / 2;
+          const cy = (floorPlan.roomHeight || 600) / 2;
+          addKitchenBlock({
+            x: cx,
+            y: cy,
+            rotation: 0,
+            ...config,
+          });
+          toast.success('Kitchen block placed');
+        }}
+      />
+      </div>
     </div>
   );
 };

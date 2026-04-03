@@ -66,6 +66,9 @@ type FloorPlanContextType = ReturnType<typeof useFloorPlan> & {
   // Ghost floor toggle
   showAdjacentFloors: boolean;
   setShowAdjacentFloors: (v: boolean) => void;
+  // Selected kitchen block
+  selectedKitchenBlockId: string | null;
+  setSelectedKitchenBlockId: (id: string | null) => void;
 };
 
 const FloorPlanContext = createContext<FloorPlanContextType | null>(null);
@@ -117,6 +120,7 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
   const [building, setBuilding] = useState<Building>(createDefaultBuilding());
   const [selectedStaircaseId, setSelectedStaircaseId] = useState<string | null>(null);
   const [showAdjacentFloors, setShowAdjacentFloors] = useState(true);
+  const [selectedKitchenBlockId, setSelectedKitchenBlockId] = useState<string | null>(null);
   
   // Track which level's floor plan is currently loaded in useFloorPlan
   const loadedLevelRef = useRef<number>(0);
@@ -482,7 +486,9 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
     setSelectedStaircaseId,
     showAdjacentFloors,
     setShowAdjacentFloors,
-  }), [floorPlanState, layerVisibility, activeEditingLayer, wallSyncSettings, ceilingPlane, isCeilingPlaneEnabled, building, activeLevel, setActiveLevel, addFloor, removeFloor, renameFloor, duplicateFloor, updateFloorHeight, addStaircase, removeStaircase, updateStaircase, getFloorPlanForLevel, selectedStaircaseId, showAdjacentFloors]);
+    selectedKitchenBlockId,
+    setSelectedKitchenBlockId,
+  }), [floorPlanState, layerVisibility, activeEditingLayer, wallSyncSettings, ceilingPlane, isCeilingPlaneEnabled, building, activeLevel, setActiveLevel, addFloor, removeFloor, renameFloor, duplicateFloor, updateFloorHeight, addStaircase, removeStaircase, updateStaircase, getFloorPlanForLevel, selectedStaircaseId, showAdjacentFloors, selectedKitchenBlockId]);
   
   return (
     <FloorPlanContext.Provider value={contextValue}>
