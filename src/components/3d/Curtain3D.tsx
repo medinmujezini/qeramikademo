@@ -258,7 +258,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
     }
     geo.computeVertexNormals();
     return geo;
-  }, [curtainW, curtainH, openAmount, curtain.type]);
+  }, [curtainW, curtainH, curtain.type]);
 
   const panelOffsetX = openAmount * curtainW / 2;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
