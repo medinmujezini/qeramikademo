@@ -260,7 +260,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
     return geo;
   }, [curtainW, curtainH, curtain.type]);
 
-  const panelOffsetX = openAmount * curtainW / 2;
+  const panelOffsetX = openAmount * curtainW / 4;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
