@@ -123,7 +123,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   // Offset: push curtain to the inside face of the wall, flush
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
-  const offset = (wallThickness * scale / 2) + 0.005;
+  const hasModel = !!curtain.modelUrl;
+  const offset = (wallThickness * scale / 2) + (hasModel ? 0.01 : 0.005);
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
