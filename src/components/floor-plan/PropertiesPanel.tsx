@@ -370,7 +370,7 @@ export const PropertiesPanel: React.FC = () => {
                         <Input
                           id="startHeight"
                           type="number"
-                          value={wall.startHeight ?? wall.height}
+                          value={round2(wall.startHeight ?? wall.height)}
                           onChange={(e) => {
                             const newStartHeight = Number(e.target.value);
                             const direction = newStartHeight > (wall.endHeight ?? wall.height) ? 'descending' : 'ascending';
