@@ -2418,8 +2418,8 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               selectedKitchenBlockId={selectedKitchenBlockId}
               onKitchenBlockClick={(id) => { setSelectedKitchenBlockId(id); setSelectedCurtainId(null); setSelectedStaircaseId(null); setIsPanelOpen(true); }}
               onKitchenBlockMove={(id, x, y) => updateKitchenBlock(id, { x, y })}
+              onKitchenDragStateChange={setIsDraggingKitchen}
             />
-          </Suspense>
           {/* Spawn point marker */}
           {viewMode === 'design' && (
             <SpawnPointMarker
