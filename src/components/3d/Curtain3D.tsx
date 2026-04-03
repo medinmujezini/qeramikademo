@@ -92,14 +92,15 @@ const CurtainGLTFModel: React.FC<{
   const leftHalf = useMemo(() => createHalf(leftClipPlane), [scene, targetWidth, targetHeight, leftClipPlane]);
   const rightHalf = useMemo(() => createHalf(rightClipPlane), [scene, targetWidth, targetHeight, rightClipPlane]);
 
-  const openOffset = openAmount * (targetWidth / 2);
+  const openOffset = openAmount * targetWidth * 0.35;
+  const gatherScale = 1 - openAmount * 0.3;
 
   return (
     <group>
-      <group position={[-openOffset, 0, 0]}>
+      <group position={[-openOffset, 0, 0]} scale={[gatherScale, 1, 1]}>
         <primitive object={leftHalf} />
       </group>
-      <group position={[openOffset, 0, 0]}>
+      <group position={[openOffset, 0, 0]} scale={[gatherScale, 1, 1]}>
         <primitive object={rightHalf} />
       </group>
     </group>
