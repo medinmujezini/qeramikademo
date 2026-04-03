@@ -32,6 +32,7 @@ import ImportExportPage from "./pages/admin/ImportExportPage";
 import ActivityLog from "./pages/admin/ActivityLog";
 import SettingsPage from "./pages/admin/SettingsPage";
 import FurnitureScraper from "./pages/admin/FurnitureScraper";
+import CurtainModelManagement from "./pages/admin/CurtainModelManagement";
 
 const queryClient = new QueryClient();
 
