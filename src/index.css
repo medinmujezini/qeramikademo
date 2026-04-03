@@ -1017,6 +1017,15 @@
   background: hsl(38 60% 68% / 0.25);
 }
 
+/* Hide scrollbar utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* WebUI Transparency Mode — makes everything transparent for Unreal Engine overlay */
 .unreal-transparent,
 .unreal-transparent body,
