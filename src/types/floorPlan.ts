@@ -460,6 +460,8 @@ export interface FloorPlan {
   ceilingEmitterConfig?: CeilingEmitterConfig;
   // Curtains
   curtains?: Curtain[];
+  // Kitchen blocks
+  kitchenBlocks?: KitchenBlock[];
 }
 
 export type CeilingEmitterDensity = 'sparse' | 'normal' | 'dense';
