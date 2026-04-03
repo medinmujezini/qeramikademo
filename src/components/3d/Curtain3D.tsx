@@ -318,7 +318,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {curtain.type === 'panel' && panelGeometry && (
         <>
           <mesh position={[-panelOffsetX, 0, -0.015]}>
-            <planeGeometry args={[curtainW, curtainH]} />
+            <planeGeometry args={[curtainW / 2, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.FrontSide}
