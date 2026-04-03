@@ -299,14 +299,14 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* ── Panel / Sheer ── */}
       {isPanelType && panelGeometry && (
         <>
-          <mesh geometry={panelGeometry} position={[-panelOffsetX, 0, 0]}>
+          <mesh geometry={panelGeometry} position={[-panelOffsetX, 0, 0]} scale={[1 - openAmount, 1, 1]}>
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.DoubleSide} transparent={isTransparent} opacity={materialOpacity}
             />
           </mesh>
           {curtain.type === 'panel' && (
-            <mesh geometry={panelGeometry} position={[panelOffsetX, 0, 0]}>
+            <mesh geometry={panelGeometry} position={[panelOffsetX, 0, 0]} scale={[1 - openAmount, 1, 1]}>
               <meshStandardMaterial
                 color={curtain.fabricColor} roughness={roughness} metalness={0}
                 side={THREE.DoubleSide} transparent={isTransparent} opacity={materialOpacity}
@@ -319,15 +319,15 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* Panel backing liner — blocks see-through between folds */}
       {curtain.type === 'panel' && panelGeometry && (
         <>
-          <mesh position={[-panelOffsetX, 0, -0.03]}>
-            <planeGeometry args={[curtainW * (1 - openAmount), curtainH]} />
+          <mesh position={[-panelOffsetX, 0, -0.015]} scale={[1 - openAmount, 1, 1]}>
+            <planeGeometry args={[curtainW, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.FrontSide}
             />
           </mesh>
-          <mesh position={[panelOffsetX, 0, -0.03]}>
-            <planeGeometry args={[curtainW * (1 - openAmount), curtainH]} />
+          <mesh position={[panelOffsetX, 0, -0.015]} scale={[1 - openAmount, 1, 1]}>
+            <planeGeometry args={[curtainW, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.FrontSide}
