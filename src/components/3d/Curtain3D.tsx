@@ -223,10 +223,10 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const posX = wallStartX + (wallEndX - wallStartX) * curtain.position;
   const posY = wallStartY + (wallEndY - wallStartY) * curtain.position;
 
-  // Offset from wall center (inside face)
+  // Offset from wall center — nearly flush to block window openings
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
-  const offset = (wallThickness * scale / 2) + 0.005;
+  const offset = (wallThickness * scale / 2) + 0.002; // 2mm clearance, nearly flush
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
@@ -239,11 +239,12 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
-  // Open mechanism: each half shrinks width and slides to edge
+  // Open mechanism: panels stay within curtain width bounds
   // At open=0: two halves each curtainW/2, meeting at center = full coverage
-  // At open=1: each half shrinks to ~10% width, pushed to wall edge
-  const halfW = (curtainW / 2) * (1 - openAmount * 0.85); // shrink to 15% at full open
-  const panelCenterX = curtainW / 4 + openAmount * (curtainW / 4); // slide outward
+  // At open=1: each half compresses and slides to edge, never exceeding ±curtainW/2
+  const halfW = (curtainW / 2) * (1 - openAmount * 0.85);
+  const maxSlide = curtainW / 2 - halfW / 2; // clamp so outer edge = curtainW/2
+  const panelCenterX = curtainW / 4 + openAmount * Math.min(curtainW / 4, maxSlide - curtainW / 4);
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
@@ -277,19 +278,21 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
         </group>
       )}
 
-      {/* ── Panel type: solid box halves ── */}
+      {/* ── Panel type: solid curtain halves ── */}
       {curtain.type === 'panel' && (
         <>
           <mesh position={[-panelCenterX, 0, 0]}>
-            <boxGeometry args={[halfW, curtainH, 0.005]} />
+            <boxGeometry args={[halfW, curtainH, 0.008]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
+              side={THREE.DoubleSide}
             />
           </mesh>
           <mesh position={[panelCenterX, 0, 0]}>
-            <boxGeometry args={[halfW, curtainH, 0.005]} />
+            <boxGeometry args={[halfW, curtainH, 0.008]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
+              side={THREE.DoubleSide}
             />
           </mesh>
         </>
