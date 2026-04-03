@@ -240,7 +240,9 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodLength = curtainW + 0.06;
 
   // Panel/sheer fold geometry
-  const panelOffsetX = openAmount * curtainW / 4;
+  // At open=0: halves meet at center (±curtainW/4). At open=1: halves at edges (±curtainW/2).
+  const panelBaseOffset = curtainW / 4;
+  const panelSlide = openAmount * curtainW / 4;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
@@ -277,13 +279,13 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* ── Panel type: solid box halves ── */}
       {curtain.type === 'panel' && (
         <>
-          <mesh position={[-panelOffsetX, 0, 0]}>
+          <mesh position={[-(panelBaseOffset + panelSlide), 0, 0]}>
             <boxGeometry args={[curtainW / 2, curtainH, 0.03]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
             />
           </mesh>
-          <mesh position={[panelOffsetX, 0, 0]}>
+          <mesh position={[(panelBaseOffset + panelSlide), 0, 0]}>
             <boxGeometry args={[curtainW / 2, curtainH, 0.03]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
@@ -294,7 +296,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
 
       {/* ── Sheer type: single flat transparent plane ── */}
       {curtain.type === 'sheer' && (
-        <mesh position={[-panelOffsetX, 0, 0]}>
+        <mesh position={[-(panelSlide), 0, 0]}>
           <planeGeometry args={[curtainW, curtainH]} />
           <meshStandardMaterial
             color={curtain.fabricColor} roughness={roughness} metalness={0}
