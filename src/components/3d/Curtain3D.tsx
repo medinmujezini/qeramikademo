@@ -175,13 +175,6 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       rotation={[0, -wallAngle, 0]}
       onClick={(e) => { e.stopPropagation(); onClick?.(curtain.id); }}
     >
-      {/* Selection highlight — thin wireframe border */}
-      {selected && (
-        <mesh>
-          <boxGeometry args={[curtainW + 0.04, curtainH + 0.04, 0.002]} />
-          <meshBasicMaterial color="#C9A96E" transparent opacity={0.3} depthWrite={false} wireframe />
-        </mesh>
-      )}
 
       {/* Curtain rod */}
       {(isPanelType || hasModel) && curtain.rodVisible !== false && (
