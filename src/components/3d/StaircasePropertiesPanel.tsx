@@ -164,8 +164,8 @@ export const StaircasePropertiesPanel: React.FC = () => {
 
       {/* Info */}
       <div className="text-[10px] text-muted-foreground space-y-0.5 border-t border-primary/10 pt-2">
-        <p>Treads: {stair.numTreads} × Riser: {stair.riserHeight.toFixed(1)} cm</p>
-        <p>Footprint: {stair.width} × {stair.depth} cm</p>
+        <p>Treads: {stair.numTreads} × Riser: {round2(stair.riserHeight)} cm</p>
+        <p>Footprint: {round2(stair.width)} × {round2(stair.depth)} cm</p>
         <p>Connects: Level {stair.fromLevel} → Level {stair.toLevel}</p>
       </div>
 
