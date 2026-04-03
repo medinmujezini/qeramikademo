@@ -320,13 +320,13 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {curtain.type === 'panel' && (
         <>
           <group position={[leftPanelCenterX, 0, 0]}>
-            <mesh position={[0, 0, -0.0025]}>
-              <planeGeometry args={[leftHalfW + 0.01, curtainH + 0.01]} />
+            <mesh position={[0, 0, -0.004]}>
+              <planeGeometry args={[leftHalfW + 0.06, curtainH + 0.02]} />
               <meshStandardMaterial
                 color={curtain.fabricColor}
                 roughness={roughness}
                 metalness={0}
-                side={THREE.FrontSide}
+                side={THREE.DoubleSide}
               />
             </mesh>
             <mesh>
@@ -342,13 +342,13 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
           </group>
 
           <group position={[rightPanelCenterX, 0, 0]}>
-            <mesh position={[0, 0, -0.0025]}>
-              <planeGeometry args={[rightHalfW + 0.01, curtainH + 0.01]} />
+            <mesh position={[0, 0, -0.004]}>
+              <planeGeometry args={[rightHalfW + 0.06, curtainH + 0.02]} />
               <meshStandardMaterial
                 color={curtain.fabricColor}
                 roughness={roughness}
                 metalness={0}
-                side={THREE.FrontSide}
+                side={THREE.DoubleSide}
               />
             </mesh>
             <mesh>
