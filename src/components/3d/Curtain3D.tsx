@@ -245,7 +245,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
 
     const segsX = 80;
     const segsY = 16;
-    const geo = new THREE.PlaneGeometry(curtainW, curtainH, segsX, segsY);
+    const geo = new THREE.PlaneGeometry(curtainW / 2, curtainH, segsX, segsY);
     const pos = geo.attributes.position;
     const foldDepth = curtain.type === 'sheer' ? 0.005 : 0.01;
     const foldFreq = curtain.type === 'sheer' ? 16 : 20;
