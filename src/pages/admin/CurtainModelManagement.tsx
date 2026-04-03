@@ -240,6 +240,7 @@ const CurtainModelManagement = () => {
               bucket="models"
               folder="curtains"
               accept=".glb,.gltf"
+              maxSizeMB={50}
               label="3D Model (GLB)"
               description="Upload a .glb or .gltf curtain model"
             />
