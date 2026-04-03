@@ -57,8 +57,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const cy = mountH - curtainH / 2;
 
   // Simple open/close: two halves slide apart from center
-  const baseOffset = curtainW / 4;
-  const slideOffset = openAmount * curtainW / 2;
+  const panelWidth = (curtainW / 2) * (1 - openAmount * 0.7);
+  const panelPosX = curtainW / 2 - panelWidth / 2;
   
   const isTransparent = curtain.type === 'sheer' || curtain.opacity < 1;
   const materialOpacity = curtain.type === 'sheer' ? Math.min(curtain.opacity, 0.4) : curtain.opacity;
@@ -104,8 +104,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {curtain.type === 'panel' && (
         <>
           {/* Left half */}
-          <mesh position={[-(baseOffset + slideOffset), 0, 0]}>
-            <boxGeometry args={[curtainW / 2, curtainH, 0.03]} />
+          <mesh position={[-panelPosX, 0, 0]}>
+            <boxGeometry args={[panelWidth, curtainH, 0.03]} />
             <meshStandardMaterial
               color={curtain.fabricColor}
               roughness={roughness}
@@ -113,8 +113,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
             />
           </mesh>
           {/* Right half */}
-          <mesh position={[(baseOffset + slideOffset), 0, 0]}>
-            <boxGeometry args={[curtainW / 2, curtainH, 0.03]} />
+          <mesh position={[(panelPosX), 0, 0]}>
+            <boxGeometry args={[panelWidth, curtainH, 0.03]} />
             <meshStandardMaterial
               color={curtain.fabricColor}
               roughness={roughness}
