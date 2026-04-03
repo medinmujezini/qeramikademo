@@ -150,7 +150,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="thickness"
               type="number"
-              value={wall.thickness}
+              value={round2(wall.thickness)}
               onChange={(e) => updateWall(wall.id, { thickness: Number(e.target.value) })}
               min={5}
               max={50}
