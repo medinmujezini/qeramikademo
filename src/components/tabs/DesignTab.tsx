@@ -1558,19 +1558,42 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     setGiEnabled(false);
   }, []);
 
-  // Horizontal scroll for toolbar via mouse wheel
+  // Horizontal scroll for toolbar via mouse wheel + fade indicators
+  const [toolbarScrollState, setToolbarScrollState] = useState<'none' | 'left' | 'right' | 'both'>('none');
+  const updateToolbarScroll = useCallback(() => {
+    const el = toolbarScrollRef.current;
+    if (!el) return;
+    const canScrollLeft = el.scrollLeft > 2;
+    const canScrollRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 2;
+    setToolbarScrollState(
+      canScrollLeft && canScrollRight ? 'both' :
+      canScrollLeft ? 'left' :
+      canScrollRight ? 'right' : 'none'
+    );
+  }, []);
+
   useEffect(() => {
     const el = toolbarScrollRef.current;
     if (!el) return;
-    const handler = (e: WheelEvent) => {
+    const wheelHandler = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
         el.scrollLeft += e.deltaY;
         e.preventDefault();
       }
     };
-    el.addEventListener('wheel', handler, { passive: false });
-    return () => el.removeEventListener('wheel', handler);
-  }, []);
+    el.addEventListener('wheel', wheelHandler, { passive: false });
+    el.addEventListener('scroll', updateToolbarScroll);
+    // Check initial state
+    const raf = requestAnimationFrame(updateToolbarScroll);
+    const ro = new ResizeObserver(updateToolbarScroll);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('wheel', wheelHandler);
+      el.removeEventListener('scroll', updateToolbarScroll);
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [updateToolbarScroll]);
 
   // Auto-open panel when furniture/fixture is selected
   useEffect(() => {
