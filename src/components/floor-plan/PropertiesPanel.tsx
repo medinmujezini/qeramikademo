@@ -863,7 +863,7 @@ export const PropertiesPanel: React.FC = () => {
               <Input
                 id="colWidth"
                 type="number"
-                value={column.width}
+                value={round2(column.width)}
                 onChange={(e) => {
                   const value = Number(e.target.value);
                   const syncDepth = column.shape === 'round' || column.shape === 'square' || 
