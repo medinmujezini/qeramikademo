@@ -214,13 +214,13 @@ const CurtainModelManagement = () => {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-display uppercase tracking-widest text-sm">
               {editingModel ? 'Edit Curtain Model' : 'Add Curtain Model'}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-1">
               <Label className="text-xs">Name</Label>
               <Input value={formName} onChange={e => setFormName(e.target.value)} className="h-8 text-xs" />
