@@ -314,17 +314,17 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
         // Vertical bar handle
         elements.push(
           <mesh key="handle" position={[w * 0.35, bodyYCenter, d / 2 + 0.015]} castShadow>
-            <boxGeometry args={[0.012, bodyTop * 0.6, 0.015]} />
+            <boxGeometry args={[0.01, bodyTop * 0.6, 0.015]} />
             <meshStandardMaterial color={handleProps.color} metalness={handleProps.metalness} roughness={handleProps.roughness} />
           </mesh>
         );
       } else {
         elements.push(
-          <mesh key="handle" position={[0, bodyYCenter + bodyTop * 0.15, d / 2 + 0.012]} castShadow>
+          <mesh key="handle" position={[0.03, bodyYCenter + bodyTop * 0.17, d / 2 + 0.012]} castShadow>
             {block.handleStyle === 'knob' ? (
-              <sphereGeometry args={[0.012, 8, 8]} />
+              <sphereGeometry args={[0.0125, 12, 12]} />
             ) : (
-              <boxGeometry args={[0.10, 0.008, 0.015]} />
+              <boxGeometry args={[0.12, 0.01, 0.015]} />
             )}
             <meshStandardMaterial color={handleProps.color} metalness={handleProps.metalness} roughness={handleProps.roughness} />
           </mesh>
