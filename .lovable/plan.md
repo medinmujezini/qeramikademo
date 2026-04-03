@@ -1,40 +1,45 @@
 
 
-# Fix: GLB Curtain Sticking Out Like Sliding Door
+# Fix: Kitchen Block Colors and Materials Not Rendering Properly
 
-## Problems
+## Problems Found
 
-From the screenshot, at 100% open the two curtain halves slide far outside the room boundaries like sliding doors. Two root causes:
+After reviewing the code, several issues prevent colors and materials from displaying correctly:
 
-1. **Z-depth forced to 3cm** (line 57: `scaleZ = 0.03 / size.z`): This crushes the GLB model flat, destroying all fabric texture and making it look like a colored slab/wall panel instead of a curtain.
+1. **Appliance colors are hardcoded**: Lines 48-49 in `KitchenBlock3D.tsx` set `bodyColor = '#e0e0e0'` and `frontColor = '#d0d0d0'` for all appliance types, completely ignoring the user's `cabinetColor` setting.
 
-2. **Open offset too large** (line 93: `openOffset = openAmount * (targetWidth / 2)`): At 100% open, each half slides outward by half the curtain width. Since the curtain is wider than the window, the halves extend way past the wall edges and stick out of the room.
+2. **Countertop materials look identical**: Only `steel` gets different material properties (metalness 0.8). Granite, marble, quartz, and wood all render with the same roughness=0.3 / metalness=0.1 — visually indistinguishable.
 
-## Fix — `src/components/3d/Curtain3D.tsx`
+3. **No material-appropriate colors**: Changing countertop material doesn't affect appearance beyond a tiny metalness difference. Real granite looks different from marble, which looks different from wood.
 
-### Change 1: Preserve model's natural depth ratio
-Instead of clamping Z to 3cm, scale Z proportionally with X (same scale factor). This keeps the curtain's natural folds and fabric look. Cap depth at a reasonable maximum (e.g. 15cm) to prevent excessively deep models.
+4. **Handle color is hardcoded**: Always `#888` regardless of material choice — no chrome/brass/black options.
 
-```
-const scaleX = size.x > 0 ? targetWidth / size.x : 1;
-const scaleY = size.y > 0 ? targetHeight / size.y : 1;
-const scaleZ = scaleX; // preserve proportions
-// Cap max depth to 15cm
-const maxDepth = 0.15;
-const actualDepth = size.z * scaleZ;
-if (actualDepth > maxDepth) scaleZ = maxDepth / size.z;
-```
+## Plan
 
-### Change 2: Reduce open offset — curtains bunch, not slide infinitely
-Limit the maximum slide distance so curtains stay within the wall boundaries. Use `openAmount * targetWidth * 0.35` instead of `* 0.5`. This means at 100% open, each half moves 35% of width (revealing 70% of center) rather than sliding completely off.
+### 1. Fix appliance colors (KitchenBlock3D.tsx)
+Remove the hardcoded grey override. Use `block.cabinetColor` for all block types. Add a subtle steel-tint overlay only for the appliance front face (slightly desaturated version of cabinet color) rather than ignoring the color entirely.
 
-### Change 3: Compress X when opening (gather effect)
-As the curtain opens, slightly compress each half's X scale to simulate fabric bunching: `scaleX * (1 - openAmount * 0.3)`. This makes opened curtains narrower (gathered) rather than just sliding full-width panels.
+### 2. Add material-specific rendering properties
+Create a `COUNTERTOP_MATERIAL_PROPS` lookup that maps each material to distinct visual properties:
 
-## Result
-- Curtain keeps its 3D fabric texture instead of looking like a flat slab
-- At 100% open, halves stay within the wall area instead of protruding out of the room
-- Gathered/bunched appearance when open
+| Material | Roughness | Metalness | Color tint behavior |
+|----------|-----------|-----------|---------------------|
+| Granite  | 0.6       | 0.05      | Speckled darker tone |
+| Marble   | 0.2       | 0.05      | Slightly veined/lighter |
+| Quartz   | 0.15      | 0.1       | Clean, uniform |
+| Wood     | 0.8       | 0.0       | Warm brown shift |
+| Steel    | 0.1       | 0.9       | Reflective silver |
 
-One file: `src/components/3d/Curtain3D.tsx`
+Apply these per-material properties to the countertop slab mesh so each material looks visually distinct.
+
+### 3. Add handle material variation
+Map handle style to appropriate metalness/color:
+- Bar: chrome (#c0c0c0, metalness 0.9)
+- Knob: brushed nickel (#a0a0a0, metalness 0.7)
+
+### 4. Ensure reactivity
+Wrap material computations in `useMemo` keyed on the block's color/material props so Three.js materials update when the user changes them in the properties panel.
+
+## Files changed
+- `src/components/3d/KitchenBlock3D.tsx` — all rendering fixes
 
