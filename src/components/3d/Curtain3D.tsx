@@ -240,7 +240,9 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodLength = curtainW + 0.06;
 
   // Panel/sheer fold geometry
-  const panelOffsetX = openAmount * curtainW / 4;
+  // At open=0: halves meet at center (±curtainW/4). At open=1: halves at edges (±curtainW/2).
+  const panelBaseOffset = curtainW / 4;
+  const panelSlide = openAmount * curtainW / 4;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
