@@ -167,7 +167,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       )}
 
       {/* Curtain rod */}
-      {!hasModel && isPanelType && curtain.rodVisible !== false && (
+      {isPanelType && curtain.rodVisible !== false && (
         <group position={[0, curtainH / 2 + rodRadius, 0]}>
           <mesh rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[rodRadius, rodRadius, rodLength, 12]} />
