@@ -1270,6 +1270,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
           block={block}
           selected={block.id === selectedKitchenBlockId}
           onClick={(id) => onKitchenBlockClick?.(id)}
+          onDragStart={(id) => handleKitchenDragStart(id)}
         />
       ))}
 
