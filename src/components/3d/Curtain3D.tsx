@@ -239,10 +239,11 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
-  // Panel/sheer fold geometry
-  // At open=0: halves meet at center (±curtainW/4). At open=1: halves at edges (±curtainW/2).
-  const panelBaseOffset = curtainW / 4;
-  const panelSlide = openAmount * curtainW / 4;
+  // Open mechanism: each half shrinks width and slides to edge
+  // At open=0: two halves each curtainW/2, meeting at center = full coverage
+  // At open=1: each half shrinks to ~10% width, pushed to wall edge
+  const halfW = (curtainW / 2) * (1 - openAmount * 0.85); // shrink to 15% at full open
+  const panelCenterX = curtainW / 4 + openAmount * (curtainW / 4); // slide outward
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
