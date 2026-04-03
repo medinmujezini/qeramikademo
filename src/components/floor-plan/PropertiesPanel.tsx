@@ -911,7 +911,7 @@ export const PropertiesPanel: React.FC = () => {
                 <Input
                   id="armLength"
                   type="number"
-                  value={column.armLength ?? 20}
+                  value={round2(column.armLength ?? 20)}
                   onChange={(e) => updateColumn(column.id, { armLength: Number(e.target.value) })}
                   min={10}
                   max={80}
