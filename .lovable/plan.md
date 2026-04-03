@@ -1,52 +1,37 @@
 
 
-# Enhanced Kitchen Blocks: PBR Textures + Realistic Geometry
+# Fix: Make Cabinet Door Panels, Seams, and Handles Visible
 
-## Overview
-Three improvements: (A) PBR texture support for countertops, (B) enhanced procedural geometry for realistic cabinet details, (C) memoized geometry creation for performance.
+## Problem
+Panel insets, center seams, and handles exist in the geometry but are visually too subtle to see — doors look like flat colored boxes.
 
-## A. Countertop PBR Texture Support
+## Changes — `src/components/3d/KitchenBlock3D.tsx`
 
-### 1. Type update — `src/types/floorPlan.ts`
-Add `countertopMaterialId?: string` to `KitchenBlock` — references a PBR material from the materials library.
+### 1. Door panel insets (base, island, wall cabinet — lines 240-259)
+- **Inset border**: `0.015` → `0.008` (8mm gap between panel edge and cabinet edge)
+- **Inset depth (Z offset)**: `d/2 + 0.002` → `d/2 + 0.006` (5mm proud of front face, up from 2mm)
+- **Inset color**: `offsetHSL(0, 0, -0.04)` → `offsetHSL(0, 0, -0.15)` (15% darker than frontColor)
 
-### 2. Built-in procedural textures — `KitchenBlock3D.tsx`
-Generate `CanvasTexture` patterns per material (marble veins, wood grain, granite speckle, quartz noise). Cache textures so they're created once per type. Steel uses high metalness only.
+### 2. Tall cabinet panels (lines 270-298) — same treatment
+- **Border**: `0.015` → `0.008`
+- **Panel color**: same `-0.15` offset
+- **Horizontal seam width**: `0.003` → `0.003` (already 3mm, keep as is)
+- **Horizontal seam color**: already uses `seamColor` which is `-0.25` — keep
 
-### 3. PBR Material Library linking — `KitchenBlock3D.tsx`
-When `countertopMaterialId` is set, load albedo/normal/roughness from `MaterialContext` via `TextureLoader` and apply to the countertop slab mesh. Falls back to procedural texture if unset.
+### 3. Center seam line (lines 260-266)
+- **Width**: `0.002` → `0.003` (3mm)
+- **Color**: change from `seamColor` to a computed 20% brightness version: `new THREE.Color(bodyColor).multiplyScalar(0.2).getStyle()`
 
-### 4. Material picker — `KitchenPropertiesPanel.tsx`
-Add optional "Custom PBR Material" dropdown below countertop material, listing materials from `useMaterialContext()`. "None (use default)" clears it.
+### 4. Handles (lines 311-333)
+- **Bar handle**: `[0.10, 0.008, 0.015]` → `[0.12, 0.01, 0.015]` (12cm long × 1cm diameter)
+- **Knob handle**: `sphereGeometry args={[0.012, 8, 8]}` → `args={[0.0125, 12, 12]}` (2.5cm diameter, smoother sphere)
+- **Fridge bar handle thickness**: `[0.012, bodyTop*0.6, 0.015]` → `[0.01, bodyTop*0.6, 0.015]` (1cm wide)
+- **Position**: move from `bodyYCenter + bodyTop * 0.15` → `bodyYCenter + bodyTop * 0.17` (upper third) and `x` offset `0.03` from center (3cm from seam)
+- **Handle colors**: already using `handleProps.color` from the chrome/nickel lookup — confirmed correct
 
-## B. Enhanced Procedural Geometry
+### 5. Seam color variable (line 162)
+- Change `seamColor` from `offsetHSL(0, 0, -0.25)` → use `new THREE.Color(bodyColor).multiplyScalar(0.2).getStyle()` for true 20% brightness
 
-All done with additional `<mesh>` elements in `ProceduralKitchenBlock`:
-
-| Block Type | Details Added |
-|---|---|
-| Base Cabinet / Island | 10cm toe kick, door panel insets (2mm deep), center seam line, 2cm countertop overhang |
-| Wall Cabinet | Panel insets, bottom edge trim strip |
-| Tall Cabinet | Two-zone front with upper/lower inset panels, horizontal seam at 60% height, toe kick |
-| Fridge | Recessed front panel, vertical handle bar, freezer/fridge gap line at 30% from top |
-| Stove | Oven door panel below burners, handle bar, dark glass window rectangle |
-| Sink | Faucet cylinder/arc on back edge |
-| Dishwasher | Front panel with handle bar, status indicator strip |
-| Countertop | Thin 3cm slab with front edge strip |
-
-## C. Performance: Memoized Geometry (new addition)
-
-Wrap the entire procedural geometry JSX tree inside `useMemo`, keyed on all relevant block properties (width, height, depth, cabinetColor, countertopColor, countertopMaterial, countertopMaterialId, handleStyle, blockType). This prevents Three.js from rebuilding the scene graph on every React render cycle when nothing changed — critical when 5-10+ blocks are placed simultaneously.
-
-```text
-Before:  ProceduralKitchenBlock renders → 20+ meshes rebuilt every frame
-After:   useMemo([...deps]) → meshes only rebuilt when block properties change
-```
-
-## Files Modified
-1. `src/types/floorPlan.ts` — add `countertopMaterialId`
-2. `src/components/3d/KitchenBlock3D.tsx` — procedural textures, PBR loading, enhanced geometry, useMemo wrapping
-3. `src/components/3d/KitchenPropertiesPanel.tsx` — PBR material picker
-
-No database changes needed.
+## One file changed
+`src/components/3d/KitchenBlock3D.tsx`
 
