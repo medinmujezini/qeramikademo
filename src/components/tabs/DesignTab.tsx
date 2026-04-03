@@ -2028,6 +2028,11 @@ export const DesignTab: React.FC<DesignTabProps> = ({
                 Curtain
               </Button>
 
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => setKitchenDialogOpen(true)}>
+                <ChefHat className="h-3 w-3" />
+                Kitchen
+              </Button>
+
               {/* Auto Emitter Controls */}
               <Popover>
                 <PopoverTrigger asChild>
