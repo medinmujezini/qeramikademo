@@ -37,32 +37,31 @@ const CurtainGLTFModel: React.FC<{
   openAmount: number;
 }> = ({ url, targetWidth, targetHeight, fabricColor, roughness, openAmount }) => {
   const { scene } = useGLTF(url);
+  const { gl } = useThree();
 
-  const clonedScene = useMemo(() => {
+  // Enable local clipping on the renderer
+  useMemo(() => { gl.localClippingEnabled = true; }, [gl]);
+
+  // Clipping planes: left half keeps X < 0, right half keeps X > 0
+  const leftClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(1, 0, 0), 0), []);
+  const rightClipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0), []);
+
+  const createHalf = (clipPlane: THREE.Plane) => {
     const clone = scene.clone(true);
-    // Compute bounding box for scaling
     const box = new THREE.Box3().setFromObject(clone);
     const size = new THREE.Vector3();
     box.getSize(size);
 
-    // Independent axis scaling — fill target exactly, clamp depth to 3cm
     const scaleX = size.x > 0 ? targetWidth / size.x : 1;
     const scaleY = size.y > 0 ? targetHeight / size.y : 1;
     const scaleZ = size.z > 0 ? 0.03 / size.z : 1;
     clone.scale.set(scaleX, scaleY, scaleZ);
 
-    // Recompute bounding box after scaling
     const newBox = new THREE.Box3().setFromObject(clone);
     const newCenter = newBox.getCenter(new THREE.Vector3());
 
-    // Position: center X, ground bottom at Y=0, back face at Z=0 (extends outward)
-    clone.position.set(
-      -newCenter.x,
-      -newBox.min.y,
-      -newBox.min.z,
-    );
+    clone.position.set(-newCenter.x, -newBox.min.y, -newBox.min.z);
 
-    // Preserve original model textures — don't override colors
     clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -71,25 +70,36 @@ const CurtainGLTFModel: React.FC<{
           mesh.material = mat.map(m => {
             const newMat = (m as THREE.MeshStandardMaterial).clone();
             newMat.metalness = 0;
+            newMat.clippingPlanes = [clipPlane];
+            newMat.clipShadows = true;
             return newMat;
           });
         } else {
           const newMat = (mat as THREE.MeshStandardMaterial).clone();
           newMat.metalness = 0;
+          newMat.clippingPlanes = [clipPlane];
+          newMat.clipShadows = true;
           mesh.material = newMat;
         }
       }
     });
 
     return clone;
-  }, [scene, targetWidth, targetHeight, fabricColor, roughness]);
+  };
 
-  // Apply open amount as X-scale compression (simulate gathering)
-  const openScale = 1 - openAmount * 0.7;
+  const leftHalf = useMemo(() => createHalf(leftClipPlane), [scene, targetWidth, targetHeight, leftClipPlane]);
+  const rightHalf = useMemo(() => createHalf(rightClipPlane), [scene, targetWidth, targetHeight, rightClipPlane]);
+
+  const openOffset = openAmount * (targetWidth / 2);
 
   return (
-    <group scale={[openScale, 1, 1]}>
-      <primitive object={clonedScene} />
+    <group>
+      <group position={[-openOffset, 0, 0]}>
+        <primitive object={leftHalf} />
+      </group>
+      <group position={[openOffset, 0, 0]}>
+        <primitive object={rightHalf} />
+      </group>
     </group>
   );
 };
