@@ -86,6 +86,42 @@ export type Database = {
         }
         Relationships: []
       }
+      curtain_models: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          model_url: string
+          name: string
+          sort_order: number
+          thumbnail_url: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          model_url: string
+          name: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          model_url?: string
+          name?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fixture_templates: {
         Row: {
           category: string
