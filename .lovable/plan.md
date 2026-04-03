@@ -1,33 +1,43 @@
 
 
-# Verdict: Approve — minor revision
+# Verdict: Approve — one small revision
 
 ## Analysis
 
-The prompt is well-reasoned. The diagnosis is correct: each curtain gets `config.width` (window width + 60cm) which leaves gaps on multi-window walls. The fix location (DesignTab.tsx onConfirm, line 2590) is correct — wall geometry is available there via `floorPlan.points`.
+The prompt is correct. The sine wave fold displacement on `PlaneGeometry` creates valleys where Z goes negative, and since `DoubleSide` rendering shows the wall behind, you get visible gaps. A flat backing plane is the standard "liner" fix.
 
-## One revision needed
+## Revision
 
-The prompt says "maximum distance between any two adjacent window centers" and applies that to ALL curtains on the wall. This is wrong for walls with unevenly spaced windows (e.g., 3 windows where two are close together and one is far away). The far-apart pair would force all curtains to be enormous.
+The prompt says to position the backing plane "1-2cm behind." Given `foldDepth = 0.025` (2.5cm amplitude), the backing should sit at Z = `-foldDepth` (the deepest valley) minus a tiny epsilon, so **Z = -0.03**. Using -0.01 or -0.02 would still intersect some fold valleys. Specify Z = -0.03 instead of "1-2cm behind."
 
-**Better approach**: give each curtain a width based on its own spacing to its neighbors, not the global max. For each window, calculate half-distance to left neighbor + half-distance to right neighbor + overlap. Edge windows extend to the wall edge.
+Also: the backing plane should use `side={THREE.FrontSide}` (not DoubleSide) since it only needs to face the room.
 
-However, for the common case (2 evenly-spaced windows), the max-distance approach works fine. Given complexity vs. payoff, the prompt's simpler approach is acceptable for now.
+## Plan
 
-## Revised plan
+### File: `src/components/3d/Curtain3D.tsx`
 
-### File: `src/components/tabs/DesignTab.tsx` (lines 2590-2607)
+After the existing `<mesh geometry={panelGeometry}>` blocks (around lines 290-305), add a flat backing plane for `panel` type only:
 
-In the `onConfirm` handler, before the `forEach`:
+```tsx
+{curtain.type === 'panel' && panelGeometry && (
+  <>
+    <mesh position={[-panelOffsetX, 0, -0.03]}>
+      <planeGeometry args={[curtainW * (1 - openAmount), curtainH]} />
+      <meshStandardMaterial
+        color={curtain.fabricColor} roughness={roughness} metalness={0}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+    <mesh position={[panelOffsetX, 0, -0.03]}>
+      <planeGeometry args={[curtainW * (1 - openAmount), curtainH]} />
+      <meshStandardMaterial
+        color={curtain.fabricColor} roughness={roughness} metalness={0}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  </>
+)}
+```
 
-1. Get wall start/end points from `floorPlan.points`
-2. Calculate `wallLength` via `distanceBetweenPoints` (import from `wallGeometry.ts`)
-3. For `panel`/`sheer` types with 2+ windows:
-   - Sort windows by position
-   - Compute max gap between adjacent window centers (position × wallLength)
-   - Set `effectiveWidth = Math.max(config.width, maxGap + 20)`
-4. For other types or single window: `effectiveWidth = config.width`
-5. Use `effectiveWidth` instead of `config.width` in the `addCurtain` call
-
-No other files change.
+One file change. No other modifications.
 
