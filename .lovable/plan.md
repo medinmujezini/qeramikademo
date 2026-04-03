@@ -1,44 +1,67 @@
 
 
-# Fix: GLB Curtain Model Positioning — Flush Against Wall
+# Fix: Curtain GLB Model Rendering — Positioning, Scaling, and Coverage
 
-## Problem
+## Problems identified
 
-The `CurtainGLTFModel` component centers the GLB model at origin (line 55-58), which means half the model's depth goes **into** the wall and windows. The curtain should sit entirely in front of the wall — back face flush, front face facing into the room.
+From the screenshot and code review, multiple issues compound:
 
-Additionally, the wall offset on line 129 is only 5mm, which is fine for flat box geometry but insufficient for a 3D GLB model that has real depth.
+1. **GLB model Z-positioning is wrong**: Line 59 uses `-box.max.z * uniformScale` which assumes the model's "back" is at max Z. Depending on the model's coordinate system, this could push the curtain INTO the wall instead of outward. The model could have its front at max Z.
 
-## Root Cause
+2. **Uniform scaling distorts coverage**: `Math.min(scaleX, scaleY)` on line 51 picks the smaller scale, meaning if the model is taller than wide relative to the target, it won't fill the width — leaving gaps around the window.
 
-In `CurtainGLTFModel`, after scaling, the model is re-centered on all three axes including Z (depth). This places half the curtain behind the wall. Instead, the Z positioning should align the model's **back face** (max Z in wall-normal direction) to the wall surface — pushing the entire model outward.
+3. **Wall offset is still too small**: 10mm (line 127) is not enough for a GLB model with 3D depth. The model clips into the wall geometry.
 
-## Changes — `src/components/3d/Curtain3D.tsx`
+4. **No open/close support for GLB models**: When `hasModel` is true, only the raw GLB renders — the `openAmount` slider does nothing. The GLB just sits there regardless of the slider position.
 
-**Change 1: Fix CurtainGLTFModel Z-positioning (lines 55-58)**
+5. **Model bottom not grounded**: The model is Y-centered at `cy` (center of curtain height), but the bounding box centering doesn't account for the curtain needing to hang from the top (mount point) down.
 
-After computing the bounding box post-scale, instead of centering on Z, position so the model's back is at Z=0 (the wall surface). The model should extend outward (positive Z in the curtain's local space):
+## Plan — all changes in `src/components/3d/Curtain3D.tsx`
 
-- X: center as before (center horizontally)
-- Y: center as before (center vertically)  
-- Z: instead of `-center.z * uniformScale`, use `-box.max.z * uniformScale` — this pushes the entire model so its back face sits at Z=0, with the rest extending outward
+### Change 1: Fix CurtainGLTFModel scaling — use independent X/Y, not uniform
+Replace `Math.min(scaleX, scaleY)` with separate X and Y scales. The model should stretch to exactly fill `targetWidth` × `targetHeight`. Curtain GLBs are decorative — aspect ratio distortion is acceptable to ensure full window coverage.
 
-**Change 2: Adjust wall offset for GLB models (around line 129)**
+```
+const scaleX = size.x > 0 ? targetWidth / size.x : 1;
+const scaleY = size.y > 0 ? targetHeight / size.y : 1;
+const scaleZ = size.z > 0 ? 0.03 / size.z : 1; // clamp depth to 3cm
+clone.scale.set(scaleX, scaleY, scaleZ);
+```
 
-When a GLB model is present, use a slightly larger offset so the back of the curtain doesn't clip into the wall. Compute offset as `(wallThickness * scale / 2) + 0.01` for GLB models (10mm clearance) vs the current 5mm for flat geometry. This accounts for minor model irregularities.
+### Change 2: Fix Z-positioning — always push model OUTWARD
+After scaling, recompute bounding box. Position so the model's min Z (back face) sits at Z=0, with the rest extending into positive Z (toward the room). Use `newBox.min.z` not `box.max.z`:
 
-**Change 3: Don't override all material colors unconditionally (lines 62-82)**
+```
+const newBox = new THREE.Box3().setFromObject(clone);
+const newCenter = newBox.getCenter(new THREE.Vector3());
+clone.position.set(
+  -newCenter.x,
+  -newBox.min.y,  // bottom at Y=0
+  -newBox.min.z   // back face at Z=0, extends outward
+);
+```
 
-Currently every mesh material gets its color replaced with `fabricColor`. This destroys the GLB model's original textures (the floral pattern shown in the reference image). Change to: only set color if the user's `fabricColor` is not the default white/cream, OR better — skip color override entirely for GLB models since the model already has its own textures and materials. The `roughness` override can stay.
+### Change 3: Fix wall offset for GLB models
+Increase from 10mm to 20mm (`0.02`) for GLB models. This ensures the curtain clears the wall surface and window frame geometry completely.
 
-Actually, looking at this more carefully: the user uploaded a model that has its own pattern/texture. Overriding color destroys that. The fix should **not override color** on GLB models — just use the model's original materials as-is. Remove the `newMat.color.set(fabricColor)` line for GLB curtains.
+### Change 4: Fix Y-positioning — curtain hangs from mount point DOWN
+Currently `cy = mountH - curtainH / 2` centers the curtain vertically. But with the new bounding-box grounding (bottom at Y=0), the group position should place the bottom of the curtain near the floor. Change the group's Y to just use `0` (floor level) for the GLB case, since the model's bottom is grounded at Y=0 within the group, and the model already spans the full curtainH.
 
-## Summary of changes
+Actually, simpler: keep `cy = mountH - curtainH` so the bottom of the curtain is at `mountH - curtainH` from floor (near floor for floor-length curtains). The model's bottom is at local Y=0, so group Y = `mountH - curtainH`.
 
-| What | Current | Fixed |
+### Change 5: Add basic open support for GLB models
+When `openAmount > 0`, scale the GLB's X by `(1 - openAmount)` and offset it slightly. Since the user confirmed GLBs are "whole set," we can simply scale X to compress the curtain (simulating gathering) and reduce width. This is a simple visual approximation — not perfect, but functional.
+
+## Summary
+
+| Issue | Current | Fix |
 |---|---|---|
-| GLB Z-position | Centered (half in wall) | Back face at Z=0, extends outward |
-| Wall offset for GLB | 5mm | 10mm |
-| Material color override | Replaces all mesh colors | Preserves original model textures |
+| Scaling | Uniform min(X,Y) — gaps | Independent X/Y/Z — fills target exactly |
+| Z-position | `-box.max.z` — depends on model orientation | `-newBox.min.z` after rescale — always outward |
+| Y-position | Centered at curtainH/2 | Grounded: bottom at Y=0, group at `mountH - curtainH` |
+| Wall offset | 10mm | 20mm for GLB models |
+| Depth | Model's original depth | Clamped to 3cm |
+| Open/close | No effect on GLB | X-scale compression |
 
-One file: `src/components/3d/Curtain3D.tsx`
+One file changed: `src/components/3d/Curtain3D.tsx`
 
