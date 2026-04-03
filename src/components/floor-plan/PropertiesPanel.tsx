@@ -651,7 +651,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="doorWidth"
               type="number"
-              value={door.width}
+              value={round2(door.width)}
               onChange={(e) => updateDoor(door.id, { width: Number(e.target.value) })}
               min={60}
               max={200}
