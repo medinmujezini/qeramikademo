@@ -114,6 +114,8 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
   const [mountHeight, setMountHeight] = useState(280);
   const [rodVisible, setRodVisible] = useState(true);
   const [hangStyle, setHangStyle] = useState<HangStyle>('floor');
+  const [curtainModels, setCurtainModels] = useState<CurtainModel[]>([]);
+  const [selectedModelUrl, setSelectedModelUrl] = useState<string | undefined>(undefined);
 
   // Compute averages for current wall
   const selectedEntry = wallsWithWindows.find(e => e.wall.id === selectedWallId);
