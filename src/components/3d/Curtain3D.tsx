@@ -247,14 +247,12 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
     const segsY = 16;
     const geo = new THREE.PlaneGeometry(curtainW, curtainH, segsX, segsY);
     const pos = geo.attributes.position;
-    const baseFoldDepth = curtain.type === 'sheer' ? 0.005 : 0.01;
-    const baseFoldFreq = curtain.type === 'sheer' ? 16 : 20;
-    const effectiveFreq = baseFoldFreq * (1 + openAmount * 2);
-    const effectiveDepth = baseFoldDepth * (1 + openAmount * 1.5);
+    const foldDepth = curtain.type === 'sheer' ? 0.005 : 0.01;
+    const foldFreq = curtain.type === 'sheer' ? 16 : 20;
 
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
-      const fold = Math.sin(x / curtainW * Math.PI * effectiveFreq) * effectiveDepth;
+      const fold = Math.sin(x / curtainW * Math.PI * foldFreq) * foldDepth;
       const variation = 0.85 + 0.15 * Math.sin(x * 137.5);
       pos.setZ(i, fold * variation);
     }
