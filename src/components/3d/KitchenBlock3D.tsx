@@ -159,7 +159,7 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
       ? new THREE.Color(bodyColor).offsetHSL(0, -0.15, -0.03).getStyle()
       : new THREE.Color(bodyColor).offsetHSL(0, 0, -0.05).getStyle();
     const darkColor = new THREE.Color(bodyColor).offsetHSL(0, 0, -0.15).getStyle();
-    const seamColor = new THREE.Color(bodyColor).offsetHSL(0, 0, -0.25).getStyle();
+    const seamColor = new THREE.Color(bodyColor).multiplyScalar(0.2).getStyle();
 
     const matProps = COUNTERTOP_MATERIAL_PROPS[block.countertopMaterial] || COUNTERTOP_MATERIAL_PROPS.quartz;
     const ctColor = matProps.tint(block.countertopColor);
@@ -238,29 +238,29 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
 
     /* ── Panel insets (door look) ── */
     if (bt === 'base-cabinet' || bt === 'island' || bt === 'wall-cabinet') {
-      const insetBorder = 0.015;
+      const insetBorder = 0.008;
       const insetW = w / 2 - insetBorder * 2 - 0.003;
       const insetH = bodyTop - insetBorder * 2;
-      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.04).getStyle();
+      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.15).getStyle();
 
       // Left panel inset
       elements.push(
-        <mesh key="inset-l" position={[-w / 4, bodyYCenter, d / 2 + 0.002]} castShadow>
+        <mesh key="inset-l" position={[-w / 4, bodyYCenter, d / 2 + 0.006]} castShadow>
           <planeGeometry args={[insetW, insetH]} />
           <meshStandardMaterial color={insetColor} roughness={0.55} />
         </mesh>
       );
       // Right panel inset
       elements.push(
-        <mesh key="inset-r" position={[w / 4, bodyYCenter, d / 2 + 0.002]} castShadow>
+        <mesh key="inset-r" position={[w / 4, bodyYCenter, d / 2 + 0.006]} castShadow>
           <planeGeometry args={[insetW, insetH]} />
           <meshStandardMaterial color={insetColor} roughness={0.55} />
         </mesh>
       );
       // Center seam
       elements.push(
-        <mesh key="seam" position={[0, bodyYCenter, d / 2 + 0.003]}>
-          <boxGeometry args={[0.002, bodyTop - 0.01, 0.002]} />
+        <mesh key="seam" position={[0, bodyYCenter, d / 2 + 0.007]}>
+          <boxGeometry args={[0.003, bodyTop - 0.01, 0.002]} />
           <meshStandardMaterial color={seamColor} roughness={0.6} />
         </mesh>
       );
@@ -269,9 +269,9 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
     /* ── Tall cabinet: two-zone front ── */
     if (bt === 'tall-cabinet') {
       const splitY = hasToeKick ? toeH + bodyTop * 0.6 : h * 0.6;
-      const insetBorder = 0.015;
+      const insetBorder = 0.008;
       const insetW = w - insetBorder * 2;
-      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.04).getStyle();
+      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.15).getStyle();
 
       // Upper panel
       const upperH = h - splitY - insetBorder;
@@ -314,17 +314,17 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
         // Vertical bar handle
         elements.push(
           <mesh key="handle" position={[w * 0.35, bodyYCenter, d / 2 + 0.015]} castShadow>
-            <boxGeometry args={[0.012, bodyTop * 0.6, 0.015]} />
+            <boxGeometry args={[0.01, bodyTop * 0.6, 0.015]} />
             <meshStandardMaterial color={handleProps.color} metalness={handleProps.metalness} roughness={handleProps.roughness} />
           </mesh>
         );
       } else {
         elements.push(
-          <mesh key="handle" position={[0, bodyYCenter + bodyTop * 0.15, d / 2 + 0.012]} castShadow>
+          <mesh key="handle" position={[0.03, bodyYCenter + bodyTop * 0.17, d / 2 + 0.012]} castShadow>
             {block.handleStyle === 'knob' ? (
-              <sphereGeometry args={[0.012, 8, 8]} />
+              <sphereGeometry args={[0.0125, 12, 12]} />
             ) : (
-              <boxGeometry args={[0.10, 0.008, 0.015]} />
+              <boxGeometry args={[0.12, 0.01, 0.015]} />
             )}
             <meshStandardMaterial color={handleProps.color} metalness={handleProps.metalness} roughness={handleProps.roughness} />
           </mesh>
