@@ -1,43 +1,40 @@
 
 
-# Fix: Curtain Open/Close — Split from Center
+# Fix: GLB Curtain Sticking Out Like Sliding Door
 
-## Problem
-The GLB curtain model currently opens by X-scale compression (shrinks to 30% width but stays centered). This looks wrong — it should split into two halves that slide apart from the center, revealing the window at 100% open. The fallback box panels already do this but the GLB model does not.
+## Problems
 
-## Approach
-Render **two copies** of the GLB model (left half and right half) using `clippingPlanes` to clip each copy to its respective half. As `openAmount` increases, slide each half outward toward the wall edges.
+From the screenshot, at 100% open the two curtain halves slide far outside the room boundaries like sliding doors. Two root causes:
 
-This avoids duplicating geometry or distorting the model. Three.js clipping planes will cleanly cut the model in half visually.
+1. **Z-depth forced to 3cm** (line 57: `scaleZ = 0.03 / size.z`): This crushes the GLB model flat, destroying all fabric texture and making it look like a colored slab/wall panel instead of a curtain.
 
-## Changes — `src/components/3d/Curtain3D.tsx`
+2. **Open offset too large** (line 93: `openOffset = openAmount * (targetWidth / 2)`): At 100% open, each half slides outward by half the curtain width. Since the curtain is wider than the window, the halves extend way past the wall edges and stick out of the room.
 
-### 1. Remove the single-group X-scale approach
-Delete the `openScale` variable (line 87) and the `<group scale={[openScale, 1, 1]}>` wrapper (line 90).
+## Fix — `src/components/3d/Curtain3D.tsx`
 
-### 2. Render two instances of the cloned scene with clipping planes
-Instead of one `<primitive>`, render two `<group>` elements:
-- **Left half**: clipped to X ≤ 0 (local space), translated by `-openAmount * curtainW / 2` along X
-- **Right half**: clipped to X ≥ 0 (local space), translated by `+openAmount * curtainW / 2` along X
+### Change 1: Preserve model's natural depth ratio
+Instead of clamping Z to 3cm, scale Z proportionally with X (same scale factor). This keeps the curtain's natural folds and fabric look. Cap depth at a reasonable maximum (e.g. 15cm) to prevent excessively deep models.
 
-Each group gets a `THREE.Plane` clipping plane. Enable `material.clippingPlanes` on all meshes in the clone by traversing and setting it during the `useMemo`.
+```
+const scaleX = size.x > 0 ? targetWidth / size.x : 1;
+const scaleY = size.y > 0 ? targetHeight / size.y : 1;
+const scaleZ = scaleX; // preserve proportions
+// Cap max depth to 15cm
+const maxDepth = 0.15;
+const actualDepth = size.z * scaleZ;
+if (actualDepth > maxDepth) scaleZ = maxDepth / size.z;
+```
 
-### 3. Implementation detail
-- Create two `THREE.Plane` objects: `leftClip = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0)` (keeps X < 0) and `rightClip = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0)` (keeps X > 0).
-- Clone the scene twice. For each clone, traverse meshes and set `material.clippingPlanes = [clipPlane]` and `material.clipShadows = true`.
-- Wrap each clone in a `<group>` with position offset based on `openAmount`:
-  - Left: `position={[-openAmount * curtainW / 2, 0, 0]}`
-  - Right: `position={[openAmount * curtainW / 2, 0, 0]}`
-- Ensure `gl.localClippingEnabled = true` is set (via `useThree`).
+### Change 2: Reduce open offset — curtains bunch, not slide infinitely
+Limit the maximum slide distance so curtains stay within the wall boundaries. Use `openAmount * targetWidth * 0.35` instead of `* 0.5`. This means at 100% open, each half moves 35% of width (revealing 70% of center) rather than sliding completely off.
 
-### 4. Fallback box panels — already correct
-The existing box panel logic (lines 204-220) already splits from center. No changes needed there.
+### Change 3: Compress X when opening (gather effect)
+As the curtain opens, slightly compress each half's X scale to simulate fabric bunching: `scaleX * (1 - openAmount * 0.3)`. This makes opened curtains narrower (gathered) rather than just sliding full-width panels.
 
 ## Result
-At 0% open: both halves together = full curtain covering window.  
-At 100% open: halves slide fully apart to wall edges, window fully revealed.  
-Smooth intermediate positions for any slider value.
+- Curtain keeps its 3D fabric texture instead of looking like a flat slab
+- At 100% open, halves stay within the wall area instead of protruding out of the room
+- Gathered/bunched appearance when open
 
-## Files modified
-- `src/components/3d/Curtain3D.tsx`
+One file: `src/components/3d/Curtain3D.tsx`
 
