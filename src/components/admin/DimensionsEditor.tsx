@@ -53,7 +53,7 @@ const DimensionsEditor = ({
           <Input
             type="number"
             step="any"
-            value={depth}
+            value={round2(depth)}
             onChange={(e) => onChange({ width, depth: parseFloat(e.target.value) || 0, height })}
             min={0.1}
             className="h-9"
