@@ -1556,6 +1556,10 @@ export const DesignTab: React.FC<DesignTabProps> = ({
   const [selectedCurtainId, setSelectedCurtainId] = useState<string | null>(null);
   const selectedCurtain = (floorPlan.curtains ?? []).find(c => c.id === selectedCurtainId) ?? null;
   const selectedCurtainWall = selectedCurtain ? floorPlan.walls.find(w => w.id === selectedCurtain.wallId) : null;
+
+  // Kitchen placement state
+  const [kitchenDialogOpen, setKitchenDialogOpen] = useState(false);
+  const selectedKitchenBlock = (floorPlan.kitchenBlocks ?? []).find(b => b.id === selectedKitchenBlockId) ?? null;
   
   const handlePipelineError = useCallback((error: Error) => {
     console.warn('[DesignTab] Pipeline error, falling back to basic lighting:', error);
