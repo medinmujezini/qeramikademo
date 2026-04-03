@@ -2346,7 +2346,9 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               findTile={findTile}
               floorPlan={floorPlan}
               selectedCurtainId={selectedCurtainId}
-              onCurtainClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); setIsPanelOpen(true); }}
+              onCurtainClick={(id) => { setSelectedCurtainId(id); setSelectedStaircaseId(null); setSelectedKitchenBlockId(null); setIsPanelOpen(true); }}
+              selectedKitchenBlockId={selectedKitchenBlockId}
+              onKitchenBlockClick={(id) => { setSelectedKitchenBlockId(id); setSelectedCurtainId(null); setSelectedStaircaseId(null); setIsPanelOpen(true); }}
             />
           </Suspense>
           {/* Spawn point marker */}
