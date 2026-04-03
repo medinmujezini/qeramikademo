@@ -1,58 +1,44 @@
 
 
-# Plan: Add GLB Model Support for Curtains
+# Fix: GLB Curtain Model Positioning — Flush Against Wall
 
-## Overview
-Replicate the furniture GLB model pipeline for curtains: database table → admin management page → model selection in CurtainDialog → GLB rendering in Curtain3D with fallback to current box geometry.
+## Problem
 
-## Changes
+The `CurtainGLTFModel` component centers the GLB model at origin (line 55-58), which means half the model's depth goes **into** the wall and windows. The curtain should sit entirely in front of the wall — back face flush, front face facing into the room.
 
-### 1. Database: Create `curtain_models` table
-New migration with:
-- `id` (uuid, PK, default gen_random_uuid())
-- `name` (text, not null)
-- `type` (text, not null — one of panel/sheer/roman/roller/pleated)
-- `model_url` (text, not null)
-- `thumbnail_url` (text, nullable)
-- `is_active` (boolean, default true)
-- `sort_order` (integer, default 0)
-- `created_at` / `updated_at` (timestamptz, default now())
+Additionally, the wall offset on line 129 is only 5mm, which is fine for flat box geometry but insufficient for a 3D GLB model that has real depth.
 
-RLS: publicly readable, admin-only for all mutations (same pattern as `furniture_templates`).
+## Root Cause
 
-### 2. Type update: `src/types/floorPlan.ts`
-Add `modelUrl?: string` to the `Curtain` interface (line ~519, after `rodVisible`).
+In `CurtainGLTFModel`, after scaling, the model is re-centered on all three axes including Z (depth). This places half the curtain behind the wall. Instead, the Z positioning should align the model's **back face** (max Z in wall-normal direction) to the wall surface — pushing the entire model outward.
 
-### 3. Admin page: `src/pages/admin/CurtainModelManagement.tsx`
-Follow `FurnitureManagement.tsx` structure:
-- List curtain models from DB with search/filter by type
-- Add/edit dialog with: name, type selector (5 types), `FileUploadField` for GLB (bucket: "models"), thumbnail upload
-- Delete with confirmation
-- Activity log on create/update/delete
+## Changes — `src/components/3d/Curtain3D.tsx`
 
-### 4. Admin navigation + routing
-- Add nav item in `AdminLayout.tsx` navItems array: `{ path: '/admin/curtain-models', label: 'Curtain Models', icon: Curtains }` (use a suitable Lucide icon like `Blinds`)
-- Add route in `App.tsx` following existing pattern
+**Change 1: Fix CurtainGLTFModel Z-positioning (lines 55-58)**
 
-### 5. CurtainDialog update: `src/components/3d/CurtainDialog.tsx`
-- Fetch `curtain_models` filtered by selected type
-- Show selectable model cards (thumbnail + name) above color/material options
-- When selected, pass `modelUrl` in the `onConfirm` callback
-- Optional: "No model (default)" option to use built-in geometry
+After computing the bounding box post-scale, instead of centering on Z, position so the model's back is at Z=0 (the wall surface). The model should extend outward (positive Z in the curtain's local space):
 
-### 6. Curtain3D update: `src/components/3d/Curtain3D.tsx`
-- When `curtain.modelUrl` exists: load GLB via `useGLTF`, clone scene, override mesh material colors with `curtain.fabricColor`, scale to fit `curtainW × curtainH`, render in place of box geometry
-- Wrap in `React.Suspense` with fallback (same as Furniture3D pattern)
-- When no `modelUrl`: keep current box/plane geometry as-is
+- X: center as before (center horizontally)
+- Y: center as before (center vertically)  
+- Z: instead of `-center.z * uniformScale`, use `-box.max.z * uniformScale` — this pushes the entire model so its back face sits at Z=0, with the rest extending outward
 
-### 7. Hook for addCurtain: `src/hooks/useFloorPlan.ts`
-Ensure `addCurtain` passes through the `modelUrl` field when present.
+**Change 2: Adjust wall offset for GLB models (around line 129)**
 
-## Technical details
+When a GLB model is present, use a slightly larger offset so the back of the curtain doesn't clip into the wall. Compute offset as `(wallThickness * scale / 2) + 0.01` for GLB models (10mm clearance) vs the current 5mm for flat geometry. This accounts for minor model irregularities.
 
-- **Files created**: `src/pages/admin/CurtainModelManagement.tsx`
-- **Files modified**: migration SQL, `src/types/floorPlan.ts`, `src/components/admin/AdminLayout.tsx`, `src/App.tsx`, `src/components/3d/CurtainDialog.tsx`, `src/components/3d/Curtain3D.tsx`, `src/hooks/useFloorPlan.ts`
-- **No seed data** — table starts empty; admin uploads models manually
-- GLB loading uses `useGLTF` from `@react-three/drei` (already a dependency)
-- Model scaling: compute bounding box, uniform scale to fit target width/height, same as `Furniture3D.tsx` GLTFModel
+**Change 3: Don't override all material colors unconditionally (lines 62-82)**
+
+Currently every mesh material gets its color replaced with `fabricColor`. This destroys the GLB model's original textures (the floral pattern shown in the reference image). Change to: only set color if the user's `fabricColor` is not the default white/cream, OR better — skip color override entirely for GLB models since the model already has its own textures and materials. The `roughness` override can stay.
+
+Actually, looking at this more carefully: the user uploaded a model that has its own pattern/texture. Overriding color destroys that. The fix should **not override color** on GLB models — just use the model's original materials as-is. Remove the `newMat.color.set(fabricColor)` line for GLB curtains.
+
+## Summary of changes
+
+| What | Current | Fixed |
+|---|---|---|
+| GLB Z-position | Centered (half in wall) | Back face at Z=0, extends outward |
+| Wall offset for GLB | 5mm | 10mm |
+| Material color override | Replaces all mesh colors | Preserves original model textures |
+
+One file: `src/components/3d/Curtain3D.tsx`
 
