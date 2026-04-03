@@ -226,7 +226,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   // Offset from wall center (inside face)
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
-  const offset = (wallThickness * scale / 2) + 0.02;
+  const offset = (wallThickness * scale / 2) + 0.005;
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
@@ -247,20 +247,18 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
     const segsY = 16;
     const geo = new THREE.PlaneGeometry(curtainW, curtainH, segsX, segsY);
     const pos = geo.attributes.position;
-    const baseFoldDepth = curtain.type === 'sheer' ? 0.005 : 0.01;
-    const baseFoldFreq = curtain.type === 'sheer' ? 16 : 20;
-    const effectiveFreq = baseFoldFreq * (1 + openAmount * 2);
-    const effectiveDepth = baseFoldDepth * (1 + openAmount * 1.5);
+    const foldDepth = curtain.type === 'sheer' ? 0.005 : 0.01;
+    const foldFreq = curtain.type === 'sheer' ? 16 : 20;
 
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
-      const fold = Math.sin(x / curtainW * Math.PI * effectiveFreq) * effectiveDepth;
+      const fold = Math.sin(x / curtainW * Math.PI * foldFreq) * foldDepth;
       const variation = 0.85 + 0.15 * Math.sin(x * 137.5);
       pos.setZ(i, fold * variation);
     }
     geo.computeVertexNormals();
     return geo;
-  }, [curtainW, curtainH, openAmount, curtain.type]);
+  }, [curtainW, curtainH, curtain.type]);
 
   const panelOffsetX = openAmount * curtainW / 2;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
@@ -299,14 +297,14 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* ── Panel / Sheer ── */}
       {isPanelType && panelGeometry && (
         <>
-          <mesh geometry={panelGeometry} position={[-panelOffsetX, 0, 0]} scale={[1 - openAmount, 1, 1]}>
+          <mesh geometry={panelGeometry} position={[-panelOffsetX, 0, 0]}>
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.DoubleSide} transparent={isTransparent} opacity={materialOpacity}
             />
           </mesh>
           {curtain.type === 'panel' && (
-            <mesh geometry={panelGeometry} position={[panelOffsetX, 0, 0]} scale={[1 - openAmount, 1, 1]}>
+            <mesh geometry={panelGeometry} position={[panelOffsetX, 0, 0]}>
               <meshStandardMaterial
                 color={curtain.fabricColor} roughness={roughness} metalness={0}
                 side={THREE.DoubleSide} transparent={isTransparent} opacity={materialOpacity}
@@ -319,14 +317,14 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* Panel backing liner — blocks see-through between folds */}
       {curtain.type === 'panel' && panelGeometry && (
         <>
-          <mesh position={[-panelOffsetX, 0, -0.015]} scale={[1 - openAmount, 1, 1]}>
+          <mesh position={[-panelOffsetX, 0, -0.015]}>
             <planeGeometry args={[curtainW, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.FrontSide}
             />
           </mesh>
-          <mesh position={[panelOffsetX, 0, -0.015]} scale={[1 - openAmount, 1, 1]}>
+          <mesh position={[panelOffsetX, 0, -0.015]}>
             <planeGeometry args={[curtainW, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
@@ -340,7 +338,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {isPanelType && openAmount > 0.1 && (
         <>
           <mesh position={[-curtainW / 2, 0, 0]}>
-            <boxGeometry args={[0.06, curtainH * 0.95, 0.08]} />
+            <boxGeometry args={[0.03 + openAmount * 0.08, curtainH * 0.95, 0.08]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               transparent={isTransparent} opacity={materialOpacity}
@@ -348,7 +346,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
           </mesh>
           {curtain.type === 'panel' && (
             <mesh position={[curtainW / 2, 0, 0]}>
-              <boxGeometry args={[0.06, curtainH * 0.95, 0.08]} />
+              <boxGeometry args={[0.03 + openAmount * 0.08, curtainH * 0.95, 0.08]} />
               <meshStandardMaterial
                 color={curtain.fabricColor} roughness={roughness} metalness={0}
                 transparent={isTransparent} opacity={materialOpacity}
