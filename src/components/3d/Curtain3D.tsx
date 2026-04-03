@@ -245,14 +245,14 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
 
     const segsX = 80;
     const segsY = 16;
-    const geo = new THREE.PlaneGeometry(curtainW, curtainH, segsX, segsY);
+    const geo = new THREE.PlaneGeometry(curtainW / 2, curtainH, segsX, segsY);
     const pos = geo.attributes.position;
     const foldDepth = curtain.type === 'sheer' ? 0.005 : 0.01;
     const foldFreq = curtain.type === 'sheer' ? 16 : 20;
 
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
-      const fold = Math.sin(x / curtainW * Math.PI * foldFreq) * foldDepth;
+      const fold = Math.sin(x / (curtainW / 2) * Math.PI * foldFreq) * foldDepth;
       const variation = 0.85 + 0.15 * Math.sin(x * 137.5);
       pos.setZ(i, fold * variation);
     }
@@ -260,7 +260,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
     return geo;
   }, [curtainW, curtainH, curtain.type]);
 
-  const panelOffsetX = openAmount * curtainW / 2;
+  const panelOffsetX = openAmount * curtainW / 4;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
@@ -318,14 +318,14 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {curtain.type === 'panel' && panelGeometry && (
         <>
           <mesh position={[-panelOffsetX, 0, -0.015]}>
-            <planeGeometry args={[curtainW, curtainH]} />
+            <planeGeometry args={[curtainW / 2, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.FrontSide}
             />
           </mesh>
           <mesh position={[panelOffsetX, 0, -0.015]}>
-            <planeGeometry args={[curtainW, curtainH]} />
+            <planeGeometry args={[curtainW / 2, curtainH]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.FrontSide}
