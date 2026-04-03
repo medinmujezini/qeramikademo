@@ -517,6 +517,7 @@ export interface Curtain {
   openAmount: number; // 0=closed, 1=fully open
   mountHeight?: number; // cm from floor, defaults to wall height
   rodVisible?: boolean; // show curtain rod
+  modelUrl?: string; // GLB model URL from curtain_models table
 }
 
 export const CURTAIN_FABRIC_PRESETS = [

@@ -36,6 +36,7 @@ const navItems = [
   { path: '/admin/tiles', label: 'Tiles', icon: Grid3X3 },
   { path: '/admin/grout', label: 'Grout Colors', icon: Pipette },
   { path: '/admin/materials', label: 'Materials', icon: Palette },
+  { path: '/admin/curtain-models', label: 'Curtain Models', icon: Blinds },
   { path: '/admin/columns', label: 'Columns', icon: Columns },
   { path: '/admin/plumbing-codes', label: 'Plumbing Codes', icon: FileCode },
   { path: '/admin/seed', label: 'Seed Data', icon: Database },
