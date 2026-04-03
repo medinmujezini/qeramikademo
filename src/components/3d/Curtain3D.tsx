@@ -37,60 +37,98 @@ const CurtainGLTFModel: React.FC<{
 }> = ({ url, targetWidth, targetHeight, fabricColor, roughness, openAmount }) => {
   const { scene } = useGLTF(url);
 
-  const clonedScene = useMemo(() => {
-    const clone = scene.clone(true);
-    // Compute bounding box for scaling
-    const box = new THREE.Box3().setFromObject(clone);
-    const size = new THREE.Vector3();
-    box.getSize(size);
+  // Create two cloned scenes — one for left half, one for right half
+  const { leftClone, rightClone } = useMemo(() => {
+    const createClone = () => {
+      const clone = scene.clone(true);
+      const box = new THREE.Box3().setFromObject(clone);
+      const size = new THREE.Vector3();
+      box.getSize(size);
 
-    // Independent axis scaling — fill target exactly, clamp depth to 3cm
-    const scaleX = size.x > 0 ? targetWidth / size.x : 1;
-    const scaleY = size.y > 0 ? targetHeight / size.y : 1;
-    const scaleZ = size.z > 0 ? 0.03 / size.z : 1;
-    clone.scale.set(scaleX, scaleY, scaleZ);
+      const scaleX = size.x > 0 ? targetWidth / size.x : 1;
+      const scaleY = size.y > 0 ? targetHeight / size.y : 1;
+      const scaleZ = size.z > 0 ? 0.03 / size.z : 1;
+      clone.scale.set(scaleX, scaleY, scaleZ);
 
-    // Recompute bounding box after scaling
-    const newBox = new THREE.Box3().setFromObject(clone);
-    const newCenter = newBox.getCenter(new THREE.Vector3());
+      const newBox = new THREE.Box3().setFromObject(clone);
+      const newCenter = newBox.getCenter(new THREE.Vector3());
 
-    // Position: center X, ground bottom at Y=0, back face at Z=0 (extends outward)
-    clone.position.set(
-      -newCenter.x,
-      -newBox.min.y,
-      -newBox.min.z,
-    );
+      clone.position.set(
+        -newCenter.x,
+        -newBox.min.y,
+        -newBox.min.z,
+      );
 
-    // Preserve original model textures — don't override colors
-    clone.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        const mat = mesh.material;
-        if (Array.isArray(mat)) {
-          mesh.material = mat.map(m => {
-            const newMat = (m as THREE.MeshStandardMaterial).clone();
+      // Preserve original model textures
+      clone.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          const mat = mesh.material;
+          if (Array.isArray(mat)) {
+            mesh.material = mat.map(m => {
+              const newMat = (m as THREE.MeshStandardMaterial).clone();
+              newMat.metalness = 0;
+              newMat.clippingPlanes = [];
+              newMat.clipShadows = true;
+              return newMat;
+            });
+          } else {
+            const newMat = (mat as THREE.MeshStandardMaterial).clone();
             newMat.metalness = 0;
-            return newMat;
-          });
+            newMat.clippingPlanes = [];
+            newMat.clipShadows = true;
+            mesh.material = newMat;
+          }
+        }
+      });
+
+      return clone;
+    };
+
+    const left = createClone();
+    const right = createClone();
+
+    // Clip left half: only show X < 0 (left side)
+    const leftPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+    // Clip right half: only show X > 0 (right side)
+    const rightPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+
+    left.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mat = (child as THREE.Mesh).material;
+        if (Array.isArray(mat)) {
+          mat.forEach(m => { (m as THREE.MeshStandardMaterial).clippingPlanes = [leftPlane]; });
         } else {
-          const newMat = (mat as THREE.MeshStandardMaterial).clone();
-          newMat.metalness = 0;
-          mesh.material = newMat;
+          (mat as THREE.MeshStandardMaterial).clippingPlanes = [leftPlane];
         }
       }
     });
 
-    return clone;
+    right.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mat = (child as THREE.Mesh).material;
+        if (Array.isArray(mat)) {
+          mat.forEach(m => { (m as THREE.MeshStandardMaterial).clippingPlanes = [rightPlane]; });
+        } else {
+          (mat as THREE.MeshStandardMaterial).clippingPlanes = [rightPlane];
+        }
+      }
+    });
+
+    return { leftClone: left, rightClone: right };
   }, [scene, targetWidth, targetHeight, fabricColor, roughness]);
 
-  // At 100% open, curtain should be fully gathered (nearly invisible)
-  const openScale = Math.max(0.03, 1 - openAmount * 0.97);
-
-  if (openAmount >= 0.98) return null; // Fully open = hidden
+  // Each half slides outward from center
+  const slideOffset = openAmount * targetWidth * 0.35;
 
   return (
-    <group scale={[openScale, 1, 1]}>
-      <primitive object={clonedScene} />
+    <group>
+      <group position={[-slideOffset, 0, 0]}>
+        <primitive object={leftClone} />
+      </group>
+      <group position={[slideOffset, 0, 0]}>
+        <primitive object={rightClone} />
+      </group>
     </group>
   );
 };
