@@ -66,6 +66,9 @@ type FloorPlanContextType = ReturnType<typeof useFloorPlan> & {
   // Ghost floor toggle
   showAdjacentFloors: boolean;
   setShowAdjacentFloors: (v: boolean) => void;
+  // Selected kitchen block
+  selectedKitchenBlockId: string | null;
+  setSelectedKitchenBlockId: (id: string | null) => void;
 };
 
 const FloorPlanContext = createContext<FloorPlanContextType | null>(null);
