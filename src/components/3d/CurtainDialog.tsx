@@ -332,7 +332,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
                 <Label className="text-[10px] text-muted-foreground">Height (cm)</Label>
                 <Input
                   type="number"
-                  value={height}
+                  value={Math.round(height * 100) / 100}
                   onChange={e => setHeight(Number(e.target.value))}
                   className="h-8 text-xs"
                   min={20}

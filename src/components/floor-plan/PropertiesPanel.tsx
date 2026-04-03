@@ -976,7 +976,7 @@ export const PropertiesPanel: React.FC = () => {
 
           <div>
             <Label className="text-xs text-muted-foreground">Position</Label>
-            <p className="text-sm font-medium">X: {column.x.toFixed(0)}, Y: {column.y.toFixed(0)}</p>
+            <p className="text-sm font-medium">X: {round2(column.x)}, Y: {round2(column.y)}</p>
           </div>
         </CardContent>
       </Card>
