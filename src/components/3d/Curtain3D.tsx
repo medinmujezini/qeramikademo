@@ -239,11 +239,12 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
-  // Open mechanism: each half shrinks width and slides to edge
+  // Open mechanism: panels stay within curtain width bounds
   // At open=0: two halves each curtainW/2, meeting at center = full coverage
-  // At open=1: each half shrinks to ~10% width, pushed to wall edge
-  const halfW = (curtainW / 2) * (1 - openAmount * 0.85); // shrink to 15% at full open
-  const panelCenterX = curtainW / 4 + openAmount * (curtainW / 4); // slide outward
+  // At open=1: each half compresses and slides to edge, never exceeding ±curtainW/2
+  const halfW = (curtainW / 2) * (1 - openAmount * 0.85);
+  const maxSlide = curtainW / 2 - halfW / 2; // clamp so outer edge = curtainW/2
+  const panelCenterX = curtainW / 4 + openAmount * Math.min(curtainW / 4, maxSlide - curtainW / 4);
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   return (
