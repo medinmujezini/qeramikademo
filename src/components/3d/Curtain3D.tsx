@@ -297,7 +297,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* ── Panel / Sheer ── */}
       {isPanelType && panelGeometry && (
         <>
-          <mesh geometry={panelGeometry} position={[-panelOffsetX, 0, 0]} scale={[1 - openAmount, 1, 1]}>
+          <mesh geometry={panelGeometry} position={[-panelOffsetX, 0, 0]}>
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
               side={THREE.DoubleSide} transparent={isTransparent} opacity={materialOpacity}
