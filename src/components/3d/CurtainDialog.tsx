@@ -10,11 +10,20 @@ import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CURTAIN_FABRIC_PRESETS } from '@/types/floorPlan';
 import type { CurtainType, CurtainFabric, Wall, Window as FloorWindow } from '@/types/floorPlan';
-import { Blinds, Layers, SquareStack, ScrollText, ChevronDown } from 'lucide-react';
+import { Blinds, Layers, SquareStack, ScrollText, ChevronDown, Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WallWithWindows {
   wall: Wall;
   windows: FloorWindow[];
+}
+
+interface CurtainModel {
+  id: string;
+  name: string;
+  type: string;
+  model_url: string;
+  thumbnail_url: string | null;
 }
 
 interface CurtainDialogProps {
@@ -32,6 +41,7 @@ interface CurtainDialogProps {
     opacity: number;
     mountHeight: number;
     rodVisible: boolean;
+    modelUrl?: string;
   }) => void;
 }
 
