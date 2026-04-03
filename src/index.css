@@ -1026,6 +1026,25 @@
   display: none;
 }
 
+/* Thin horizontal scrollbar for toolbar */
+.toolbar-hscroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(38 60% 68% / 0.25) transparent;
+}
+.toolbar-hscroll::-webkit-scrollbar {
+  height: 3px;
+}
+.toolbar-hscroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.toolbar-hscroll::-webkit-scrollbar-thumb {
+  background: hsl(38 60% 68% / 0.25);
+  border-radius: 2px;
+}
+.toolbar-hscroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(38 60% 68% / 0.4);
+}
+
 /* WebUI Transparency Mode — makes everything transparent for Unreal Engine overlay */
 .unreal-transparent,
 .unreal-transparent body,
