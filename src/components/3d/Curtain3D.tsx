@@ -142,8 +142,6 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
-  // Check if this curtain has a GLB model
-  const hasModel = !!curtain.modelUrl;
 
   return (
     <group
