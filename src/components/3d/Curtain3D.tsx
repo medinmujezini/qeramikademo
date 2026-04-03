@@ -278,19 +278,21 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
         </group>
       )}
 
-      {/* ── Panel type: solid box halves ── */}
+      {/* ── Panel type: solid curtain halves ── */}
       {curtain.type === 'panel' && (
         <>
           <mesh position={[-panelCenterX, 0, 0]}>
-            <boxGeometry args={[halfW, curtainH, 0.005]} />
+            <boxGeometry args={[halfW, curtainH, 0.008]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
+              side={THREE.DoubleSide}
             />
           </mesh>
           <mesh position={[panelCenterX, 0, 0]}>
-            <boxGeometry args={[halfW, curtainH, 0.005]} />
+            <boxGeometry args={[halfW, curtainH, 0.008]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
+              side={THREE.DoubleSide}
             />
           </mesh>
         </>
