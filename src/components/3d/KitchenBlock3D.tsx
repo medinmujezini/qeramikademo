@@ -19,7 +19,7 @@ function getOrCreateProceduralTexture(type: string, color: string): THREE.Canvas
   const key = `${type}-${color}`;
   if (textureCache.has(key)) return textureCache.get(key)!;
 
-  const size = 256;
+  const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -30,14 +30,14 @@ function getOrCreateProceduralTexture(type: string, color: string): THREE.Canvas
     ctx.fillStyle = base.getStyle();
     ctx.fillRect(0, 0, size, size);
     ctx.strokeStyle = new THREE.Color(color).offsetHSL(0, -0.1, 0.15).getStyle();
-    ctx.lineWidth = 1.5;
-    ctx.globalAlpha = 0.35;
-    for (let i = 0; i < 12; i++) {
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.55;
+    for (let i = 0; i < 20; i++) {
       ctx.beginPath();
       const y0 = Math.random() * size;
       ctx.moveTo(0, y0);
       for (let x = 0; x < size; x += 20) {
-        ctx.lineTo(x, y0 + (Math.random() - 0.5) * 40);
+        ctx.lineTo(x, y0 + (Math.random() - 0.5) * 60);
       }
       ctx.stroke();
     }
@@ -47,9 +47,9 @@ function getOrCreateProceduralTexture(type: string, color: string): THREE.Canvas
     ctx.fillRect(0, 0, size, size);
     const dark = new THREE.Color(color).offsetHSL(0.01, 0.05, -0.12).getStyle();
     ctx.strokeStyle = dark;
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.5;
     for (let y = 0; y < size; y += 4 + Math.random() * 6) {
-      ctx.lineWidth = 0.5 + Math.random() * 1.5;
+      ctx.lineWidth = 1 + Math.random() * 2.5;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(size, y + (Math.random() - 0.5) * 3);
@@ -63,7 +63,7 @@ function getOrCreateProceduralTexture(type: string, color: string): THREE.Canvas
       const x = Math.random() * size;
       const y = Math.random() * size;
       const r = 0.5 + Math.random() * 1.5;
-      ctx.fillStyle = `rgba(${Math.random() > 0.5 ? '0,0,0' : '255,255,255'},${0.05 + Math.random() * 0.15})`;
+      ctx.fillStyle = `rgba(${Math.random() > 0.5 ? '0,0,0' : '255,255,255'},${0.1 + Math.random() * 0.25})`;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
@@ -84,7 +84,7 @@ function getOrCreateProceduralTexture(type: string, color: string): THREE.Canvas
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(2, 2);
+  tex.repeat.set(1, 1);
   textureCache.set(key, tex);
   return tex;
 }
