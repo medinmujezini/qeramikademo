@@ -1558,6 +1558,20 @@ export const DesignTab: React.FC<DesignTabProps> = ({
     setGiEnabled(false);
   }, []);
 
+  // Horizontal scroll for toolbar via mouse wheel
+  useEffect(() => {
+    const el = toolbarScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+        el.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, []);
+
   // Auto-open panel when furniture/fixture is selected
   useEffect(() => {
     if (selectedFurnitureId) {
