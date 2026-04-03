@@ -805,7 +805,7 @@ export const PropertiesPanel: React.FC = () => {
 
           <div>
             <Label className="text-xs text-muted-foreground">Position</Label>
-            <p className="text-sm font-medium">X: {fixture.cx.toFixed(0)}, Y: {fixture.cy.toFixed(0)}</p>
+            <p className="text-sm font-medium">X: {round2(fixture.cx)}, Y: {round2(fixture.cy)}</p>
           </div>
         </CardContent>
       </Card>
