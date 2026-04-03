@@ -8,6 +8,7 @@ interface KitchenBlock3DProps {
   block: KitchenBlock;
   selected?: boolean;
   onClick?: (id: string) => void;
+  onDragStart?: (id: string, e: THREE.Event) => void;
 }
 
 const KitchenGLTFModel: React.FC<{
