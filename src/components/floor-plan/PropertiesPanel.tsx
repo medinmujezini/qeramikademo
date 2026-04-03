@@ -900,7 +900,7 @@ export const PropertiesPanel: React.FC = () => {
                 <Input
                   id="armWidth"
                   type="number"
-                  value={column.armWidth ?? 15}
+                  value={round2(column.armWidth ?? 15)}
                   onChange={(e) => updateColumn(column.id, { armWidth: Number(e.target.value) })}
                   min={5}
                   max={50}
