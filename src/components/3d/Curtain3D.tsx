@@ -54,7 +54,9 @@ const CurtainGLTFModel: React.FC<{
 
     const scaleX = size.x > 0 ? targetWidth / size.x : 1;
     const scaleY = size.y > 0 ? targetHeight / size.y : 1;
-    const scaleZ = size.z > 0 ? 0.03 / size.z : 1;
+    let scaleZ = scaleX; // preserve natural depth proportions
+    const maxDepth = 0.15;
+    if (size.z * scaleZ > maxDepth) scaleZ = maxDepth / size.z;
     clone.scale.set(scaleX, scaleY, scaleZ);
 
     const newBox = new THREE.Box3().setFromObject(clone);
