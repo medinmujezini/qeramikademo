@@ -220,7 +220,7 @@ const CurtainModelManagement = () => {
               {editingModel ? 'Edit Curtain Model' : 'Add Curtain Model'}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-1">
               <Label className="text-xs">Name</Label>
               <Input value={formName} onChange={e => setFormName(e.target.value)} className="h-8 text-xs" />
