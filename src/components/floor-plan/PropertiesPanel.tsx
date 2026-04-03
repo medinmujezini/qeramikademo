@@ -162,7 +162,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="height"
               type="number"
-              value={wall.height}
+              value={round2(wall.height)}
               onChange={(e) => updateWall(wall.id, { height: Number(e.target.value) })}
               min={100}
               max={500}
