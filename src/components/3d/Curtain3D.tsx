@@ -279,13 +279,13 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {/* ── Panel type: solid box halves ── */}
       {curtain.type === 'panel' && (
         <>
-          <mesh position={[-panelOffsetX, 0, 0]}>
+          <mesh position={[-(panelBaseOffset + panelSlide), 0, 0]}>
             <boxGeometry args={[curtainW / 2, curtainH, 0.03]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
             />
           </mesh>
-          <mesh position={[panelOffsetX, 0, 0]}>
+          <mesh position={[(panelBaseOffset + panelSlide), 0, 0]}>
             <boxGeometry args={[curtainW / 2, curtainH, 0.03]} />
             <meshStandardMaterial
               color={curtain.fabricColor} roughness={roughness} metalness={0}
@@ -296,7 +296,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
 
       {/* ── Sheer type: single flat transparent plane ── */}
       {curtain.type === 'sheer' && (
-        <mesh position={[-panelOffsetX, 0, 0]}>
+        <mesh position={[-(panelSlide), 0, 0]}>
           <planeGeometry args={[curtainW, curtainH]} />
           <meshStandardMaterial
             color={curtain.fabricColor} roughness={roughness} metalness={0}
