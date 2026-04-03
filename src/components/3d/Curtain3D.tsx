@@ -223,10 +223,12 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const posX = wallStartX + (wallEndX - wallStartX) * curtain.position;
   const posY = wallStartY + (wallEndY - wallStartY) * curtain.position;
 
-  // Offset from wall center — nearly flush to block window openings
+  // Offset from wall center — place curtain in front of interior window sill/frame
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
-  const offset = (wallThickness * scale / 2) + 0.002; // 2mm clearance, nearly flush
+  const wallFaceOffset = wallThickness * scale / 2;
+  const interiorWindowProjection = 0.015 + 0.06 / 2; // sill starts at +1.5cm, depth 6cm
+  const offset = wallFaceOffset + interiorWindowProjection + 0.004;
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
@@ -248,8 +250,8 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const desiredHalfW = (curtainW / 2) * (1 - openAmount * 0.8);
   const leftHalfW = Math.min(desiredHalfW, Math.max(leftSpace * 2, 0.05));
   const rightHalfW = Math.min(desiredHalfW, Math.max(rightSpace * 2, 0.05));
-  const leftPanelCenterX = -Math.max(leftHalfW / 2, curtainW / 4 + openAmount * curtainW / 4);
-  const rightPanelCenterX = Math.max(rightHalfW / 2, curtainW / 4 + openAmount * curtainW / 4);
+  const leftPanelCenterX = -(leftSpace - leftHalfW / 2);
+  const rightPanelCenterX = rightSpace - rightHalfW / 2;
   const isPanelType = curtain.type === 'panel' || curtain.type === 'sheer';
 
   const panelTexture = useMemo(() => {
@@ -318,13 +320,13 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       {curtain.type === 'panel' && (
         <>
           <group position={[leftPanelCenterX, 0, 0]}>
-            <mesh position={[0, 0, -0.0025]}>
-              <planeGeometry args={[leftHalfW + 0.01, curtainH + 0.01]} />
+            <mesh position={[0, 0, -0.004]}>
+              <planeGeometry args={[leftHalfW + 0.06, curtainH + 0.02]} />
               <meshStandardMaterial
                 color={curtain.fabricColor}
                 roughness={roughness}
                 metalness={0}
-                side={THREE.FrontSide}
+                side={THREE.DoubleSide}
               />
             </mesh>
             <mesh>
@@ -340,13 +342,13 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
           </group>
 
           <group position={[rightPanelCenterX, 0, 0]}>
-            <mesh position={[0, 0, -0.0025]}>
-              <planeGeometry args={[rightHalfW + 0.01, curtainH + 0.01]} />
+            <mesh position={[0, 0, -0.004]}>
+              <planeGeometry args={[rightHalfW + 0.06, curtainH + 0.02]} />
               <meshStandardMaterial
                 color={curtain.fabricColor}
                 roughness={roughness}
                 metalness={0}
-                side={THREE.FrontSide}
+                side={THREE.DoubleSide}
               />
             </mesh>
             <mesh>
