@@ -346,7 +346,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
           </mesh>
           {curtain.type === 'panel' && (
             <mesh position={[curtainW / 2, 0, 0]}>
-              <boxGeometry args={[0.06, curtainH * 0.95, 0.08]} />
+              <boxGeometry args={[0.03 + openAmount * 0.08, curtainH * 0.95, 0.08]} />
               <meshStandardMaterial
                 color={curtain.fabricColor} roughness={roughness} metalness={0}
                 transparent={isTransparent} opacity={materialOpacity}
