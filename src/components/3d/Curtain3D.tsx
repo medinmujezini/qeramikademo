@@ -137,7 +137,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
-  const cy = mountH - curtainH / 2;
+  const cy = hasModel ? (mountH - curtainH) : (mountH - curtainH / 2);
 
   // Simple open/close: two halves slide apart from center
   const panelWidth = (curtainW / 2) * (1 - openAmount * 0.7);
