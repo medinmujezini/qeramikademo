@@ -361,7 +361,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             onClick={() => {
-              onConfirm({ wallId: selectedWallId, type, fabricColor, fabricMaterial, width, height, opacity, mountHeight, rodVisible });
+              onConfirm({ wallId: selectedWallId, type, fabricColor, fabricMaterial, width, height, opacity, mountHeight, rodVisible, modelUrl: selectedModelUrl });
               onOpenChange(false);
             }}
             disabled={!selectedWallId}

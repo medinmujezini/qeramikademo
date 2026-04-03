@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo, Suspense } from 'react';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import type { Curtain } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
+import { ModelErrorBoundary } from './ModelErrorBoundary';
 
 interface Curtain3DProps {
   curtain: Curtain;
@@ -23,6 +25,80 @@ const FABRIC_ROUGHNESS: Record<string, number> = {
   silk: 0.4,
   blackout: 0.9,
 };
+
+// GLB curtain model loader — same pattern as Furniture3D
+const CurtainGLTFModel: React.FC<{
+  url: string;
+  targetWidth: number;
+  targetHeight: number;
+  fabricColor: string;
+  roughness: number;
+}> = ({ url, targetWidth, targetHeight, fabricColor, roughness }) => {
+  const { scene } = useGLTF(url);
+
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone(true);
+    // Compute bounding box for scaling
+    const box = new THREE.Box3().setFromObject(clone);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    // Uniform scale to fit target dimensions
+    const scaleX = size.x > 0 ? targetWidth / size.x : 1;
+    const scaleY = size.y > 0 ? targetHeight / size.y : 1;
+    const uniformScale = Math.min(scaleX, scaleY);
+
+    clone.scale.setScalar(uniformScale);
+    // Re-center after scaling
+    clone.position.set(
+      -center.x * uniformScale,
+      -center.y * uniformScale,
+      -center.z * uniformScale,
+    );
+
+    // Override material colors with fabric color
+    clone.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const mat = mesh.material;
+        if (Array.isArray(mat)) {
+          mesh.material = mat.map(m => {
+            const newMat = (m as THREE.MeshStandardMaterial).clone();
+            newMat.color.set(fabricColor);
+            newMat.roughness = roughness;
+            newMat.metalness = 0;
+            return newMat;
+          });
+        } else {
+          const newMat = (mat as THREE.MeshStandardMaterial).clone();
+          newMat.color.set(fabricColor);
+          newMat.roughness = roughness;
+          newMat.metalness = 0;
+          mesh.material = newMat;
+        }
+      }
+    });
+
+    return clone;
+  }, [scene, targetWidth, targetHeight, fabricColor, roughness]);
+
+  return <primitive object={clonedScene} />;
+};
+
+// Fallback box used during loading and as error fallback
+const FallbackBox: React.FC<{
+  width: number;
+  height: number;
+  color: string;
+  roughness: number;
+}> = ({ width, height, color, roughness }) => (
+  <mesh>
+    <boxGeometry args={[width, height, 0.03]} />
+    <meshStandardMaterial color={color} roughness={roughness} metalness={0} transparent opacity={0.5} />
+  </mesh>
+);
 
 export const Curtain3D: React.FC<Curtain3DProps> = ({
   curtain,
@@ -68,6 +144,9 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const rodRadius = 0.012;
   const rodLength = curtainW + 0.06;
 
+  // Check if this curtain has a GLB model
+  const hasModel = !!curtain.modelUrl;
+
   return (
     <group
       position={[cx, cy, cz]}
@@ -100,71 +179,64 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
         </group>
       )}
 
-      {/* ── Panel: two solid box halves that slide apart ── */}
-      {curtain.type === 'panel' && (
+      {/* ── GLB Model rendering ── */}
+      {hasModel && (
+        <ModelErrorBoundary fallback={<FallbackBox width={curtainW} height={curtainH} color={curtain.fabricColor} roughness={roughness} />}>
+          <Suspense fallback={<FallbackBox width={curtainW} height={curtainH} color={curtain.fabricColor} roughness={roughness} />}>
+            <CurtainGLTFModel
+              url={curtain.modelUrl!}
+              targetWidth={curtainW}
+              targetHeight={curtainH}
+              fabricColor={curtain.fabricColor}
+              roughness={roughness}
+            />
+          </Suspense>
+        </ModelErrorBoundary>
+      )}
+
+      {/* ── Fallback: Panel — two solid box halves that slide apart ── */}
+      {!hasModel && curtain.type === 'panel' && (
         <>
-          {/* Left half */}
           <mesh position={[-panelPosX, 0, 0]}>
             <boxGeometry args={[panelWidth, curtainH, 0.03]} />
-            <meshStandardMaterial
-              color={curtain.fabricColor}
-              roughness={roughness}
-              metalness={0}
-            />
+            <meshStandardMaterial color={curtain.fabricColor} roughness={roughness} metalness={0} />
           </mesh>
-          {/* Right half */}
           <mesh position={[(panelPosX), 0, 0]}>
             <boxGeometry args={[panelWidth, curtainH, 0.03]} />
-            <meshStandardMaterial
-              color={curtain.fabricColor}
-              roughness={roughness}
-              metalness={0}
-            />
+            <meshStandardMaterial color={curtain.fabricColor} roughness={roughness} metalness={0} />
           </mesh>
         </>
       )}
 
-      {/* ── Sheer: single transparent flat plane, slides to one side ── */}
-      {curtain.type === 'sheer' && (
+      {/* ── Fallback: Sheer — single transparent flat plane ── */}
+      {!hasModel && curtain.type === 'sheer' && (
         <mesh position={[-(openAmount * curtainW / 4), 0, 0]}>
           <planeGeometry args={[curtainW, curtainH]} />
           <meshStandardMaterial
-            color={curtain.fabricColor}
-            roughness={roughness}
-            metalness={0}
-            side={THREE.DoubleSide}
-            transparent
-            opacity={0.3}
+            color={curtain.fabricColor} roughness={roughness} metalness={0}
+            side={THREE.DoubleSide} transparent opacity={0.3}
           />
         </mesh>
       )}
 
       {/* Bunched fabric at sides when open */}
-      {isPanelType && openAmount > 0.15 && (
+      {!hasModel && isPanelType && openAmount > 0.15 && (
         <>
           <mesh position={[-curtainW / 2, 0, 0]}>
             <boxGeometry args={[0.03 + openAmount * 0.08, curtainH * 0.95, 0.06]} />
-            <meshStandardMaterial
-              color={curtain.fabricColor}
-              roughness={roughness}
-              metalness={0}
-            />
+            <meshStandardMaterial color={curtain.fabricColor} roughness={roughness} metalness={0} />
           </mesh>
           {curtain.type === 'panel' && (
             <mesh position={[curtainW / 2, 0, 0]}>
               <boxGeometry args={[0.03 + openAmount * 0.08, curtainH * 0.95, 0.06]} />
-              <meshStandardMaterial
-                color={curtain.fabricColor}
-                roughness={roughness}
-                metalness={0}
-              />
+              <meshStandardMaterial color={curtain.fabricColor} roughness={roughness} metalness={0} />
             </mesh>
           )}
         </>
       )}
 
       {/* ── Roman shade ── */}
-      {curtain.type === 'roman' && (
+      {!hasModel && curtain.type === 'roman' && (
         <RomanShade
           width={curtainW} height={curtainH} openAmount={openAmount}
           color={curtain.fabricColor} roughness={roughness}
@@ -173,7 +245,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       )}
 
       {/* ── Roller shade ── */}
-      {curtain.type === 'roller' && (
+      {!hasModel && curtain.type === 'roller' && (
         <RollerShade
           width={curtainW} height={curtainH} openAmount={openAmount}
           color={curtain.fabricColor} roughness={roughness}
@@ -182,7 +254,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
       )}
 
       {/* ── Pleated shade ── */}
-      {curtain.type === 'pleated' && (
+      {!hasModel && curtain.type === 'pleated' && (
         <PleatedShade
           width={curtainW} height={curtainH} openAmount={openAmount}
           color={curtain.fabricColor} roughness={roughness}
