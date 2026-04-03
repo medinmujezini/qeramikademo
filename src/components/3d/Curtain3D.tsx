@@ -83,8 +83,10 @@ const CurtainGLTFModel: React.FC<{
     return clone;
   }, [scene, targetWidth, targetHeight, fabricColor, roughness]);
 
-  // Apply open amount as X-scale compression (simulate gathering)
-  const openScale = 1 - openAmount * 0.7;
+  // At 100% open, curtain should be fully gathered (nearly invisible)
+  const openScale = Math.max(0.03, 1 - openAmount * 0.97);
+
+  if (openAmount >= 0.98) return null; // Fully open = hidden
 
   return (
     <group scale={[openScale, 1, 1]}>
