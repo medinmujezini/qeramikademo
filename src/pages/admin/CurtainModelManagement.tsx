@@ -214,7 +214,7 @@ const CurtainModelManagement = () => {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-display uppercase tracking-widest text-sm">
               {editingModel ? 'Edit Curtain Model' : 'Add Curtain Model'}
