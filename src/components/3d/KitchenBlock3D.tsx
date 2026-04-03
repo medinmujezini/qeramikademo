@@ -238,29 +238,29 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
 
     /* ── Panel insets (door look) ── */
     if (bt === 'base-cabinet' || bt === 'island' || bt === 'wall-cabinet') {
-      const insetBorder = 0.015;
+      const insetBorder = 0.008;
       const insetW = w / 2 - insetBorder * 2 - 0.003;
       const insetH = bodyTop - insetBorder * 2;
-      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.04).getStyle();
+      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.15).getStyle();
 
       // Left panel inset
       elements.push(
-        <mesh key="inset-l" position={[-w / 4, bodyYCenter, d / 2 + 0.002]} castShadow>
+        <mesh key="inset-l" position={[-w / 4, bodyYCenter, d / 2 + 0.006]} castShadow>
           <planeGeometry args={[insetW, insetH]} />
           <meshStandardMaterial color={insetColor} roughness={0.55} />
         </mesh>
       );
       // Right panel inset
       elements.push(
-        <mesh key="inset-r" position={[w / 4, bodyYCenter, d / 2 + 0.002]} castShadow>
+        <mesh key="inset-r" position={[w / 4, bodyYCenter, d / 2 + 0.006]} castShadow>
           <planeGeometry args={[insetW, insetH]} />
           <meshStandardMaterial color={insetColor} roughness={0.55} />
         </mesh>
       );
       // Center seam
       elements.push(
-        <mesh key="seam" position={[0, bodyYCenter, d / 2 + 0.003]}>
-          <boxGeometry args={[0.002, bodyTop - 0.01, 0.002]} />
+        <mesh key="seam" position={[0, bodyYCenter, d / 2 + 0.007]}>
+          <boxGeometry args={[0.003, bodyTop - 0.01, 0.002]} />
           <meshStandardMaterial color={seamColor} roughness={0.6} />
         </mesh>
       );
