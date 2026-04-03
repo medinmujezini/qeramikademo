@@ -1,6 +1,7 @@
 import React, { useMemo, Suspense } from 'react';
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import type { Curtain } from '@/types/floorPlan';
 import { CM_TO_METERS } from '@/constants/units';
 import { ModelErrorBoundary } from './ModelErrorBoundary';
