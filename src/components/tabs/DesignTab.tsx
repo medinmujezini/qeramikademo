@@ -1211,6 +1211,16 @@ const DesignScene: React.FC<DesignSceneProps> = ({
         });
       })()}
 
+      {/* Kitchen blocks */}
+      {(floorPlan.kitchenBlocks ?? []).map(block => (
+        <KitchenBlock3D
+          key={block.id}
+          block={block}
+          selected={block.id === selectedKitchenBlockId}
+          onClick={(id) => onKitchenBlockClick?.(id)}
+        />
+      ))}
+
       {/* Furniture Scene with all interaction */}
       <FurnitureScene enableDrag={true} enableSelection={true} floorPlan={floorPlan} />
     </>
