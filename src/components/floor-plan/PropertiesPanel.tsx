@@ -663,7 +663,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="doorHeight"
               type="number"
-              value={door.height}
+              value={round2(door.height)}
               onChange={(e) => updateDoor(door.id, { height: Number(e.target.value) })}
               min={180}
               max={280}
