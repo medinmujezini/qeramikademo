@@ -125,6 +125,11 @@ const App = () => (
                         <AdminLayout><ImportExportPage /></AdminLayout>
                       </ProtectedAdminRoute>
                     } />
+                    <Route path="/admin/curtain-models" element={
+                      <ProtectedAdminRoute>
+                        <AdminLayout><CurtainModelManagement /></AdminLayout>
+                      </ProtectedAdminRoute>
+                    } />
                     
                     <Route path="*" element={<NotFound />} />
                   </Routes>
