@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { round2 } from '@/lib/utils';
 
 interface DimensionsEditorProps {
   width: number;
