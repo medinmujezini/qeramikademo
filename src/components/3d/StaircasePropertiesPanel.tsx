@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Trash2, Upload, X } from 'lucide-react';
 import { calculateStaircaseGeometry } from '@/types/multiFloor';
+import { round2 } from '@/lib/utils';
 import type { StaircaseType, RailingStyle } from '@/types/multiFloor';
 
 export const StaircasePropertiesPanel: React.FC = () => {
