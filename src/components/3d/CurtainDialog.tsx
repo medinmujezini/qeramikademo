@@ -326,7 +326,7 @@ export const CurtainDialog: React.FC<CurtainDialogProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Width (cm)</Label>
-                <Input type="number" value={width} onChange={e => setWidth(Number(e.target.value))} className="h-8 text-xs" min={20} max={500} />
+                <Input type="number" value={Math.round(width * 100) / 100} onChange={e => setWidth(Number(e.target.value))} className="h-8 text-xs" min={20} max={500} />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Height (cm)</Label>
