@@ -194,6 +194,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
               targetHeight={curtainH}
               fabricColor={curtain.fabricColor}
               roughness={roughness}
+              openAmount={openAmount}
             />
           </Suspense>
         </ModelErrorBoundary>
