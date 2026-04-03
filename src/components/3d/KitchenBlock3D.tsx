@@ -269,9 +269,9 @@ const ProceduralKitchenBlock: React.FC<{ block: KitchenBlock }> = ({ block }) =>
     /* ── Tall cabinet: two-zone front ── */
     if (bt === 'tall-cabinet') {
       const splitY = hasToeKick ? toeH + bodyTop * 0.6 : h * 0.6;
-      const insetBorder = 0.015;
+      const insetBorder = 0.008;
       const insetW = w - insetBorder * 2;
-      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.04).getStyle();
+      const insetColor = new THREE.Color(frontColor).offsetHSL(0, 0, -0.15).getStyle();
 
       // Upper panel
       const upperH = h - splitY - insetBorder;
