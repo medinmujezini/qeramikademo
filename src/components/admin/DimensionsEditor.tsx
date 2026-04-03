@@ -31,7 +31,7 @@ const DimensionsEditor = ({
         <div 
           className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-muted-foreground"
         >
-          {width}×{depth}
+          {round2(width)}×{round2(depth)}
         </div>
       </div>
 
