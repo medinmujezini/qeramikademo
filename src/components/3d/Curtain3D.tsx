@@ -317,6 +317,26 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
         </>
       )}
 
+      {/* Panel backing liner — blocks see-through between folds */}
+      {curtain.type === 'panel' && panelGeometry && (
+        <>
+          <mesh position={[-panelOffsetX, 0, -0.03]}>
+            <planeGeometry args={[curtainW * (1 - openAmount), curtainH]} />
+            <meshStandardMaterial
+              color={curtain.fabricColor} roughness={roughness} metalness={0}
+              side={THREE.FrontSide}
+            />
+          </mesh>
+          <mesh position={[panelOffsetX, 0, -0.03]}>
+            <planeGeometry args={[curtainW * (1 - openAmount), curtainH]} />
+            <meshStandardMaterial
+              color={curtain.fabricColor} roughness={roughness} metalness={0}
+              side={THREE.FrontSide}
+            />
+          </mesh>
+        </>
+      )}
+
       {/* Bunched fabric at sides (panel/sheer when open) */}
       {isPanelType && openAmount > 0.1 && (
         <>
