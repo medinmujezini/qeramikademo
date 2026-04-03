@@ -782,11 +782,11 @@ export const PropertiesPanel: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-xs text-muted-foreground">Width</Label>
-              <p className="text-sm font-medium">{fixture.width} cm</p>
+              <p className="text-sm font-medium">{round2(fixture.width)} cm</p>
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Depth</Label>
-              <p className="text-sm font-medium">{fixture.depth} cm</p>
+              <p className="text-sm font-medium">{round2(fixture.depth)} cm</p>
             </div>
           </div>
 
