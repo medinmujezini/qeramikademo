@@ -112,7 +112,7 @@ const ProceduralKitchenBlock: React.FC<{
   );
 };
 
-const KitchenBlock3D: React.FC<KitchenBlock3DProps> = ({ block, selected, onClick }) => {
+const KitchenBlock3D: React.FC<KitchenBlock3DProps> = ({ block, selected, onClick, onDragStart }) => {
   const groupRef = useRef<THREE.Group>(null);
   const x = block.x * CM_TO_METERS;
   const z = block.y * CM_TO_METERS;
@@ -129,6 +129,12 @@ const KitchenBlock3D: React.FC<KitchenBlock3DProps> = ({ block, selected, onClic
       onClick={(e) => {
         e.stopPropagation();
         onClick?.(block.id);
+      }}
+      onPointerDown={(e) => {
+        if (onDragStart) {
+          e.stopPropagation();
+          onDragStart(block.id, e as any);
+        }
       }}
       onPointerOver={(e) => {
         e.stopPropagation();
