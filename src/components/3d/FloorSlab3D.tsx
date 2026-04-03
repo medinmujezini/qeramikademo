@@ -90,6 +90,7 @@ export const FloorSlab3D: React.FC<FloorSlab3DProps> = ({
     <group position={[cx, yPosition, cz]}>
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0, thickness]}
         castShadow
         receiveShadow
       >
