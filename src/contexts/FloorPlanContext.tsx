@@ -486,7 +486,9 @@ export const FloorPlanProvider = ({ children }: { children: ReactNode }) => {
     setSelectedStaircaseId,
     showAdjacentFloors,
     setShowAdjacentFloors,
-  }), [floorPlanState, layerVisibility, activeEditingLayer, wallSyncSettings, ceilingPlane, isCeilingPlaneEnabled, building, activeLevel, setActiveLevel, addFloor, removeFloor, renameFloor, duplicateFloor, updateFloorHeight, addStaircase, removeStaircase, updateStaircase, getFloorPlanForLevel, selectedStaircaseId, showAdjacentFloors]);
+    selectedKitchenBlockId,
+    setSelectedKitchenBlockId,
+  }), [floorPlanState, layerVisibility, activeEditingLayer, wallSyncSettings, ceilingPlane, isCeilingPlaneEnabled, building, activeLevel, setActiveLevel, addFloor, removeFloor, renameFloor, duplicateFloor, updateFloorHeight, addStaircase, removeStaircase, updateStaircase, getFloorPlanForLevel, selectedStaircaseId, showAdjacentFloors, selectedKitchenBlockId]);
   
   return (
     <FloorPlanContext.Provider value={contextValue}>
