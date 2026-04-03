@@ -2445,7 +2445,14 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               </Button>
             </div>
             <ScrollArea className="relative z-10 min-h-0 flex-1">
-              {selectedCurtain && selectedCurtainWall ? (
+              {selectedKitchenBlock ? (
+                <KitchenPropertiesPanel
+                  block={selectedKitchenBlock}
+                  onUpdate={updateKitchenBlock}
+                  onDelete={(id) => { removeKitchenBlock(id); setSelectedKitchenBlockId(null); }}
+                  onDeselect={() => setSelectedKitchenBlockId(null)}
+                />
+              ) : selectedCurtain && selectedCurtainWall ? (
                 <CurtainPropertiesPanel
                   curtain={selectedCurtain}
                   wallHeight={selectedCurtainWall.height}
