@@ -133,7 +133,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
   const hasModel = !!curtain.modelUrl;
-  const offset = (wallThickness * scale / 2) + (hasModel ? 0.01 : 0.005);
+  const offset = (wallThickness * scale / 2) + (hasModel ? 0.02 : 0.005);
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
