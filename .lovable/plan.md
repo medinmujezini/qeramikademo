@@ -1,45 +1,52 @@
 
 
-# Fix: Kitchen Block Colors and Materials Not Rendering Properly
+# Enhanced Kitchen Blocks: PBR Textures + Realistic Geometry
 
-## Problems Found
+## Overview
+Three improvements: (A) PBR texture support for countertops, (B) enhanced procedural geometry for realistic cabinet details, (C) memoized geometry creation for performance.
 
-After reviewing the code, several issues prevent colors and materials from displaying correctly:
+## A. Countertop PBR Texture Support
 
-1. **Appliance colors are hardcoded**: Lines 48-49 in `KitchenBlock3D.tsx` set `bodyColor = '#e0e0e0'` and `frontColor = '#d0d0d0'` for all appliance types, completely ignoring the user's `cabinetColor` setting.
+### 1. Type update — `src/types/floorPlan.ts`
+Add `countertopMaterialId?: string` to `KitchenBlock` — references a PBR material from the materials library.
 
-2. **Countertop materials look identical**: Only `steel` gets different material properties (metalness 0.8). Granite, marble, quartz, and wood all render with the same roughness=0.3 / metalness=0.1 — visually indistinguishable.
+### 2. Built-in procedural textures — `KitchenBlock3D.tsx`
+Generate `CanvasTexture` patterns per material (marble veins, wood grain, granite speckle, quartz noise). Cache textures so they're created once per type. Steel uses high metalness only.
 
-3. **No material-appropriate colors**: Changing countertop material doesn't affect appearance beyond a tiny metalness difference. Real granite looks different from marble, which looks different from wood.
+### 3. PBR Material Library linking — `KitchenBlock3D.tsx`
+When `countertopMaterialId` is set, load albedo/normal/roughness from `MaterialContext` via `TextureLoader` and apply to the countertop slab mesh. Falls back to procedural texture if unset.
 
-4. **Handle color is hardcoded**: Always `#888` regardless of material choice — no chrome/brass/black options.
+### 4. Material picker — `KitchenPropertiesPanel.tsx`
+Add optional "Custom PBR Material" dropdown below countertop material, listing materials from `useMaterialContext()`. "None (use default)" clears it.
 
-## Plan
+## B. Enhanced Procedural Geometry
 
-### 1. Fix appliance colors (KitchenBlock3D.tsx)
-Remove the hardcoded grey override. Use `block.cabinetColor` for all block types. Add a subtle steel-tint overlay only for the appliance front face (slightly desaturated version of cabinet color) rather than ignoring the color entirely.
+All done with additional `<mesh>` elements in `ProceduralKitchenBlock`:
 
-### 2. Add material-specific rendering properties
-Create a `COUNTERTOP_MATERIAL_PROPS` lookup that maps each material to distinct visual properties:
+| Block Type | Details Added |
+|---|---|
+| Base Cabinet / Island | 10cm toe kick, door panel insets (2mm deep), center seam line, 2cm countertop overhang |
+| Wall Cabinet | Panel insets, bottom edge trim strip |
+| Tall Cabinet | Two-zone front with upper/lower inset panels, horizontal seam at 60% height, toe kick |
+| Fridge | Recessed front panel, vertical handle bar, freezer/fridge gap line at 30% from top |
+| Stove | Oven door panel below burners, handle bar, dark glass window rectangle |
+| Sink | Faucet cylinder/arc on back edge |
+| Dishwasher | Front panel with handle bar, status indicator strip |
+| Countertop | Thin 3cm slab with front edge strip |
 
-| Material | Roughness | Metalness | Color tint behavior |
-|----------|-----------|-----------|---------------------|
-| Granite  | 0.6       | 0.05      | Speckled darker tone |
-| Marble   | 0.2       | 0.05      | Slightly veined/lighter |
-| Quartz   | 0.15      | 0.1       | Clean, uniform |
-| Wood     | 0.8       | 0.0       | Warm brown shift |
-| Steel    | 0.1       | 0.9       | Reflective silver |
+## C. Performance: Memoized Geometry (new addition)
 
-Apply these per-material properties to the countertop slab mesh so each material looks visually distinct.
+Wrap the entire procedural geometry JSX tree inside `useMemo`, keyed on all relevant block properties (width, height, depth, cabinetColor, countertopColor, countertopMaterial, countertopMaterialId, handleStyle, blockType). This prevents Three.js from rebuilding the scene graph on every React render cycle when nothing changed — critical when 5-10+ blocks are placed simultaneously.
 
-### 3. Add handle material variation
-Map handle style to appropriate metalness/color:
-- Bar: chrome (#c0c0c0, metalness 0.9)
-- Knob: brushed nickel (#a0a0a0, metalness 0.7)
+```text
+Before:  ProceduralKitchenBlock renders → 20+ meshes rebuilt every frame
+After:   useMemo([...deps]) → meshes only rebuilt when block properties change
+```
 
-### 4. Ensure reactivity
-Wrap material computations in `useMemo` keyed on the block's color/material props so Three.js materials update when the user changes them in the properties panel.
+## Files Modified
+1. `src/types/floorPlan.ts` — add `countertopMaterialId`
+2. `src/components/3d/KitchenBlock3D.tsx` — procedural textures, PBR loading, enhanced geometry, useMemo wrapping
+3. `src/components/3d/KitchenPropertiesPanel.tsx` — PBR material picker
 
-## Files changed
-- `src/components/3d/KitchenBlock3D.tsx` — all rendering fixes
+No database changes needed.
 
