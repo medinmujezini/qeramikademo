@@ -2420,6 +2420,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               onKitchenBlockMove={(id, x, y) => updateKitchenBlock(id, { x, y })}
               onKitchenDragStateChange={setIsDraggingKitchen}
             />
+          </Suspense>
           {/* Spawn point marker */}
           {viewMode === 'design' && (
             <SpawnPointMarker
