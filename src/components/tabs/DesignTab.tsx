@@ -1995,18 +1995,6 @@ export const DesignTab: React.FC<DesignTabProps> = ({
 
           {viewMode === 'design' && (
             <>
-              <div className="flex items-center gap-1.5">
-                <Switch id="show-ceiling" checked={showCeiling} onCheckedChange={setShowCeiling} className="scale-75" />
-                <Label htmlFor="show-ceiling" className="text-xs text-muted-foreground uppercase tracking-wider cursor-pointer">Ceiling</Label>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <Switch id="show-plumbing" checked={showPlumbing} onCheckedChange={setShowPlumbing} className="scale-75" />
-                <Label htmlFor="show-plumbing" className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
-                  <Droplets className="h-3 w-3 text-blue-500" />
-                  <span className="uppercase tracking-wider">Plumbing</span>
-                </Label>
-              </div>
 
               <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => {
                 const cx = (floorPlan.roomWidth || 800) / 2;
