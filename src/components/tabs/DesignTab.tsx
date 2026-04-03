@@ -646,6 +646,7 @@ const DesignScene: React.FC<DesignSceneProps> = ({
   selectedKitchenBlockId,
   onKitchenBlockClick,
   onKitchenBlockMove,
+  onKitchenDragStateChange,
 }) => {
   const { staircases, building, activeLevel, selectedStaircaseId, setSelectedStaircaseId, showAdjacentFloors, getFloorPlanForLevel } = useFloorPlanContext();
   const { 
