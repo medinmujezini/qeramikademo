@@ -252,7 +252,7 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
 
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
-      const fold = Math.sin(x / curtainW * Math.PI * foldFreq) * foldDepth;
+      const fold = Math.sin(x / (curtainW / 2) * Math.PI * foldFreq) * foldDepth;
       const variation = 0.85 + 0.15 * Math.sin(x * 137.5);
       pos.setZ(i, fold * variation);
     }
