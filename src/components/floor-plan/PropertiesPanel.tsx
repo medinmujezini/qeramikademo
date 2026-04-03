@@ -709,7 +709,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="winWidth"
               type="number"
-              value={window.width}
+              value={round2(window.width)}
               onChange={(e) => updateWindow(window.id, { width: Number(e.target.value) })}
               min={40}
               max={300}
