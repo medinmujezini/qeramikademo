@@ -568,6 +568,7 @@ export interface KitchenBlock {
   countertopMaterial: CountertopMaterial;
   handleStyle: HandleStyle;
   modelUrl?: string; // optional GLB
+  countertopMaterialId?: string; // optional PBR material from library
 }
 
 export interface SavedCameraView {

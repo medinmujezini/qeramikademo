@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Trash2, ChefHat } from 'lucide-react';
-import type { KitchenBlock, KitchenBlockType, CountertopMaterial, HandleStyle, KITCHEN_BLOCK_DEFAULTS } from '@/types/floorPlan';
+import type { KitchenBlock, KitchenBlockType, CountertopMaterial, HandleStyle } from '@/types/floorPlan';
 import ColorPickerField from '@/components/admin/ColorPickerField';
 import { supabase } from '@/integrations/supabase/client';
+import { useMaterialContext } from '@/contexts/MaterialContext';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
@@ -60,6 +61,7 @@ export const KitchenPropertiesPanel: React.FC<KitchenPropertiesPanelProps> = ({
   onDeselect,
 }) => {
   const [models, setModels] = useState<KitchenModel[]>([]);
+  const { materials } = useMaterialContext();
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -170,6 +172,25 @@ export const KitchenPropertiesPanel: React.FC<KitchenPropertiesPanelProps> = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          {/* Custom PBR Material override */}
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Custom PBR Material</Label>
+            <Select
+              value={block.countertopMaterialId || '__none__'}
+              onValueChange={v => onUpdate(block.id, { countertopMaterialId: v === '__none__' ? undefined : v })}
+            >
+              <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="None (use default)" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None (use default)</SelectItem>
+                {materials.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {materials.length === 0 && (
+              <p className="text-[10px] text-muted-foreground">No PBR materials uploaded yet</p>
+            )}
           </div>
         </>
       )}
