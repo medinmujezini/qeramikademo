@@ -223,10 +223,10 @@ export const Curtain3D: React.FC<Curtain3DProps> = ({
   const posX = wallStartX + (wallEndX - wallStartX) * curtain.position;
   const posY = wallStartY + (wallEndY - wallStartY) * curtain.position;
 
-  // Offset from wall center (inside face)
+  // Offset from wall center — nearly flush to block window openings
   const normalX = -Math.sin(wallAngle);
   const normalY = Math.cos(wallAngle);
-  const offset = (wallThickness * scale / 2) + 0.005;
+  const offset = (wallThickness * scale / 2) + 0.002; // 2mm clearance, nearly flush
 
   const cx = posX * scale + normalX * offset;
   const cz = posY * scale + normalY * offset;
