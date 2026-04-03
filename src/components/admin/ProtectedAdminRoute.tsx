@@ -1,10 +1,9 @@
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Loader2, ShieldX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;
@@ -12,10 +11,10 @@ interface ProtectedAdminRouteProps {
 }
 
 const ProtectedAdminRoute = ({ children, requiredRole = 'admin' }: ProtectedAdminRouteProps) => {
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isModerator, loading: roleLoading } = useAdminAuth();
 
-  // Show loading state
   if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -27,15 +26,13 @@ const ProtectedAdminRoute = ({ children, requiredRole = 'admin' }: ProtectedAdmi
     );
   }
 
-  // Not logged in - redirect to home
   if (!user) {
-    return <Navigate to="/" replace />;
+    const redirectTo = `${location.pathname}${location.search}`;
+    return <Navigate to={`/auth?redirect=${encodeURIComponent(redirectTo)}`} replace />;
   }
 
-  // Check role requirements
   const hasAccess = requiredRole === 'admin' ? isAdmin : isModerator;
 
-  // No access - show access denied
   if (!hasAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -45,7 +42,7 @@ const ProtectedAdminRoute = ({ children, requiredRole = 'admin' }: ProtectedAdmi
           </div>
           <h1 className="text-2xl font-bold">Access Denied</h1>
           <p className="text-muted-foreground">
-            You don't have permission to access the admin panel. 
+            You don't have permission to access the admin panel.
             Please contact an administrator if you believe this is an error.
           </p>
           <Button asChild>
@@ -60,3 +57,4 @@ const ProtectedAdminRoute = ({ children, requiredRole = 'admin' }: ProtectedAdmi
 };
 
 export default ProtectedAdminRoute;
+
