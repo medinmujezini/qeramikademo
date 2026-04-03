@@ -1947,9 +1947,17 @@ export const DesignTab: React.FC<DesignTabProps> = ({
         <div className="gold-accent-line w-full absolute bottom-0 left-0 z-0" />
         <div className="pointer-events-none absolute -top-10 right-1/4 w-[250px] h-[120px] rounded-full bg-[radial-gradient(circle,hsl(38_60%_68%/0.04)_0%,transparent_70%)] z-0" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/[0.02] to-transparent z-0" />
+        {/* Left fade */}
+        {(toolbarScrollState === 'left' || toolbarScrollState === 'both') && (
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-20 bg-gradient-to-r from-card to-transparent" />
+        )}
+        {/* Right fade */}
+        {(toolbarScrollState === 'right' || toolbarScrollState === 'both') && (
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 z-20 bg-gradient-to-l from-card to-transparent" />
+        )}
         <div
           ref={toolbarScrollRef}
-          className="flex items-center gap-2 h-11 px-3 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-none relative z-10 [&>*]:shrink-0"
+          className="flex items-center gap-2 h-11 px-3 overflow-x-auto overflow-y-hidden whitespace-nowrap toolbar-hscroll relative z-10 [&>*]:shrink-0"
         >
           <div className="flex items-center gap-1.5">
             <Switch id="gi-enabled" checked={giEnabled} onCheckedChange={setGiEnabled} className="scale-75" />
