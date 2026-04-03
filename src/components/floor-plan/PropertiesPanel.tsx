@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
+import { round2 } from '@/lib/utils';
 import { StaircasePropertiesPanel } from '@/components/3d/StaircasePropertiesPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
@@ -149,7 +150,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="thickness"
               type="number"
-              value={wall.thickness}
+              value={round2(wall.thickness)}
               onChange={(e) => updateWall(wall.id, { thickness: Number(e.target.value) })}
               min={5}
               max={50}
@@ -161,7 +162,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="height"
               type="number"
-              value={wall.height}
+              value={round2(wall.height)}
               onChange={(e) => updateWall(wall.id, { height: Number(e.target.value) })}
               min={100}
               max={500}
@@ -369,7 +370,7 @@ export const PropertiesPanel: React.FC = () => {
                         <Input
                           id="startHeight"
                           type="number"
-                          value={wall.startHeight ?? wall.height}
+                          value={round2(wall.startHeight ?? wall.height)}
                           onChange={(e) => {
                             const newStartHeight = Number(e.target.value);
                             const direction = newStartHeight > (wall.endHeight ?? wall.height) ? 'descending' : 'ascending';
@@ -398,7 +399,7 @@ export const PropertiesPanel: React.FC = () => {
                         <Input
                           id="endHeight"
                           type="number"
-                          value={wall.endHeight ?? wall.height}
+                          value={round2(wall.endHeight ?? wall.height)}
                           onChange={(e) => {
                             const newEndHeight = Number(e.target.value);
                             const direction = (wall.startHeight ?? wall.height) > newEndHeight ? 'descending' : 'ascending';
@@ -650,7 +651,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="doorWidth"
               type="number"
-              value={door.width}
+              value={round2(door.width)}
               onChange={(e) => updateDoor(door.id, { width: Number(e.target.value) })}
               min={60}
               max={200}
@@ -662,7 +663,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="doorHeight"
               type="number"
-              value={door.height}
+              value={round2(door.height)}
               onChange={(e) => updateDoor(door.id, { height: Number(e.target.value) })}
               min={180}
               max={280}
@@ -708,7 +709,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="winWidth"
               type="number"
-              value={window.width}
+              value={round2(window.width)}
               onChange={(e) => updateWindow(window.id, { width: Number(e.target.value) })}
               min={40}
               max={300}
@@ -720,7 +721,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="winHeight"
               type="number"
-              value={window.height}
+              value={round2(window.height)}
               onChange={(e) => updateWindow(window.id, { height: Number(e.target.value) })}
               min={40}
               max={250}
@@ -781,11 +782,11 @@ export const PropertiesPanel: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-xs text-muted-foreground">Width</Label>
-              <p className="text-sm font-medium">{fixture.width} cm</p>
+              <p className="text-sm font-medium">{round2(fixture.width)} cm</p>
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Depth</Label>
-              <p className="text-sm font-medium">{fixture.depth} cm</p>
+              <p className="text-sm font-medium">{round2(fixture.depth)} cm</p>
             </div>
           </div>
 
@@ -804,7 +805,7 @@ export const PropertiesPanel: React.FC = () => {
 
           <div>
             <Label className="text-xs text-muted-foreground">Position</Label>
-            <p className="text-sm font-medium">X: {fixture.cx.toFixed(0)}, Y: {fixture.cy.toFixed(0)}</p>
+            <p className="text-sm font-medium">X: {round2(fixture.cx)}, Y: {round2(fixture.cy)}</p>
           </div>
         </CardContent>
       </Card>
@@ -862,7 +863,7 @@ export const PropertiesPanel: React.FC = () => {
               <Input
                 id="colWidth"
                 type="number"
-                value={column.width}
+                value={round2(column.width)}
                 onChange={(e) => {
                   const value = Number(e.target.value);
                   const syncDepth = column.shape === 'round' || column.shape === 'square' || 
@@ -882,7 +883,7 @@ export const PropertiesPanel: React.FC = () => {
                 <Input
                   id="colDepth"
                   type="number"
-                  value={column.depth}
+                  value={round2(column.depth)}
                   onChange={(e) => updateColumn(column.id, { depth: Number(e.target.value) })}
                   min={10}
                   max={100}
@@ -899,7 +900,7 @@ export const PropertiesPanel: React.FC = () => {
                 <Input
                   id="armWidth"
                   type="number"
-                  value={column.armWidth ?? 15}
+                  value={round2(column.armWidth ?? 15)}
                   onChange={(e) => updateColumn(column.id, { armWidth: Number(e.target.value) })}
                   min={5}
                   max={50}
@@ -910,7 +911,7 @@ export const PropertiesPanel: React.FC = () => {
                 <Input
                   id="armLength"
                   type="number"
-                  value={column.armLength ?? 20}
+                  value={round2(column.armLength ?? 20)}
                   onChange={(e) => updateColumn(column.id, { armLength: Number(e.target.value) })}
                   min={10}
                   max={80}
@@ -924,7 +925,7 @@ export const PropertiesPanel: React.FC = () => {
             <Input
               id="colHeight"
               type="number"
-              value={column.height}
+              value={round2(column.height)}
               onChange={(e) => updateColumn(column.id, { height: Number(e.target.value) })}
               min={100}
               max={500}
@@ -975,7 +976,7 @@ export const PropertiesPanel: React.FC = () => {
 
           <div>
             <Label className="text-xs text-muted-foreground">Position</Label>
-            <p className="text-sm font-medium">X: {column.x.toFixed(0)}, Y: {column.y.toFixed(0)}</p>
+            <p className="text-sm font-medium">X: {round2(column.x)}, Y: {round2(column.y)}</p>
           </div>
         </CardContent>
       </Card>

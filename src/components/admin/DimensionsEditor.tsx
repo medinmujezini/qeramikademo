@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { round2 } from '@/lib/utils';
 
 interface DimensionsEditorProps {
   width: number;
@@ -30,7 +31,7 @@ const DimensionsEditor = ({
         <div 
           className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-muted-foreground"
         >
-          {width}×{depth}
+          {round2(width)}×{round2(depth)}
         </div>
       </div>
 
@@ -41,7 +42,7 @@ const DimensionsEditor = ({
           <Input
             type="number"
             step="any"
-            value={width}
+            value={round2(width)}
             onChange={(e) => onChange({ width: parseFloat(e.target.value) || 0, depth, height })}
             min={0.1}
             className="h-9"
@@ -52,7 +53,7 @@ const DimensionsEditor = ({
           <Input
             type="number"
             step="any"
-            value={depth}
+            value={round2(depth)}
             onChange={(e) => onChange({ width, depth: parseFloat(e.target.value) || 0, height })}
             min={0.1}
             className="h-9"
@@ -63,7 +64,7 @@ const DimensionsEditor = ({
           <Input
             type="number"
             step="any"
-            value={height}
+            value={round2(height)}
             onChange={(e) => onChange({ width, depth, height: parseFloat(e.target.value) || 0 })}
             min={0.1}
             className="h-9"
