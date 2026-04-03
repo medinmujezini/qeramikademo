@@ -131,6 +131,11 @@ const App = () => (
                         <AdminLayout><CurtainModelManagement /></AdminLayout>
                       </ProtectedAdminRoute>
                     } />
+                    <Route path="/admin/kitchen-models" element={
+                      <ProtectedAdminRoute>
+                        <AdminLayout><KitchenModelManagement /></AdminLayout>
+                      </ProtectedAdminRoute>
+                    } />
                     
                     <Route path="*" element={<NotFound />} />
                   </Routes>

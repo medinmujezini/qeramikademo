@@ -2705,7 +2705,24 @@ export const DesignTab: React.FC<DesignTabProps> = ({
           toast.success(`${wallWindows.length} curtain${wallWindows.length > 1 ? 's' : ''} placed`);
         }}
       />
-      </div>{/* end flex-1 canvas area */}
+
+      {/* Kitchen Block Dialog */}
+      <KitchenBlockDialog
+        open={kitchenDialogOpen}
+        onOpenChange={setKitchenDialogOpen}
+        onConfirm={(config) => {
+          const cx = (floorPlan.roomWidth || 800) / 2;
+          const cy = (floorPlan.roomHeight || 600) / 2;
+          addKitchenBlock({
+            x: cx,
+            y: cy,
+            rotation: 0,
+            ...config,
+          });
+          toast.success('Kitchen block placed');
+        }}
+      />
+      </div>
     </div>
   );
 };
