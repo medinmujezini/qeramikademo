@@ -2626,6 +2626,7 @@ export const DesignTab: React.FC<DesignTabProps> = ({
               openAmount: 0,
               mountHeight: config.mountHeight,
               rodVisible: config.rodVisible,
+              modelUrl: config.modelUrl,
             });
           });
           toast.success(`${wallWindows.length} curtain${wallWindows.length > 1 ? 's' : ''} placed`);
