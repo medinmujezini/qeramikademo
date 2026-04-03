@@ -11,6 +11,34 @@ interface KitchenBlock3DProps {
   onDragStart?: (id: string, e: THREE.Event) => void;
 }
 
+const COUNTERTOP_MATERIAL_PROPS: Record<string, { roughness: number; metalness: number; tint: (hex: string) => string }> = {
+  granite: {
+    roughness: 0.6, metalness: 0.05,
+    tint: (hex) => new THREE.Color(hex).offsetHSL(0, -0.1, -0.15).getStyle(),
+  },
+  marble: {
+    roughness: 0.2, metalness: 0.05,
+    tint: (hex) => new THREE.Color(hex).offsetHSL(0, -0.2, 0.1).getStyle(),
+  },
+  quartz: {
+    roughness: 0.15, metalness: 0.1,
+    tint: (hex) => hex,
+  },
+  wood: {
+    roughness: 0.8, metalness: 0.0,
+    tint: (hex) => new THREE.Color(hex).offsetHSL(0.02, 0.1, -0.05).getStyle(),
+  },
+  steel: {
+    roughness: 0.1, metalness: 0.9,
+    tint: () => '#c8c8c8',
+  },
+};
+
+const HANDLE_PROPS: Record<string, { color: string; metalness: number; roughness: number }> = {
+  bar: { color: '#c0c0c0', metalness: 0.9, roughness: 0.15 },
+  knob: { color: '#a0a0a0', metalness: 0.7, roughness: 0.25 },
+};
+
 const KitchenGLTFModel: React.FC<{
   modelUrl: string;
   width: number;
@@ -45,8 +73,33 @@ const ProceduralKitchenBlock: React.FC<{
   const d = block.depth * CM_TO_METERS;
 
   const isAppliance = block.blockType.startsWith('appliance-');
-  const bodyColor = isAppliance ? '#e0e0e0' : block.cabinetColor;
-  const frontColor = isAppliance ? '#d0d0d0' : new THREE.Color(block.cabinetColor).offsetHSL(0, 0, -0.05).getStyle();
+
+  // Always use user's cabinetColor — no hardcoded grey
+  const bodyColor = block.cabinetColor;
+  const frontColor = useMemo(() => {
+    if (isAppliance) {
+      // Subtle steel tint for appliance faces
+      return new THREE.Color(block.cabinetColor).offsetHSL(0, -0.15, -0.03).getStyle();
+    }
+    return new THREE.Color(block.cabinetColor).offsetHSL(0, 0, -0.05).getStyle();
+  }, [block.cabinetColor, isAppliance]);
+
+  const countertopProps = useMemo(() => {
+    const mat = COUNTERTOP_MATERIAL_PROPS[block.countertopMaterial] || COUNTERTOP_MATERIAL_PROPS.quartz;
+    return {
+      color: mat.tint(block.countertopColor),
+      roughness: mat.roughness,
+      metalness: mat.metalness,
+    };
+  }, [block.countertopMaterial, block.countertopColor]);
+
+  const handleProps = useMemo(() => {
+    return HANDLE_PROPS[block.handleStyle] || HANDLE_PROPS.bar;
+  }, [block.handleStyle]);
+
+  const hasCountertop = block.blockType === 'base-cabinet' || block.blockType === 'island' ||
+    block.blockType === 'appliance-sink' || block.blockType === 'appliance-stove' ||
+    block.blockType === 'appliance-dishwasher';
 
   return (
     <group>
@@ -59,17 +112,17 @@ const ProceduralKitchenBlock: React.FC<{
       {/* Front face accent */}
       <mesh position={[0, h / 2, d / 2 + 0.001]} castShadow>
         <planeGeometry args={[w - 0.01, h - 0.01]} />
-        <meshStandardMaterial color={frontColor} roughness={0.5} />
+        <meshStandardMaterial
+          color={frontColor}
+          roughness={isAppliance ? 0.3 : 0.5}
+          metalness={isAppliance ? 0.4 : 0}
+        />
       </mesh>
 
       {/* Handle */}
       {block.handleStyle !== 'none' && block.handleStyle !== 'integrated' && (
         <mesh
-          position={[
-            block.handleStyle === 'knob' ? 0 : 0,
-            h * 0.55,
-            d / 2 + 0.008,
-          ]}
+          position={[0, h * 0.55, d / 2 + 0.008]}
           castShadow
         >
           {block.handleStyle === 'knob' ? (
@@ -77,15 +130,23 @@ const ProceduralKitchenBlock: React.FC<{
           ) : (
             <boxGeometry args={[0.10, 0.008, 0.015]} />
           )}
-          <meshStandardMaterial color="#888" metalness={0.8} roughness={0.2} />
+          <meshStandardMaterial
+            color={handleProps.color}
+            metalness={handleProps.metalness}
+            roughness={handleProps.roughness}
+          />
         </mesh>
       )}
 
-      {/* Countertop slab for base/island types */}
-      {(block.blockType === 'base-cabinet' || block.blockType === 'island' || block.blockType === 'appliance-sink' || block.blockType === 'appliance-stove' || block.blockType === 'appliance-dishwasher') && (
+      {/* Countertop slab */}
+      {hasCountertop && (
         <mesh position={[0, h + 0.015, 0]} castShadow receiveShadow>
           <boxGeometry args={[w + 0.01, 0.03, d + 0.01]} />
-          <meshStandardMaterial color={block.countertopColor} roughness={0.3} metalness={block.countertopMaterial === 'steel' ? 0.8 : 0.1} />
+          <meshStandardMaterial
+            color={countertopProps.color}
+            roughness={countertopProps.roughness}
+            metalness={countertopProps.metalness}
+          />
         </mesh>
       )}
 
@@ -118,7 +179,6 @@ const KitchenBlock3D: React.FC<KitchenBlock3DProps> = ({ block, selected, onClic
   const z = block.y * CM_TO_METERS;
   const rotRad = (block.rotation * Math.PI) / 180;
 
-  // Wall cabinets mount at 140cm
   const yPos = block.blockType === 'wall-cabinet' ? 1.4 : 0;
 
   return (
@@ -155,7 +215,6 @@ const KitchenBlock3D: React.FC<KitchenBlock3DProps> = ({ block, selected, onClic
         <ProceduralKitchenBlock block={block} />
       )}
 
-      {/* Selection outline */}
       {selected && (
         <mesh position={[0, (block.height * CM_TO_METERS) / 2, 0]}>
           <boxGeometry args={[
