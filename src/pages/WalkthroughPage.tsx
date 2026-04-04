@@ -40,7 +40,7 @@ const WalkthroughPage = () => {
 
       {/* Unreal status badge — above 0.333 alpha threshold for interactivity */}
       <div className="absolute top-4 right-4 z-50">
-        <div className="flex items-center gap-2 bg-card/80 backdrop-blur-sm border border-primary/20 rounded-lg px-3 py-2">
+        <div data-unreal-opaque className="flex items-center gap-2 bg-card/80 backdrop-blur-sm border border-primary/20 rounded-lg px-3 py-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-xs font-display text-foreground/80 uppercase tracking-wider">
             Running in Unreal Engine

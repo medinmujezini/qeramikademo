@@ -1062,3 +1062,7 @@
 .unreal-transparent .canvas-vignette::after {
   display: none !important;
 }
+.unreal-transparent *:not([data-unreal-opaque]) {
+  background: transparent !important;
+  background-color: transparent !important;
+}
