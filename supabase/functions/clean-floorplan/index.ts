@@ -20,7 +20,7 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
+const MODEL = "openai/gpt-5-mini";
 
 const SYSTEM_PROMPT = `You analyze top-down architectural floor plans for a vectorization pipeline.
 
