@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFloorPlanContext } from '@/contexts/FloorPlanContext';
-import { BlueprintImportWizard, FloorPlanAnalysis } from '@/components/blueprint/BlueprintImportWizard';
+import { FloorplanPipelineWizard } from '@/components/floorplan-pipeline/FloorplanPipelineWizard';
+import { createDefaultFloorPlan } from '@/types/floorPlan';
+import type { Point, Wall } from '@/types/floorPlan';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NewFloorDialog } from '@/components/floor-plan/NewFloorDialog';
@@ -87,34 +89,20 @@ export const FloorPlanTab: React.FC = () => {
     setWallChainLength(0);
   }, [resetFloorPlan, setSelectedElement]);
 
-  const handleImportComplete = useCallback((
-    analysis: FloorPlanAnalysis, 
-    pixelsPerCm: number, 
-    settings: { wallThickness: number }
-  ) => {
-    resetFloorPlan();
-    const pointMap = new Map<string, string>();
-    const getOrCreatePoint = (x: number, y: number): string => {
-      const key = `${Math.round(x)},${Math.round(y)}`;
-      if (pointMap.has(key)) return pointMap.get(key)!;
-      const id = addPoint(x, y);
-      pointMap.set(key, id);
-      return id;
-    };
-
-    let wallsAdded = 0;
-    analysis.walls.forEach(wall => {
-      const startPointId = getOrCreatePoint(wall.startX, wall.startY);
-      const endPointId = getOrCreatePoint(wall.endX, wall.endY);
-      const length = Math.sqrt((wall.endX - wall.startX) ** 2 + (wall.endY - wall.startY) ** 2);
-      if (length < 5) return;
-      addWall(startPointId, endPointId);
-      wallsAdded++;
-    });
-
-    toast.success('Floor plan imported!', { description: `Added ${wallsAdded} walls from the image analysis.` });
+  const handleImportComplete = useCallback((result: { points: Point[]; walls: Wall[]; pixelsPerMeter: number }) => {
+    const plan = createDefaultFloorPlan();
+    plan.points = result.points;
+    plan.walls = result.walls;
+    // Size the room to fit imported walls (with a 100cm margin)
+    if (result.points.length > 0) {
+      const maxX = Math.max(...result.points.map((p) => p.x));
+      const maxY = Math.max(...result.points.map((p) => p.y));
+      plan.roomWidth = Math.max(plan.roomWidth, Math.ceil(maxX) + 100);
+      plan.roomHeight = Math.max(plan.roomHeight, Math.ceil(maxY) + 100);
+    }
+    loadFloorPlan(plan);
     setSelectedElement(null);
-  }, [resetFloorPlan, addPoint, addWall, setSelectedElement]);
+  }, [loadFloorPlan, setSelectedElement]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -226,7 +214,7 @@ export const FloorPlanTab: React.FC = () => {
         </div>
       </div>
 
-      <BlueprintImportWizard
+      <FloorplanPipelineWizard
         open={showImportWizard}
         onOpenChange={setShowImportWizard}
         onComplete={handleImportComplete}
